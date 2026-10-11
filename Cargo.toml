@@ -28,27 +28,29 @@ tomet-transform = { git = "https://github.com/tomet-lang/tomet.git" }
 tomet-tree = { git = "https://github.com/tomet-lang/tomet.git" }
 
 #= Crates.io
-anyhow = "1.0.95"
-clap = { version = "4.5.23", features = ["derive"] }
+anyhow = "1.0"
+axum = "0.7"
+clap = { version = "4.5", features = ["derive"] }
 image = { version = "0.25", default-features = false, features = [
   "jpeg",
   "png",
   "webp",
 ] }
-minijinja = { version = "2.7.0", features = ["json", "loader"] }
-notify = "6.1.1"
-pagefind = { version = "1.5.2", default-features = false }
+minijinja = { version = "2.7", features = ["json", "loader"] }
+notify = "6.1"
+pagefind = { version = "1.5", default-features = false }
 percent-encoding = "2.3"
 rayon = "1.10"
-regex = "1.11.1"
-serde = { version = "1.0.217", features = ["derive"] }
-serde_json = { version = "1.0.134", features = ["preserve_order"] }
-tokio = { version = "1.42.0", features = ["full"] }
-toml = "0.8.19"
-tracing = "0.1.41"
-tracing-subscriber = { version = "0.3.19", features = ["env-filter"] }
+regex = "1.11"
+serde = { version = "1.0", features = ["derive"] }
+serde_json = { version = "1.0", features = ["preserve_order"] }
+tokio = { version = "1.42", features = ["full"] }
+toml = "0.8"
+tower-http = "0.5.2"
+tracing = "0.1"
+tracing-subscriber = { version = "0.3", features = ["env-filter"] }
 unicode-segmentation = "1.12"
-walkdir = "2.5.0"
+walkdir = "2.5"
 
 [profile.dev.package."*"]
 opt-level = 3

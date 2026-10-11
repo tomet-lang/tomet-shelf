@@ -24,7 +24,7 @@
 use std::path::Path;
 
 use rayon::prelude::*;
-use tomet_ast::{Block, Document};
+use tomet_ast::{Block, Document, ListItem};
 
 use super::document::strip_doc_extension;
 use super::loader::DocFileInfo;
@@ -151,45 +151,58 @@ fn collect_blocks(
     let mut entries = Vec::new();
 
     for block in blocks {
-        let Block::Element(el) = block else { continue };
-        if !matches!(
-            tomet_semantics::classify_std_lenient(el),
-            tomet_semantics::ElementKind::UnorderedList | tomet_semantics::ElementKind::OrderedList
-        ) {
+        let Block::List(list) = block else { continue };
+        entries.extend(collect_list_items(
+            &list.items,
+            from_path,
+            vault_index,
+            unresolved,
+            route_table,
+        ));
+    }
+
+    entries
+}
+
+fn collect_list_items(
+    items: &[ListItem],
+    from_path: &Path,
+    vault_index: &tomet_links::VaultLinkIndex,
+    unresolved: &mut Vec<String>,
+    route_table: Option<&crate::book::slug::RouteTable>,
+) -> Vec<IndexEntry> {
+    let mut entries = Vec::new();
+
+    for item in items {
+        // A list item's own link lives in its content; the sub-list it
+        // opens lives in its sublist. Reading them separately is what
+        // keeps a parent from claiming its first child's target.
+        let target = item
+            .element
+            .content
+            .as_ref()
+            .and_then(|blocks| first_page_target(blocks, item.element.span));
+
+        let children = item
+            .sublist
+            .as_ref()
+            .map(|sub| {
+                collect_list_items(&sub.items, from_path, vault_index, unresolved, route_table)
+            })
+            .unwrap_or_default();
+
+        let Some(target) = target else {
+            // A bullet with no link is a label, not an entry. Its
+            // children still belong to the list.
+            entries.extend(children);
             continue;
-        }
+        };
 
-        let Some(value) = &el.value else { continue };
-        for item in value.as_children() {
-            // A list item's own link lives in its content; the sub-list it
-            // opens lives in its children. Reading them separately is what
-            // keeps a parent from claiming its first child's target.
-            let target = item
-                .content
-                .as_ref()
-                .and_then(|blocks| first_page_target(blocks, item.span));
-
-            let children = item
-                .children
-                .as_deref()
-                .map(|blocks| {
-                    collect_blocks(blocks, from_path, vault_index, unresolved, route_table)
-                })
-                .unwrap_or_default();
-
-            let Some(target) = target else {
-                // A bullet with no link is a label, not an entry. Its
-                // children still belong to the list.
+        match resolve_page_slug(&target, from_path, vault_index, route_table) {
+            Some(slug) => entries.push(IndexEntry { slug, children }),
+            None => {
+                unresolved.push(target);
                 entries.extend(children);
-                continue;
-            };
-
-            match resolve_page_slug(&target, from_path, vault_index, route_table) {
-                Some(slug) => entries.push(IndexEntry { slug, children }),
-                None => {
-                    unresolved.push(target);
-                    entries.extend(children);
-                }
             }
         }
     }
