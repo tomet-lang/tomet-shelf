@@ -24,8 +24,9 @@
     };
 
     #= Tool
-    tomet.url = "github:tomet-lang/tomet";
-    twrit.url = "github:tomet-lang/tomet-writ";
+    # sisho brings tomet and twrit for the dev shell. It pins tomet-shelf too, but its
+    # `tomet-shelf` input cuts this one (`inputs.sisho.follows = ""`), so the loop is not in the lock.
+    sisho.url = "github:tomet-lang/sisho";
   };
 
   outputs = inputs: import ./nix inputs;

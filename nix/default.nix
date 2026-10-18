@@ -15,7 +15,9 @@ flake-parts.lib.mkFlake { inherit inputs; } {
   perSystem =
     { pkgs, ... }:
     let
+      system = pkgs.stdenv.hostPlatform.system;
       craneLib = inputs.crane.mkLib pkgs;
+      sisho = inputs.sisho.packages.${system};
     in
     {
       packages = rec {
@@ -28,15 +30,19 @@ flake-parts.lib.mkFlake { inherit inputs; } {
 
       devShells.default = pkgs.callPackage ./dev.nix {
         inherit inputs;
-        fenix = inputs.fenix.packages.${pkgs.stdenv.hostPlatform.system};
+        fenix = inputs.fenix.packages.${system};
         tomet-shelf = pkgs.callPackage ./pkgs/tomet-shelf.nix { inherit craneLib; };
-        tomet = inputs.tomet.packages.${pkgs.stdenv.hostPlatform.system}.tomet;
-        tomet-lsp = inputs.tomet.packages.${pkgs.stdenv.hostPlatform.system}.tomet-lsp;
-        twrit = inputs.twrit.packages.${pkgs.stdenv.hostPlatform.system}.twrit;
+        # The other tools; tomet-shelf itself is the one built from this checkout.
+        tools = inputs.sisho.legacyPackages.${system}.combine [
+          sisho.sisho
+          sisho.tomet
+          sisho.tomet-lsp
+          sisho.twrit
+        ];
       };
 
       treefmt = import ./formatter.nix {
-        tomet = inputs.tomet.packages.${pkgs.stdenv.hostPlatform.system}.tomet;
+        tomet = sisho.tomet;
       };
     };
 }
