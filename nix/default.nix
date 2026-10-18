@@ -19,9 +19,9 @@ flake-parts.lib.mkFlake { inherit inputs; } {
     in
     {
       packages = rec {
-        default = tmtbook;
-        tmtbook = pkgs.callPackage ./pkgs/tmtbook.nix { inherit craneLib; };
-        tmtbook-embedded-search = pkgs.callPackage ./pkgs/tmtbook-embedded-search.nix {
+        default = tomet-shelf;
+        tomet-shelf = pkgs.callPackage ./pkgs/tomet-shelf.nix { inherit craneLib; };
+        tomet-shelf-embedded-search = pkgs.callPackage ./pkgs/tomet-shelf-embedded-search.nix {
           inherit craneLib;
         };
       };
@@ -29,7 +29,7 @@ flake-parts.lib.mkFlake { inherit inputs; } {
       devShells.default = pkgs.callPackage ./dev.nix {
         inherit inputs;
         fenix = inputs.fenix.packages.${pkgs.stdenv.hostPlatform.system};
-        tmtbook = pkgs.callPackage ./pkgs/tmtbook.nix { inherit craneLib; };
+        tomet-shelf = pkgs.callPackage ./pkgs/tomet-shelf.nix { inherit craneLib; };
         tomet = inputs.tomet.packages.${pkgs.stdenv.hostPlatform.system}.tomet;
         tomet-lsp = inputs.tomet.packages.${pkgs.stdenv.hostPlatform.system}.tomet-lsp;
         twrit = inputs.twrit.packages.${pkgs.stdenv.hostPlatform.system}.twrit;

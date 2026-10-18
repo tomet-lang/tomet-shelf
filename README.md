@@ -1,12 +1,12 @@
 <!-- Generated from tmtroot/readme.tmt. Edit that, then `tomet export .`. -->
 
-# TometBook
+# TometShelf
 
 Fast static site generator and documentation server specifically built for Tomet (`.tmt`) vaults.
 
 ## Overview
 
-`tmtbook` provides a modern documentation site experience for Tomet vaults. It features:
+`tomet-shelf` provides a modern documentation site experience for Tomet vaults. It features:
 
 - **Blazing fast builds**: Written in Rust, optimized for large-scale knowledge bases.
 - **Instant link resolution**: First-class support for Tomet intra-vault link resolution and references.
@@ -15,8 +15,8 @@ Fast static site generator and documentation server specifically built for Tomet
 
 ## Workspace Layout
 
-- `crates/tmtbook` (`tmtbook`) -- Core SSG engine, routing, markdown rendering pipeline, and CLI server.
-- `crates/tmtbook-assets` (`tmtbook-assets`) -- Frontend web assets, theme styling, and client scripts.
+- `crates/tomet-shelf` (`tomet-shelf`) -- Core SSG engine, routing, markdown rendering pipeline, and CLI server.
+- `crates/tomet-shelf-assets` (`tomet-shelf-assets`) -- Frontend web assets, theme styling, and client scripts.
 
 ## Building and Running
 
@@ -35,6 +35,6 @@ cargo test --workspace
 ### Serve a vault locally
 
 ```bash
-cargo run -p tmtbook -- serve tmtroot/
+cargo run -p tomet-shelf -- serve tmtroot/
 ```
 

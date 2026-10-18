@@ -7,8 +7,8 @@ use tracing_subscriber::{EnvFilter, fmt};
 mod cli;
 
 use cli::{Cli, Commands};
-use tmtbook::book;
-use tmtbook::config::BookConfig;
+use tomet_shelf::book;
+use tomet_shelf::config::BookConfig;
 
 #[tokio::main]
 async fn main() -> Result<()> {
@@ -44,10 +44,10 @@ async fn main() -> Result<()> {
         } => {
             let (src_dir, out_dir, config) = resolve_build_paths(&dir, dest)?;
 
-            tmtbook::run_dev_server(src_dir, out_dir, config, host, port).await?;
+            tomet_shelf::run_dev_server(src_dir, out_dir, config, host, port).await?;
         }
         Commands::Init { dir, title } => {
-            let target_file = dir.join("tmtbook.toml");
+            let target_file = dir.join("shelf.toml");
             if target_file.exists() {
                 anyhow::bail!("Configuration already exists: {}", target_file.display());
             }

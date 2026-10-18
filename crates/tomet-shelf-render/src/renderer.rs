@@ -1,0 +1,181 @@
+use anyhow::{Context, Result};
+use minijinja::{Environment, Value, context};
+use serde::{Deserialize, Serialize};
+
+use crate::document::ProcessedDoc;
+use tomet_shelf_config::BookConfig;
+
+pub struct BookRenderer {
+    env: Environment<'static>,
+    clean_url_prefix: String,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct SectionSummary {
+    pub name: String,
+    pub count: usize,
+}
+
+/// A page that points at the one being rendered.
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct Backlink {
+    pub url: String,
+    pub title: String,
+    pub section: Option<String>,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct EntrySummary {
+    pub url: String,
+    pub title: String,
+    pub section: Option<String>,
+    /// Pages the index nested under this one. Always empty when the catalog
+    /// is generated rather than written.
+    #[serde(default)]
+    pub children: Vec<EntrySummary>,
+}
+
+impl BookRenderer {
+    pub fn new(config: &BookConfig, is_dev: bool) -> Result<Self> {
+        let mut env = Environment::new();
+
+        env.add_template("base.html", tomet_shelf_assets::BASE_HTML)
+            .context("Failed to add base.html template")?;
+        env.add_template("page.html", tomet_shelf_assets::PAGE_HTML)
+            .context("Failed to add page.html template")?;
+        env.add_template("index.html", tomet_shelf_assets::INDEX_HTML)
+            .context("Failed to add index.html template")?;
+        env.add_template("macros.html", tomet_shelf_assets::MACROS_HTML)
+            .context("Failed to add macros.html template")?;
+
+        let rail_title = config
+            .ui
+            .rail_title
+            .as_deref()
+            .unwrap_or(&config.book.title);
+
+        let rail_letters: Vec<String> = rail_title.chars().map(|c| c.to_string()).collect();
+
+        // Vault-wide invariant values registered once as globals rather than
+        // rebuilt per-page in context!().
+        env.add_global("site_title", Value::from(&config.book.title));
+        env.add_global(
+            "description",
+            Value::from_serialize(&config.book.description),
+        );
+        env.add_global("lang", Value::from(&config.book.lang));
+        env.add_global("default_view", Value::from(&config.ui.default_view));
+        env.add_global("custom_css", Value::from_serialize(&config.ui.custom_css));
+        env.add_global("t", Value::from_serialize(&config.ui.strings));
+        env.add_global(
+            "css_version",
+            Value::from(tomet_shelf_assets::CSS_VERSION.as_str()),
+        );
+        env.add_global(
+            "js_version",
+            Value::from(tomet_shelf_assets::JS_VERSION.as_str()),
+        );
+        env.add_global(
+            "tmt_btn_css_version",
+            Value::from(tomet_shelf_assets::TMT_BTN_CSS_VERSION.as_str()),
+        );
+        env.add_global(
+            "tmt_badge_css_version",
+            Value::from(tomet_shelf_assets::TMT_BADGE_CSS_VERSION.as_str()),
+        );
+        env.add_global(
+            "tmt_icon_css_version",
+            Value::from(tomet_shelf_assets::TMT_ICON_CSS_VERSION.as_str()),
+        );
+        env.add_global(
+            "tmt_swatch_css_version",
+            Value::from(tomet_shelf_assets::TMT_SWATCH_CSS_VERSION.as_str()),
+        );
+        env.add_global(
+            "tmt_switch_css_version",
+            Value::from(tomet_shelf_assets::TMT_SWITCH_CSS_VERSION.as_str()),
+        );
+        env.add_global("is_dev", Value::from(is_dev));
+        env.add_global("rail_letters", Value::from_serialize(&rail_letters));
+
+        let base_path = config.build.clean_base_path();
+        let full_url_prefix = config.build.full_url_prefix();
+        let home_url = if full_url_prefix.is_empty() {
+            if base_path.is_empty() {
+                "/".to_string()
+            } else {
+                format!("{base_path}/")
+            }
+        } else {
+            full_url_prefix.clone()
+        };
+
+        env.add_global("base_path", Value::from(base_path));
+        env.add_global(
+            "clean_url_prefix",
+            Value::from(config.build.clean_url_prefix()),
+        );
+        env.add_global("full_url_prefix", Value::from(&full_url_prefix));
+        env.add_global("home_url", Value::from(&home_url));
+
+        Ok(Self {
+            env,
+            clean_url_prefix: full_url_prefix,
+        })
+    }
+
+    pub fn render_page(
+        &self,
+        doc: &ProcessedDoc,
+        backlinks: &[Backlink],
+        book_index: &[EntrySummary],
+    ) -> Result<String> {
+        let tmpl = self.env.get_template("page.html")?;
+
+        let ctx = context! {
+            source_path => &doc.source_path,
+            rel_path => &doc.rel_path,
+            slug => &doc.slug,
+            page_title => &doc.title,
+            section => &doc.section,
+            kind => &doc.kind,
+            primary_color => &doc.primary_color,
+            icon => &doc.icon,
+            icon_image_url => &doc.icon_image_url,
+            banner_url => &doc.banner_url,
+            banner_original_url => &doc.banner_original_url,
+            banner_y => doc.banner_y,
+            images => &doc.images,
+            original_images => &doc.original_images,
+            hero_chips => &doc.hero_chips,
+            infobox_rows => &doc.infobox_rows,
+            has_data => doc.has_data,
+            toc => &doc.toc,
+            section_tabs => &doc.section_tabs,
+            body_html => &doc.body_html,
+            backlinks => backlinks,
+            book_index => book_index,
+            // So the index can mark where the reader is standing.
+            page_url => format!("{}/{}", self.clean_url_prefix, doc.slug),
+        };
+
+        let rendered = tmpl.render(ctx)?;
+        Ok(rendered)
+    }
+
+    pub fn render_index(
+        &self,
+        sections: &[SectionSummary],
+        entries: &[EntrySummary],
+    ) -> Result<String> {
+        let tmpl = self.env.get_template("index.html")?;
+
+        let ctx = context! {
+            sections => sections,
+            entries => entries,
+        };
+
+        let rendered = tmpl.render(ctx)?;
+        Ok(rendered)
+    }
+}

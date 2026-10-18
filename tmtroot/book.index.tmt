@@ -5,7 +5,7 @@
 
 - ${filter(contains(path, "docs/"), by(path))}
 - @link(ref:"readme")
-- @link(ref:"what-is-tmtbook")
+- @link(ref:"what-is-tomet-shelf")
 - @link(ref:"doc-index")
 - @link(ref:"roadmap")
   - @link(ref:"idea")

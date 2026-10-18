@@ -1,5 +1,5 @@
 {
-  description = "Tomet Book generator (tmtbook) - A standalone book & wiki generator for Tomet";
+  description = "Tomet Book generator (tomet-shelf) - A standalone book & wiki generator for Tomet";
 
   nixConfig = {
     extra-substituters = [ "https://tomet.cachix.org" ];

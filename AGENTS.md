@@ -1,6 +1,6 @@
 <!-- Generated from tmtroot/agents.tmt. Edit that, then `tomet export .`. -->
 
-# TometBook
+# TometShelf
 
 ## Core Philosophy & Principles
 
@@ -38,10 +38,10 @@ All Markdown files (`README.md`, `AGENTS.md`, `CLAUDE.md`) are generated build a
 
 ## Project overview
 
-`tmtbook` is a static site generator and documentation server specifically built for Tomet (`.tmt`) vaults. It provides live reloading, fast link resolution, and client-side full-text search.
+`tomet-shelf` is a static site generator and documentation server specifically built for Tomet (`.tmt`) vaults. It provides live reloading, fast link resolution, and client-side full-text search.
 
-- `crates/tmtbook`: Core engine and CLI.
-- `crates/tmtbook-assets`: Web assets and frontend UI (TypeScript, Tailwind).
+- `crates/tomet-shelf`: Core engine and CLI.
+- `crates/tomet-shelf-assets`: Web assets and frontend UI (TypeScript, Tailwind).
 
 Read `CONTRIBUTING.md` for the contribution workflow, commit conventions, and verification steps.
 

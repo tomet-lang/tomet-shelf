@@ -3,7 +3,7 @@ use std::net::IpAddr;
 use std::path::PathBuf;
 
 #[derive(Parser, Debug)]
-#[command(name = "tmtbook")]
+#[command(name = "tomet-shelf")]
 #[command(author, version, about = "A standalone book & wiki generator for Tomet", long_about = None)]
 pub struct Cli {
     #[command(subcommand)]
@@ -47,7 +47,7 @@ pub enum Commands {
         port: u16,
     },
 
-    /// Initialize a new tmtbook.toml configuration in the directory
+    /// Initialize a new shelf.toml configuration in the directory
     Init {
         /// Directory to initialize in
         #[arg(default_value = ".")]

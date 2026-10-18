@@ -3,7 +3,7 @@
   mkShell,
   fenix,
 
-  tmtbook,
+  tomet-shelf,
   tomet,
   tomet-lsp,
   twrit,
@@ -24,7 +24,7 @@ in
 mkShell rec {
   buildInputs = with pkgs; [
     #= Develop
-    tmtbook
+    tomet-shelf
     tomet
     tomet-lsp
     twrit

@@ -10,7 +10,7 @@
 - ("12:01") タイムスタンプ
 - (v1.0) バージョンタグ
 
-==[ 有効化設定（tmtbook.toml） ]
+==[ 有効化設定（shelf.toml） ]
 
 ```toml
 [ui.markers]

@@ -1,0 +1,10 @@
+{
+  "name": "shelf-frontend",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "build": "esbuild src/index.ts --bundle --minify --outfile=dist/shelf.js",
+    "dev": "esbuild src/index.ts --bundle --watch --outfile=dist/shelf.js"
+  }
+}

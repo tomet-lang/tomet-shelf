@@ -9,12 +9,12 @@ edition = "2024"
 rust-version = "1.85"
 
 [workspace.dependencies]
-tmtbook = { path = "crates/tmtbook" }
-tmtbook-config = { path = "crates/tmtbook-config" }
-tmtbook-assets = { path = "crates/tmtbook-assets" }
-tmtbook-render = { path = "crates/tmtbook-render" }
-tmtbook-search = { path = "crates/tmtbook-search" }
-tmtbook-serve = { path = "crates/tmtbook-serve" }
+tomet-shelf = { path = "crates/tomet-shelf" }
+tomet-shelf-config = { path = "crates/tomet-shelf-config" }
+tomet-shelf-assets = { path = "crates/tomet-shelf-assets" }
+tomet-shelf-render = { path = "crates/tomet-shelf-render" }
+tomet-shelf-search = { path = "crates/tomet-shelf-search" }
+tomet-shelf-serve = { path = "crates/tomet-shelf-serve" }
 
 #= Tomet
 tomet-ast = { git = "https://github.com/tomet-lang/tomet.git" }

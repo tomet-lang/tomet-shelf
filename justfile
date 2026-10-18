@@ -1,4 +1,4 @@
-# tmtbook development tasks.
+# tomet-shelf development tasks.
 # Run `just` to see everything available.
 
 # Vault used by the `dev` and `book` recipes when none is given.
@@ -29,7 +29,7 @@ test:
 
 # Type-check TypeScript without producing output
 check-ui:
-    tsc --project crates/tmtbook-assets/frontend/tsconfig.json --noEmit
+    tsc --project crates/tomet-shelf-assets/frontend/tsconfig.json --noEmit
 
 # Type-check without producing a binary
 check: check-ui

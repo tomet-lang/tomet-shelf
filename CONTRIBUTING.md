@@ -1,6 +1,6 @@
 <!-- Generated from tmtroot/contributing.tmt. Edit that, then `tomet export .`. -->
 
-# Contributing to TometBook
+# Contributing to TometShelf
 
 ## Documentation Policy
 
@@ -27,8 +27,8 @@ All commits must follow the Conventional Commits format: `type(scope): descripti
 
 Use the affected crate or subsystem as the scope:
 
-- **Core / CLI**: `cli`, `engine`, `tmtbook` (`crates/tmtbook`)
-- **Assets & UI**: `assets`, `ui` (`crates/tmtbook-assets`)
+- **Core / CLI**: `cli`, `engine`, `tomet-shelf` (`crates/tomet-shelf`)
+- **Assets & UI**: `assets`, `ui` (`crates/tomet-shelf-assets`)
 - **Infra / Meta**: `nix`, `ci`, `deps`, `docs`
 
 > [!tip]

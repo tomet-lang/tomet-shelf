@@ -1,0 +1,33 @@
+[package]
+name = "tomet-shelf-render"
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+description = "Document parsing, AST transformation, and HTML rendering for tomet-shelf"
+
+[dependencies]
+tomet-shelf-config = { workspace = true }
+tomet-shelf-assets = { workspace = true }
+tomet-shelf-search = { workspace = true }
+
+#= Tomet
+tomet-ast = { workspace = true }
+tomet-compute = { workspace = true }
+tomet-html = { workspace = true }
+tomet-indexer = { workspace = true }
+tomet-links = { workspace = true }
+tomet-parser = { workspace = true }
+tomet-semantics = { workspace = true }
+tomet-transform = { workspace = true }
+tomet-tree = { workspace = true }
+
+#= Crates.io
+anyhow = { workspace = true }
+image = { workspace = true }
+minijinja = { workspace = true }
+percent-encoding = { workspace = true }
+regex = { workspace = true }
+serde = { workspace = true }
+serde_json = { workspace = true }
+tracing = { workspace = true }
+unicode-segmentation = { workspace = true }

@@ -1,0 +1,16 @@
+[book]
+title = "tomet-shelf docs"
+lang = "en"
+dest = "dist"
+
+[build]
+base = "/tomet-shelf"
+kinds = ["*", "!config", "!index"]
+routing = "id"                     # "hierarchical" (default) | "flat" | "id"
+
+[ui.markers]
+enable = true
+strikethrough = true
+
+[ui.markers.custom]
+fire = { icon = "flame", color = "#f97316" }

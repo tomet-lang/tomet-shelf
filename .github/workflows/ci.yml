@@ -22,11 +22,11 @@ jobs:
           name: tomet
           authToken: '${{ secrets.CACHIX_AUTH_TOKEN }}'
 
-      - name: Build tmtbook package
-        run: nix build .#tmtbook
+      - name: Build tomet-shelf package
+        run: nix build .#tomet-shelf
 
-      - name: Build tmtbook-embedded-search package
-        run: nix build .#tmtbook-embedded-search
+      - name: Build tomet-shelf-embedded-search package
+        run: nix build .#tomet-shelf-embedded-search
 
       - name: Run CI checks & tests
         run: nix develop --command just ci
