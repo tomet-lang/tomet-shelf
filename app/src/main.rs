@@ -7,8 +7,9 @@ use tracing_subscriber::{EnvFilter, fmt};
 mod cli;
 
 use cli::{Cli, Commands};
-use tomet_shelf::book;
-use tomet_shelf::config::BookConfig;
+use tomet_shelf_assets::ASSETS;
+use tomet_shelf_core::book;
+use tomet_shelf_core::config::BookConfig;
 
 #[tokio::main]
 async fn main() -> Result<()> {
@@ -24,7 +25,7 @@ async fn main() -> Result<()> {
         Commands::Build { dir, dest, strict } => {
             let (src_dir, out_dir, config) = resolve_build_paths(&dir, dest)?;
 
-            let report = book::build_book(&src_dir, &out_dir, &config, false)?;
+            let report = book::build_book(&src_dir, &out_dir, &config, &ASSETS, false)?;
 
             if strict && !report.failures.is_empty() {
                 for failure in &report.failures {
@@ -44,7 +45,7 @@ async fn main() -> Result<()> {
         } => {
             let (src_dir, out_dir, config) = resolve_build_paths(&dir, dest)?;
 
-            tomet_shelf::run_dev_server(src_dir, out_dir, config, host, port).await?;
+            tomet_shelf_core::run_dev_server(src_dir, out_dir, config, ASSETS, host, port).await?;
         }
         Commands::Init { dir, title } => {
             let target_file = dir.join("shelf.toml");

@@ -1,4 +1,4 @@
-@config(
+::config(
   export: {
     type: commonmark,
     path: "AGENTS.md"
@@ -40,8 +40,13 @@ All Markdown files (`README.md`, `AGENTS.md`, `CLAUDE.md`) are generated build a
 
 `tomet-shelf` is a static site generator and documentation server specifically built for Tomet (`.tmt`) vaults. It provides live reloading, fast link resolution, and client-side full-text search.
 
-- `crates/tomet-shelf`: Core engine and CLI.
-- `crates/tomet-shelf-assets`: Web assets and frontend UI (TypeScript, Tailwind).
+- `app`: CLI entry point (`tomet-shelf-cli`).
+- `crates/tomet-shelf-assets`: Official web assets and frontend UI (`tomet-shelf-assets`, TypeScript, Tailwind).
+- `crates/tomet-shelf-headless-core`: Headless SSG engine and dev server orchestration (`tomet-shelf-core`).
+- `crates/tomet-shelf-headless-config`: Configuration parser, models, and i18n (`tomet-shelf-config`).
+- `crates/tomet-shelf-headless-render`: Document processing, routing, and template rendering (`tomet-shelf-render`).
+- `crates/tomet-shelf-headless-search`: Search indexing (`tomet-shelf-search`).
+- `crates/tomet-shelf-headless-serve`: Axum dev server and live reload (`tomet-shelf-serve`).
 
 Read `CONTRIBUTING.md` for the contribution workflow, commit conventions, and verification steps.
 

@@ -199,27 +199,4 @@ mod tests {
         assert!(!is_same_media(&src, &dest));
         let _ = fs::remove_dir_all(&dir);
     }
-
-    #[test]
-    fn tmt_components_are_bundled_in_book_assets() {
-        assert!(
-            tomet_shelf_assets::BOOK_JS.contains("customElements.define('tmt-btn'")
-                || tomet_shelf_assets::BOOK_JS.contains("customElements.define(\"tmt-btn\""),
-            "tmt-btn custom element is defined in BOOK_JS"
-        );
-        assert!(
-            tomet_shelf_assets::BOOK_JS.contains("customElements.define('tmt-badge'")
-                || tomet_shelf_assets::BOOK_JS.contains("customElements.define(\"tmt-badge\""),
-            "tmt-badge custom element is defined in BOOK_JS"
-        );
-        assert!(
-            tomet_shelf_assets::BOOK_JS.contains("customElements.define('tmt-icon'")
-                || tomet_shelf_assets::BOOK_JS.contains("customElements.define(\"tmt-icon\""),
-            "tmt-icon custom element is defined in BOOK_JS"
-        );
-        assert!(
-            tomet_shelf_assets::BOOK_CSS.contains("tmt-btn"),
-            "tmt-btn light DOM base rules are in BOOK_CSS"
-        );
-    }
 }

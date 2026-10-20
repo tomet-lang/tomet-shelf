@@ -3,6 +3,8 @@ use serde::{Deserialize, Serialize};
 use std::collections::HashMap;
 use std::path::{Path, PathBuf};
 
+pub mod i18n;
+
 #[derive(Debug, Clone, Serialize, Deserialize, Default)]
 pub struct BookConfig {
     #[serde(default)]

@@ -44,6 +44,7 @@ pub struct RenderContext<'a> {
 /// Holds metadata, routes, backlinks, catalog, and renderer for on-demand SSR.
 pub struct VaultState {
     pub config: BookConfig,
+    pub assets: tomet_shelf_render::ShelfAssets,
     pub src_dir: PathBuf,
     pub scanned: ScannedVault,
     pub route_table: slug::RouteTable,
@@ -59,7 +60,12 @@ pub struct VaultState {
 }
 
 impl VaultState {
-    pub fn init(src_dir: &Path, config: &BookConfig, is_dev: bool) -> Result<Self> {
+    pub fn init(
+        src_dir: &Path,
+        config: &BookConfig,
+        assets: tomet_shelf_render::ShelfAssets,
+        is_dev: bool,
+    ) -> Result<Self> {
         let scanned = scan_vault(src_dir, config).context("Failed to scan vault")?;
 
         let parsed: Vec<Result<(tomet_ast::Document, Option<String>), DocFailure>> = scanned
@@ -222,10 +228,11 @@ impl VaultState {
             None => processed_entries,
         };
 
-        let renderer = BookRenderer::new(config, is_dev)?;
+        let renderer = BookRenderer::new(config, &assets, is_dev)?;
 
         Ok(Self {
             config: config.clone(),
+            assets,
             src_dir: src_dir.to_path_buf(),
             scanned,
             route_table,

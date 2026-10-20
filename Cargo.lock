@@ -3552,7 +3552,41 @@ dependencies = [
 ]
 
 [[package]]
-name = "tomet-shelf"
+name = "tomet-shelf-assets"
+version = "0.1.0"
+dependencies = [
+ "anyhow",
+ "rayon",
+ "serde",
+ "serde_json",
+ "tomet-shelf-config",
+ "tomet-shelf-render",
+]
+
+[[package]]
+name = "tomet-shelf-cli"
+version = "0.1.0"
+dependencies = [
+ "anyhow",
+ "clap",
+ "tokio",
+ "tomet-shelf-assets",
+ "tomet-shelf-core",
+ "tracing",
+ "tracing-subscriber",
+]
+
+[[package]]
+name = "tomet-shelf-config"
+version = "0.1.0"
+dependencies = [
+ "anyhow",
+ "serde",
+ "toml 0.8.23",
+]
+
+[[package]]
+name = "tomet-shelf-core"
 version = "0.1.0"
 dependencies = [
  "anyhow",
@@ -3572,7 +3606,6 @@ dependencies = [
  "tomet-links",
  "tomet-parser",
  "tomet-semantics",
- "tomet-shelf-assets",
  "tomet-shelf-config",
  "tomet-shelf-render",
  "tomet-shelf-search",
@@ -3584,38 +3617,6 @@ dependencies = [
  "tracing-subscriber",
  "unicode-segmentation",
  "walkdir",
-]
-
-[[package]]
-name = "tomet-shelf-assets"
-version = "0.1.0"
-dependencies = [
- "anyhow",
- "rayon",
- "serde",
- "serde_json",
- "tomet-shelf-config",
-]
-
-[[package]]
-name = "tomet-shelf-cli"
-version = "0.1.0"
-dependencies = [
- "anyhow",
- "clap",
- "tokio",
- "tomet-shelf",
- "tracing",
- "tracing-subscriber",
-]
-
-[[package]]
-name = "tomet-shelf-config"
-version = "0.1.0"
-dependencies = [
- "anyhow",
- "serde",
- "toml 0.8.23",
 ]
 
 [[package]]
@@ -3636,7 +3637,6 @@ dependencies = [
  "tomet-links",
  "tomet-parser",
  "tomet-semantics",
- "tomet-shelf-assets",
  "tomet-shelf-config",
  "tomet-shelf-search",
  "tomet-transform",

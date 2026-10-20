@@ -391,7 +391,7 @@ body
     #[test]
     fn a_meta_parent_and_row_written_as_link_element_resolve() {
         let mut config = BookConfig::default();
-        tomet_shelf_assets::i18n::apply_defaults(&mut config);
+        tomet_shelf_config::i18n::apply_defaults(&mut config);
         let vault = tomet_links::VaultLinkIndex::from_paths(&[
             "page.tmt".to_string(),
             "30-39 Knowledge/rust.tmt".to_string(),

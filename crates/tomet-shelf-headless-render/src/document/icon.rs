@@ -17,7 +17,7 @@ use std::sync::LazyLock;
 use tomet_ast::Value;
 use tomet_html::CustomElementCtx;
 
-use tomet_shelf_assets::{LUCIDE_SPRITE, SIMPLE_SPRITE};
+use crate::assets::{LUCIDE_SPRITE, SIMPLE_SPRITE};
 
 use super::html::escape_html;
 

@@ -3,8 +3,8 @@
 pub mod en;
 pub mod ja;
 
+use crate::{BookConfig, HeroChipConfig};
 use std::collections::HashMap;
-use tomet_shelf_config::{BookConfig, HeroChipConfig};
 
 /// Populate missing UI strings, infobox labels, and hero chips in `config` based on `config.book.lang`.
 pub fn apply_defaults(config: &mut BookConfig) {

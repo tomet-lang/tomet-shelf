@@ -1,14 +1,15 @@
 [package]
-name = "tomet-shelf-render"
+name = "tomet-shelf-core"
 version.workspace = true
 edition.workspace = true
 rust-version.workspace = true
-description = "Document parsing, AST transformation, and HTML rendering for tomet-shelf"
+description = "Headless book & wiki engine for Tomet"
 
 [dependencies]
 tomet-shelf-config = { workspace = true }
-tomet-shelf-assets = { workspace = true }
+tomet-shelf-render = { workspace = true }
 tomet-shelf-search = { workspace = true }
+tomet-shelf-serve = { workspace = true }
 
 #= Tomet
 tomet-ast = { workspace = true }
@@ -24,10 +25,20 @@ tomet-tree = { workspace = true }
 #= Crates.io
 anyhow = { workspace = true }
 image = { workspace = true }
-minijinja = { workspace = true }
+notify = { workspace = true }
+pagefind = { workspace = true, optional = true }
 percent-encoding = { workspace = true }
+rayon = { workspace = true }
 regex = { workspace = true }
 serde = { workspace = true }
 serde_json = { workspace = true }
+tokio = { workspace = true }
+toml = { workspace = true }
 tracing = { workspace = true }
+tracing-subscriber = { workspace = true }
 unicode-segmentation = { workspace = true }
+walkdir = { workspace = true }
+
+[features]
+embedded-search = ["dep:pagefind"]
+embedded-search-extended = ["embedded-search", "pagefind/extended"]

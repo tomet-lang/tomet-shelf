@@ -361,7 +361,7 @@ fn infobox_rows(cx: &MetaCtx, map: &Map<String, Value>, kind: Option<&str>) -> V
     {
         rows.push(InfoboxRowItem {
             label: infobox.labels.get("kind").cloned().unwrap_or_else(|| {
-                if tomet_shelf_assets::i18n::is_english(&cx.config.book.lang) {
+                if tomet_shelf_config::i18n::is_english(&cx.config.book.lang) {
                     "Kind".to_string()
                 } else {
                     "種別".to_string()

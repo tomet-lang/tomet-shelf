@@ -9,12 +9,13 @@ edition = "2024"
 rust-version = "1.85"
 
 [workspace.dependencies]
-tomet-shelf = { path = "crates/tomet-shelf" }
-tomet-shelf-config = { path = "crates/tomet-shelf-config" }
 tomet-shelf-assets = { path = "crates/tomet-shelf-assets" }
-tomet-shelf-render = { path = "crates/tomet-shelf-render" }
-tomet-shelf-search = { path = "crates/tomet-shelf-search" }
-tomet-shelf-serve = { path = "crates/tomet-shelf-serve" }
+#--- Headless ---
+tomet-shelf-core = { path = "crates/tomet-shelf-headless-core" }
+tomet-shelf-config = { path = "crates/tomet-shelf-headless-config" }
+tomet-shelf-render = { path = "crates/tomet-shelf-headless-render" }
+tomet-shelf-search = { path = "crates/tomet-shelf-headless-search" }
+tomet-shelf-serve = { path = "crates/tomet-shelf-headless-serve" }
 
 #= Tomet
 tomet-ast = { git = "https://github.com/tomet-lang/tomet.git" }

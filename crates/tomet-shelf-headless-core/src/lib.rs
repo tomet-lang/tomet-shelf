@@ -1,18 +1,20 @@
-//! Library surface for `tomet-shelf`.
+//! Headless engine library surface for `tomet-shelf-core`.
 //!
 //! Provides the primary API for building and serving Tomet books:
 //! - [`book::build_book`]: Builds an entire book from a vault directory.
 //! - [`run_dev_server`]: Runs a local development server with live reload.
 //! - [`config::BookConfig`]: Configuration parser and models.
+//! - [`ShelfAssets`]: UI template and asset bundle injected by a shelf variant.
 
 pub mod book;
 pub mod serve;
 
 // Companion subcrates re-exports
-pub use tomet_shelf_assets as assets;
-pub use tomet_shelf_assets::i18n;
 pub use tomet_shelf_config as config;
+pub use tomet_shelf_config::i18n;
 pub use tomet_shelf_render as render;
+pub use tomet_shelf_render::ShelfAssets;
+pub use tomet_shelf_render::assets;
 pub use tomet_shelf_search as search;
 
 pub use book::{BuildReport, DocFailure, build_book};
@@ -31,10 +33,11 @@ pub async fn run_dev_server(
     src_dir: PathBuf,
     out_dir: PathBuf,
     config: BookConfig,
+    assets: ShelfAssets,
     host: IpAddr,
     port: u16,
 ) -> Result<()> {
     let prefix = Some(config.build.clean_url_prefix().to_string());
-    let handler = TometDevHandler::new(src_dir.clone(), out_dir.clone(), config);
+    let handler = TometDevHandler::new(src_dir.clone(), out_dir.clone(), config, assets);
     tomet_shelf_serve::run_dev_server(src_dir, None, host, port, prefix, handler).await
 }

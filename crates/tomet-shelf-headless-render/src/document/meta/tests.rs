@@ -2,7 +2,7 @@ use super::*;
 
 fn ctx_config() -> BookConfig {
     let mut cfg = BookConfig::default();
-    tomet_shelf_assets::i18n::apply_defaults(&mut cfg);
+    tomet_shelf_config::i18n::apply_defaults(&mut cfg);
     cfg
 }
 

@@ -2,6 +2,7 @@ use anyhow::{Context, Result};
 use minijinja::{Environment, Value, context};
 use serde::{Deserialize, Serialize};
 
+use crate::assets::{self, ShelfAssets};
 use crate::document::ProcessedDoc;
 use tomet_shelf_config::BookConfig;
 
@@ -36,16 +37,16 @@ pub struct EntrySummary {
 }
 
 impl BookRenderer {
-    pub fn new(config: &BookConfig, is_dev: bool) -> Result<Self> {
+    pub fn new(config: &BookConfig, assets: &ShelfAssets, is_dev: bool) -> Result<Self> {
         let mut env = Environment::new();
 
-        env.add_template("base.html", tomet_shelf_assets::BASE_HTML)
+        env.add_template("base.html", assets.base_html)
             .context("Failed to add base.html template")?;
-        env.add_template("page.html", tomet_shelf_assets::PAGE_HTML)
+        env.add_template("page.html", assets.page_html)
             .context("Failed to add page.html template")?;
-        env.add_template("index.html", tomet_shelf_assets::INDEX_HTML)
+        env.add_template("index.html", assets.index_html)
             .context("Failed to add index.html template")?;
-        env.add_template("macros.html", tomet_shelf_assets::MACROS_HTML)
+        env.add_template("macros.html", assets.macros_html)
             .context("Failed to add macros.html template")?;
 
         let rail_title = config
@@ -67,33 +68,27 @@ impl BookRenderer {
         env.add_global("default_view", Value::from(&config.ui.default_view));
         env.add_global("custom_css", Value::from_serialize(&config.ui.custom_css));
         env.add_global("t", Value::from_serialize(&config.ui.strings));
-        env.add_global(
-            "css_version",
-            Value::from(tomet_shelf_assets::CSS_VERSION.as_str()),
-        );
-        env.add_global(
-            "js_version",
-            Value::from(tomet_shelf_assets::JS_VERSION.as_str()),
-        );
+        env.add_global("css_version", Value::from(assets.css_version()));
+        env.add_global("js_version", Value::from(assets.js_version()));
         env.add_global(
             "tmt_btn_css_version",
-            Value::from(tomet_shelf_assets::TMT_BTN_CSS_VERSION.as_str()),
+            Value::from(assets::TMT_BTN_CSS_VERSION.as_str()),
         );
         env.add_global(
             "tmt_badge_css_version",
-            Value::from(tomet_shelf_assets::TMT_BADGE_CSS_VERSION.as_str()),
+            Value::from(assets::TMT_BADGE_CSS_VERSION.as_str()),
         );
         env.add_global(
             "tmt_icon_css_version",
-            Value::from(tomet_shelf_assets::TMT_ICON_CSS_VERSION.as_str()),
+            Value::from(assets::TMT_ICON_CSS_VERSION.as_str()),
         );
         env.add_global(
             "tmt_swatch_css_version",
-            Value::from(tomet_shelf_assets::TMT_SWATCH_CSS_VERSION.as_str()),
+            Value::from(assets::TMT_SWATCH_CSS_VERSION.as_str()),
         );
         env.add_global(
             "tmt_switch_css_version",
-            Value::from(tomet_shelf_assets::TMT_SWITCH_CSS_VERSION.as_str()),
+            Value::from(assets::TMT_SWITCH_CSS_VERSION.as_str()),
         );
         env.add_global("is_dev", Value::from(is_dev));
         env.add_global("rail_letters", Value::from_serialize(&rail_letters));

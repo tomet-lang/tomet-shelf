@@ -1,7 +1,9 @@
+pub mod assets;
 pub mod document;
 pub mod renderer;
 pub mod slug;
 
+pub use assets::ShelfAssets;
 pub use document::{
     HeroChipItem, InfoboxRowItem, ProcessedDoc, SectionTab, TocItem, enhance_internal_links,
     extract_workspace_config_blocks, process_parsed_document, process_parsed_document_with_blocks,

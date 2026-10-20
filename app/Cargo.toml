@@ -10,7 +10,8 @@ name = "tomet-shelf"
 path = "src/main.rs"
 
 [dependencies]
-tomet-shelf = { workspace = true }
+tomet-shelf-core = { workspace = true }
+tomet-shelf-assets = { workspace = true }
 
 #= Crates.io
 anyhow = { workspace = true }
@@ -21,5 +22,5 @@ tracing-subscriber = { workspace = true }
 
 [features]
 default = []
-embedded-search = ["tomet-shelf/embedded-search"]
-embedded-search-extended = ["tomet-shelf/embedded-search-extended"]
+embedded-search = ["tomet-shelf-core/embedded-search"]
+embedded-search-extended = ["tomet-shelf-core/embedded-search-extended"]

@@ -178,7 +178,7 @@ fn build_book_enhances_internal_links_with_note_icons() {
     let mut config = BookConfig::default();
     config.build.search = SearchEngine::None;
 
-    let report = build_book(&src, &out, &config, false).unwrap();
+    let report = build_book(&src, &out, &config, &ShelfAssets::minimal(), false).unwrap();
     assert_eq!(report.rendered, 2);
     assert!(report.doc_icons.contains_key("target"));
 
@@ -210,7 +210,7 @@ fn build_book_emits_pagefind_path_metadata() {
     let mut config = BookConfig::default();
     config.build.search = SearchEngine::None;
 
-    let report = build_book(&src, &out, &config, false).unwrap();
+    let report = build_book(&src, &out, &config, &ShelfAssets::minimal(), false).unwrap();
     assert_eq!(report.rendered, 1);
 
     let roadmap_html = fs::read_to_string(out.join("wiki/dev/roadmap/index.html")).unwrap();
@@ -251,7 +251,7 @@ fn build_book_sanitizes_urls_with_spaces_symbols_and_emoji() {
     let mut config = BookConfig::default();
     config.build.search = SearchEngine::None;
 
-    let report = build_book(&src, &out, &config, false).unwrap();
+    let report = build_book(&src, &out, &config, &ShelfAssets::minimal(), false).unwrap();
     assert_eq!(report.rendered, 2);
 
     // 1. Filesystem outputs must have sanitized paths
@@ -320,7 +320,7 @@ fn build_book_flat_routing_collision_error_by_default() {
     config.build.search = SearchEngine::None;
     config.build.routing = RoutingStrategy::Flat;
 
-    let res = build_book(&src, &out, &config, false);
+    let res = build_book(&src, &out, &config, &ShelfAssets::minimal(), false);
     assert!(res.is_err(), "build_book must fail on collision by default");
     let err_msg = res.unwrap_err().to_string();
     assert!(err_msg.contains("Duplicate slug(s) detected"), "{err_msg}");
@@ -358,7 +358,7 @@ fn build_book_flat_routing_disambiguation() {
     config.build.routing = RoutingStrategy::Flat;
     config.build.on_collision = CollisionStrategy::Disambiguate;
 
-    let report = build_book(&src, &out, &config, false).unwrap();
+    let report = build_book(&src, &out, &config, &ShelfAssets::minimal(), false).unwrap();
     assert_eq!(report.rendered, 2);
 
     // Outputs should be disambiguated with flat hyphenated names
@@ -405,7 +405,7 @@ fn build_book_explicit_slug_precedence() {
     let mut config = BookConfig::default();
     config.build.search = SearchEngine::None;
 
-    let report = build_book(&src, &out, &config, false).unwrap();
+    let report = build_book(&src, &out, &config, &ShelfAssets::minimal(), false).unwrap();
     assert_eq!(report.rendered, 2);
 
     let guide_html_path = out.join("wiki/super-guide/index.html");
@@ -447,7 +447,14 @@ fn build_book_id_routing_behavior() {
     hier_config.build.search = SearchEngine::None;
     hier_config.build.routing = RoutingStrategy::Hierarchical;
 
-    let report_hier = build_book(&src, &out_hier, &hier_config, false).unwrap();
+    let report_hier = build_book(
+        &src,
+        &out_hier,
+        &hier_config,
+        &ShelfAssets::minimal(),
+        false,
+    )
+    .unwrap();
     assert_eq!(report_hier.rendered, 2);
     assert!(out_hier.join("wiki/notes/my-note/index.html").is_file());
     let index_hier = fs::read_to_string(out_hier.join("wiki/index/index.html")).unwrap();
@@ -458,7 +465,7 @@ fn build_book_id_routing_behavior() {
     id_config.build.search = SearchEngine::None;
     id_config.build.routing = RoutingStrategy::Id;
 
-    let report_id = build_book(&src, &out_id, &id_config, false).unwrap();
+    let report_id = build_book(&src, &out_id, &id_config, &ShelfAssets::minimal(), false).unwrap();
     assert_eq!(report_id.rendered, 2);
     assert!(out_id.join("wiki/random-uuid-1234/index.html").is_file());
     let index_id = fs::read_to_string(out_id.join("wiki/index/index.html")).unwrap();
@@ -483,7 +490,7 @@ fn build_book_emits_native_search_index_json() {
     let config = BookConfig::default();
     assert_eq!(config.build.search, SearchEngine::Native);
 
-    let report = build_book(&src, &out, &config, false).unwrap();
+    let report = build_book(&src, &out, &config, &ShelfAssets::minimal(), false).unwrap();
     assert_eq!(report.rendered, 1);
 
     // 1. Verify dist/search-index.json exists
@@ -498,7 +505,14 @@ fn build_book_emits_native_search_index_json() {
     let out_none = scratch("test-none-search-out");
     let mut none_config = BookConfig::default();
     none_config.build.search = SearchEngine::None;
-    build_book(&src, &out_none, &none_config, false).unwrap();
+    build_book(
+        &src,
+        &out_none,
+        &none_config,
+        &ShelfAssets::minimal(),
+        false,
+    )
+    .unwrap();
     assert!(!out_none.join("search-index.json").exists());
 
     let _ = fs::remove_dir_all(&src);
@@ -527,7 +541,7 @@ fn build_book_with_base_path() {
     config.build.base_path = Some("/my-book".to_string());
     config.build.search = SearchEngine::Native;
 
-    let report = build_book(&src, &out, &config, false).unwrap();
+    let report = build_book(&src, &out, &config, &ShelfAssets::minimal(), false).unwrap();
     assert_eq!(report.rendered, 2);
 
     // 1. Files are placed directly under `out`, without nesting under /my-book physically

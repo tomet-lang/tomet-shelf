@@ -1,13 +1,14 @@
-use anyhow::{Context, Result};
-use std::collections::hash_map::DefaultHasher;
-use std::fs;
-use std::hash::{Hash, Hasher};
+use anyhow::Result;
 use std::path::Path;
 use std::sync::LazyLock;
 
-pub mod i18n;
-
-use tomet_shelf_config::BookConfig;
+pub use tomet_shelf_config::{BookConfig, i18n};
+pub use tomet_shelf_render::assets::{
+    LUCIDE_SPRITE, SIMPLE_SPRITE, ShelfAssets, TMT_BADGE_CSS, TMT_BADGE_CSS_VERSION, TMT_BTN_CSS,
+    TMT_BTN_CSS_VERSION, TMT_ICON_CSS, TMT_ICON_CSS_VERSION, TMT_SWATCH_CSS,
+    TMT_SWATCH_CSS_VERSION, TMT_SWITCH_CSS, TMT_SWITCH_CSS_VERSION, content_version,
+    write_if_changed,
+};
 
 // Stylesheets
 pub const BOOK_CSS: &str = concat!(
@@ -29,88 +30,27 @@ pub const BOOK_CSS: &str = concat!(
 
 pub const BOOK_JS: &str = include_str!(concat!(env!("OUT_DIR"), "/shelf.js"));
 
-pub const LUCIDE_SPRITE: &str = include_str!("../frontend/icons/lucide/sprite.svg");
-pub const SIMPLE_SPRITE: &str = include_str!("../frontend/icons/simple/sprite.svg");
-
-pub const TMT_BTN_CSS: &str = include_str!("../frontend/styles/components/tmt-btn.css");
-pub const TMT_BADGE_CSS: &str = include_str!("../frontend/styles/components/tmt-badge.css");
-pub const TMT_ICON_CSS: &str = include_str!("../frontend/styles/components/tmt-icon.css");
-pub const TMT_SWATCH_CSS: &str = include_str!("../frontend/styles/components/tmt-swatch.css");
-pub const TMT_SWITCH_CSS: &str = include_str!("../frontend/styles/components/tmt-switch.css");
-
 // Templates
 pub const BASE_HTML: &str = include_str!("../frontend/templates/base.html");
 pub const PAGE_HTML: &str = include_str!("../frontend/templates/page.html");
 pub const INDEX_HTML: &str = include_str!("../frontend/templates/index.html");
 pub const MACROS_HTML: &str = include_str!("../frontend/templates/macros.html");
 
-fn content_version(content: &str) -> String {
-    let mut hasher = DefaultHasher::new();
-    content.hash(&mut hasher);
-    format!("{:016x}", hasher.finish())
-}
+/// Official `tomet-shelf` UI asset bundle.
+pub const ASSETS: ShelfAssets = ShelfAssets::new(
+    BASE_HTML,
+    PAGE_HTML,
+    INDEX_HTML,
+    MACROS_HTML,
+    BOOK_CSS,
+    BOOK_JS,
+);
 
 pub static CSS_VERSION: LazyLock<String> = LazyLock::new(|| content_version(BOOK_CSS));
 pub static JS_VERSION: LazyLock<String> = LazyLock::new(|| content_version(BOOK_JS));
-pub static TMT_BTN_CSS_VERSION: LazyLock<String> = LazyLock::new(|| content_version(TMT_BTN_CSS));
-pub static TMT_BADGE_CSS_VERSION: LazyLock<String> =
-    LazyLock::new(|| content_version(TMT_BADGE_CSS));
-pub static TMT_ICON_CSS_VERSION: LazyLock<String> = LazyLock::new(|| content_version(TMT_ICON_CSS));
-pub static TMT_SWATCH_CSS_VERSION: LazyLock<String> =
-    LazyLock::new(|| content_version(TMT_SWATCH_CSS));
-pub static TMT_SWITCH_CSS_VERSION: LazyLock<String> =
-    LazyLock::new(|| content_version(TMT_SWITCH_CSS));
-
-pub fn write_if_changed(path: &Path, content: &str) -> Result<bool> {
-    if path.exists() {
-        if let Ok(existing) = fs::read_to_string(path) {
-            if existing == content {
-                return Ok(false);
-            }
-        }
-    }
-    if let Some(parent) = path.parent() {
-        fs::create_dir_all(parent)?;
-    }
-    fs::write(path, content)?;
-    Ok(true)
-}
 
 pub fn write_static_assets(out_dir: &Path, src_dir: &Path, config: &BookConfig) -> Result<()> {
-    fs::create_dir_all(out_dir)?;
-
-    write_if_changed(&out_dir.join("shelf.css"), BOOK_CSS).context("Failed to write shelf.css")?;
-    write_if_changed(&out_dir.join("shelf.js"), BOOK_JS).context("Failed to write shelf.js")?;
-
-    write_if_changed(&out_dir.join("icons/lucide.svg"), LUCIDE_SPRITE)
-        .context("Failed to write icons/lucide.svg")?;
-    write_if_changed(&out_dir.join("icons/simple.svg"), SIMPLE_SPRITE)
-        .context("Failed to write icons/simple.svg")?;
-
-    write_if_changed(&out_dir.join("components/tmt-btn.css"), TMT_BTN_CSS)
-        .context("Failed to write components/tmt-btn.css")?;
-    write_if_changed(&out_dir.join("components/tmt-badge.css"), TMT_BADGE_CSS)
-        .context("Failed to write components/tmt-badge.css")?;
-    write_if_changed(&out_dir.join("components/tmt-icon.css"), TMT_ICON_CSS)
-        .context("Failed to write components/tmt-icon.css")?;
-    write_if_changed(&out_dir.join("components/tmt-swatch.css"), TMT_SWATCH_CSS)
-        .context("Failed to write components/tmt-swatch.css")?;
-    write_if_changed(&out_dir.join("components/tmt-switch.css"), TMT_SWITCH_CSS)
-        .context("Failed to write components/tmt-switch.css")?;
-
-    for css_rel in &config.ui.custom_css {
-        let clean_rel = css_rel.trim_start_matches('/');
-        let src_file = src_dir.join(clean_rel);
-        if src_file.exists() && src_file.is_file() {
-            let dest_file = out_dir.join(clean_rel);
-            if let Some(parent) = dest_file.parent() {
-                fs::create_dir_all(parent)?;
-            }
-            let _ = fs::copy(&src_file, &dest_file);
-        }
-    }
-
-    Ok(())
+    ASSETS.write_static_assets(out_dir, src_dir, config)
 }
 
 #[cfg(test)]
@@ -121,5 +61,28 @@ mod tests {
     fn assets_versions_are_valid() {
         assert_eq!(CSS_VERSION.len(), 16);
         assert_eq!(JS_VERSION.len(), 16);
+    }
+
+    #[test]
+    fn tmt_components_are_bundled_in_book_assets() {
+        assert!(
+            BOOK_JS.contains("customElements.define('tmt-btn'")
+                || BOOK_JS.contains("customElements.define(\"tmt-btn\""),
+            "tmt-btn custom element is defined in BOOK_JS"
+        );
+        assert!(
+            BOOK_JS.contains("customElements.define('tmt-badge'")
+                || BOOK_JS.contains("customElements.define(\"tmt-badge\""),
+            "tmt-badge custom element is defined in BOOK_JS"
+        );
+        assert!(
+            BOOK_JS.contains("customElements.define('tmt-icon'")
+                || BOOK_JS.contains("customElements.define(\"tmt-icon\""),
+            "tmt-icon custom element is defined in BOOK_JS"
+        );
+        assert!(
+            BOOK_CSS.contains("tmt-btn"),
+            "tmt-btn light DOM base rules are in BOOK_CSS"
+        );
     }
 }

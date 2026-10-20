@@ -27,8 +27,8 @@ use tracing::{info, warn};
 pub use state::{RenderContext, VaultState, render_single_document, render_single_document_html};
 
 use media::copy_vault_media;
-use tomet_shelf_assets::write_static_assets;
 use tomet_shelf_config::{BookConfig, SearchEngine};
+use tomet_shelf_render::ShelfAssets;
 use tomet_shelf_render::document::ProcessedDoc;
 use tomet_shelf_render::renderer::{Backlink, BookRenderer, EntrySummary, SectionSummary};
 
@@ -219,6 +219,7 @@ pub fn build_book(
     src_dir: &Path,
     out_dir: &Path,
     config: &BookConfig,
+    assets: &ShelfAssets,
     is_dev: bool,
 ) -> Result<BuildReport> {
     info!(
@@ -236,7 +237,9 @@ pub fn build_book(
     );
 
     // 2. Write static assets (shelf.css, shelf.js, custom.css)
-    write_static_assets(out_dir, src_dir, config).context("Failed to write static assets")?;
+    assets
+        .write_static_assets(out_dir, src_dir, config)
+        .context("Failed to write static assets")?;
 
     // 3. Copy/Link media into the asset directory
     let media = copy_vault_media(out_dir, &scanned.media_files, config)
@@ -260,7 +263,7 @@ pub fn build_book(
     }
 
     // 4. Initialize MiniJinja renderer
-    let renderer = BookRenderer::new(config, is_dev)?;
+    let renderer = BookRenderer::new(config, assets, is_dev)?;
 
     // Pages live where the links point, so both come from `url_prefix`.
     let wiki_rel = config.build.wiki_out_rel();

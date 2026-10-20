@@ -1,5 +1,5 @@
+use crate::HeroChipConfig;
 use std::collections::HashMap;
-use tomet_shelf_config::HeroChipConfig;
 
 /// The interface's text in Japanese (default).
 pub fn ui_strings() -> HashMap<String, String> {
