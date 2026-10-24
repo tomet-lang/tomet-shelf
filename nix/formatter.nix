@@ -36,16 +36,6 @@
       includes = [ "*.sh" ];
     };
 
-    biome = {
-      includes = [
-        "*.js"
-        "*.ts"
-        "*.jsx"
-        "*.tsx"
-        "*.json"
-      ];
-    };
-
     rustfmt = {
       includes = [ "*.rs" ];
     };

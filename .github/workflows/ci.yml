@@ -8,7 +8,7 @@ on:
 
 jobs:
   ci:
-    name: Build · Test · Lint · Docs
+    name: Test · Lint · Docs
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -16,17 +16,13 @@ jobs:
       - name: Install Nix
         uses: DeterminateSystems/nix-installer-action@main
 
+      # Reads from Cachix only: this job builds the dev shell, which must not be pushed.
+      # The packages are built and pushed by nix-ci.yml.
       - name: Setup Cachix
         uses: cachix/cachix-action@v15
         with:
           name: tomet
-          authToken: '${{ secrets.CACHIX_AUTH_TOKEN }}'
-
-      - name: Build tomet-shelf package
-        run: nix build .#tomet-shelf
-
-      - name: Build tomet-shelf-embedded-search package
-        run: nix build .#tomet-shelf-embedded-search
+          skipPush: true
 
       - name: Run CI checks & tests
         run: nix develop --command just ci

@@ -26,6 +26,18 @@ flake-parts.lib.mkFlake { inherit inputs; } {
         tomet-shelf-embedded-search = pkgs.callPackage ./pkgs/tomet-shelf-embedded-search.nix {
           inherit craneLib;
         };
+
+        # What CI builds and sends to Cachix (.github/workflows/nix-ci.yml).
+        ci = pkgs.linkFarm "ci" [
+          {
+            name = "tomet-shelf";
+            path = tomet-shelf;
+          }
+          {
+            name = "tomet-shelf-embedded-search";
+            path = tomet-shelf-embedded-search;
+          }
+        ];
       };
 
       devShells.default = pkgs.callPackage ./dev.nix {
@@ -38,6 +50,8 @@ flake-parts.lib.mkFlake { inherit inputs; } {
           sisho.tomet
           sisho.tomet-lsp
           sisho.twrit
+          # `sisho check` runs `catasto check` beside `tomet` and `twrit`.
+          sisho.catasto
         ];
       };
 
