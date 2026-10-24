@@ -650,11 +650,7 @@ mod tests {
 
     #[test]
     fn config_changes_force_a_full_rebuild() {
-        let plan = plan(
-            &[modified(&["/vault/shelf.toml"])],
-            "/vault",
-            "/vault/dist",
-        );
+        let plan = plan(&[modified(&["/vault/shelf.toml"])], "/vault", "/vault/dist");
         assert!(plan.global);
     }
 
@@ -721,8 +717,10 @@ mod ssr_tests {
     use tomet_shelf_serve::axum::http::header;
 
     fn scratch(name: &str) -> PathBuf {
-        let dir =
-            std::env::temp_dir().join(format!("tomet-shelf-ssr-test-{name}-{}", std::process::id()));
+        let dir = std::env::temp_dir().join(format!(
+            "tomet-shelf-ssr-test-{name}-{}",
+            std::process::id()
+        ));
         let _ = fs::remove_dir_all(&dir);
         fs::create_dir_all(&dir).unwrap();
         dir

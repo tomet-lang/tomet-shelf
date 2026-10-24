@@ -79,8 +79,7 @@ pub fn write_if_changed(path: &Path, content: &str) -> Result<bool> {
 pub fn write_static_assets(out_dir: &Path, src_dir: &Path, config: &BookConfig) -> Result<()> {
     fs::create_dir_all(out_dir)?;
 
-    write_if_changed(&out_dir.join("shelf.css"), BOOK_CSS)
-        .context("Failed to write shelf.css")?;
+    write_if_changed(&out_dir.join("shelf.css"), BOOK_CSS).context("Failed to write shelf.css")?;
     write_if_changed(&out_dir.join("shelf.js"), BOOK_JS).context("Failed to write shelf.js")?;
 
     write_if_changed(&out_dir.join("icons/lucide.svg"), LUCIDE_SPRITE)

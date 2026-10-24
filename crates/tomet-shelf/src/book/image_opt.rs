@@ -336,7 +336,8 @@ mod tests {
 
     #[test]
     fn optimizes_image_to_webp_within_max_width() {
-        let tmp = std::env::temp_dir().join(format!("tomet-shelf-img-opt-test-{}", std::process::id()));
+        let tmp =
+            std::env::temp_dir().join(format!("tomet-shelf-img-opt-test-{}", std::process::id()));
         let src_dir = tmp.join("src");
         let out_dir = tmp.join("dist");
         fs::create_dir_all(&src_dir).unwrap();
@@ -377,7 +378,8 @@ mod tests {
 
     #[test]
     fn resolves_local_media_path_with_or_without_prefix() {
-        let tmp = std::env::temp_dir().join(format!("tomet-shelf-img-res-test-{}", std::process::id()));
+        let tmp =
+            std::env::temp_dir().join(format!("tomet-shelf-img-res-test-{}", std::process::id()));
         let src_dir = tmp.join("vault");
         fs::create_dir_all(src_dir.join("images")).unwrap();
         fs::write(src_dir.join("images/hero.png"), b"fake").unwrap();
