@@ -25,9 +25,9 @@ use tracing::info;
 pub struct RenderContext<'a> {
     pub config: &'a BookConfig,
     pub src_dir: &'a Path,
-    pub vault_index: &'a tomet_links::VaultLinkIndex,
+    pub vault_index: &'a tomet::links::VaultLinkIndex,
     pub workspace_cfg_src: Option<&'a str>,
-    pub workspace_cfg_blocks: &'a [tomet_ast::Block],
+    pub workspace_cfg_blocks: &'a [tomet::ast::Block],
     pub renderer: &'a dyn PageRenderer,
     /// The documents the last full build left out, so a page re-rendered on
     /// its own still shows links to them as broken.
@@ -67,7 +67,7 @@ impl VaultState {
     ) -> Result<Self> {
         let scanned = scan_vault(src_dir, config).context("Failed to scan vault")?;
 
-        let parsed: Vec<Result<(tomet_ast::Document, Option<String>), DocFailure>> = scanned
+        let parsed: Vec<Result<(tomet::ast::Document, Option<String>), DocFailure>> = scanned
             .doc_files
             .par_iter()
             .map(|doc_file| {

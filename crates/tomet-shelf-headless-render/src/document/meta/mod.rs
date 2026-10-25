@@ -62,7 +62,7 @@ impl MetaProperties {
 /// Context shared by every extraction step below.
 struct MetaCtx<'a> {
     from_path: &'a Path,
-    vault_index: &'a tomet_links::VaultLinkIndex,
+    vault_index: &'a tomet::links::VaultLinkIndex,
     config: &'a BookConfig,
     route_table: Option<&'a crate::slug::RouteTable>,
 }
@@ -210,7 +210,7 @@ pub fn extract(
     meta_json: Option<&Value>,
     kind: Option<&str>,
     from_path: &Path,
-    vault_index: &tomet_links::VaultLinkIndex,
+    vault_index: &tomet::links::VaultLinkIndex,
     config: &BookConfig,
     route_table: Option<&crate::slug::RouteTable>,
 ) -> MetaProperties {

@@ -6,8 +6,8 @@ fn ctx_config() -> BookConfig {
     cfg
 }
 
-fn index() -> tomet_links::VaultLinkIndex {
-    tomet_links::VaultLinkIndex::from_paths(["30-39 Knowledge/rust.tmt"])
+fn index() -> tomet::links::VaultLinkIndex {
+    tomet::links::VaultLinkIndex::from_paths(["30-39 Knowledge/rust.tmt"])
 }
 
 fn extract_from(json: &str, kind: Option<&str>) -> MetaProperties {

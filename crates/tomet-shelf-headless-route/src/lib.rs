@@ -104,9 +104,9 @@ pub struct DocRouteInput<'a> {
 }
 
 /// Extract explicit `slug` and `id` from a document's `@meta` block, if present.
-pub fn extract_route_metadata(doc: &tomet_ast::Document) -> (Option<String>, Option<String>) {
-    let raw_meta = tomet_semantics::document_meta(doc);
-    let meta_json = raw_meta.as_ref().map(tomet_semantics::value_to_json);
+pub fn extract_route_metadata(doc: &tomet::ast::Document) -> (Option<String>, Option<String>) {
+    let raw_meta = tomet::declaration::document_meta(doc);
+    let meta_json = raw_meta.as_ref().map(tomet::semantics::value_to_json);
     let slug = meta_json
         .as_ref()
         .and_then(|m| m.get("slug"))

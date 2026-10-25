@@ -14,8 +14,8 @@
 use std::collections::HashSet;
 use std::sync::LazyLock;
 
-use tomet_ast::Value;
-use tomet_html::CustomElementCtx;
+use tomet::ast::Value;
+use tomet::html::CustomElementCtx;
 
 use crate::assets::{LUCIDE_SPRITE, SIMPLE_SPRITE};
 
@@ -96,19 +96,19 @@ fn placeholder(name: &str, pkg: &str, inline: bool) -> String {
 /// same way `std` does, so no vault/vocabulary context is needed here
 /// either.
 #[allow(dead_code)]
-pub fn render_meta_value(el: &tomet_ast::Element, inline: bool) -> Option<String> {
+pub fn render_meta_value(el: &tomet::ast::Element, inline: bool) -> Option<String> {
     render_meta_value_with_base(el, inline, "")
 }
 
 pub fn render_meta_value_with_base(
-    el: &tomet_ast::Element,
+    el: &tomet::ast::Element,
     inline: bool,
     base_path: &str,
 ) -> Option<String> {
     let name = el.sigil.name().map(|n| n.to_string()).unwrap_or_default();
-    let bindings = tomet_semantics::Bindings::default();
+    let bindings = tomet::semantics::Bindings::default();
     let ctx = CustomElementCtx::new(&name, el.content.as_deref(), inline, || {
-        tomet_semantics::normalized_element_args_in(el, &bindings)
+        tomet::semantics::normalized_element_args_in(el, &bindings)
     });
     render_with_base(ctx, base_path)
 }
@@ -117,35 +117,32 @@ pub fn render_meta_value_with_base(
 /// than the plain string `MetaProperties::icon`'s own JSON-based read
 /// already covers. `None` for a plain string (that path handles it), a
 /// missing `icon` key, or an `icon` written as something else entirely.
-pub fn meta_icon_element(raw_meta: Option<&tomet_ast::Value>, base_path: &str) -> Option<String> {
-    let tomet_ast::Value::Map(entries) = raw_meta? else {
+pub fn meta_icon_element(raw_meta: Option<&Value>, base_path: &str) -> Option<String> {
+    let Value::Map(entries) = raw_meta? else {
         return None;
     };
     let (_, value) = entries.iter().find(|(k, _)| k == "icon")?;
-    let tomet_ast::Value::Element(el) = value else {
+    let Value::Element(el) = value else {
         return None;
     };
     render_meta_value_with_base(el, true, base_path)
 }
 
 /// Link prefix icon representation for `@doc.icon(...)` in `@meta`.
-pub fn meta_link_icon_element(
-    raw_meta: Option<&tomet_ast::Value>,
-    base_path: &str,
-) -> Option<String> {
-    let tomet_ast::Value::Map(entries) = raw_meta? else {
+pub fn meta_link_icon_element(raw_meta: Option<&Value>, base_path: &str) -> Option<String> {
+    let Value::Map(entries) = raw_meta? else {
         return None;
     };
     let (_, value) = entries.iter().find(|(k, _)| k == "icon")?;
-    let tomet_ast::Value::Element(el) = value else {
+    let Value::Element(el) = value else {
         return None;
     };
     let name = el.sigil.name().map(|n| n.to_string()).unwrap_or_default();
     if name != "doc.icon" {
         return None;
     }
-    let bindings = tomet_semantics::Bindings::default();
-    let args = tomet_semantics::normalized_element_args_in(el, &bindings);
+    let bindings = tomet::semantics::Bindings::default();
+    let args = tomet::semantics::normalized_element_args_in(el, &bindings);
     let icon_name = arg_str(args.as_ref(), "name").unwrap_or_default();
     let pkg = arg_str(args.as_ref(), "pkg").unwrap_or("lucide");
     render_link_icon_with_base(icon_name, pkg, base_path)
@@ -230,7 +227,6 @@ pub fn render_with_base(ctx: CustomElementCtx, base_path: &str) -> Option<String
 #[cfg(test)]
 mod tests {
     use super::*;
-    use tomet_ast::Value;
 
     fn args(name: &str, pkg: Option<&str>) -> Value {
         let mut entries = vec![("name".to_string(), Value::String(name.to_string()))];
@@ -315,14 +311,14 @@ mod tests {
         assert!(html.contains("heroicons"));
     }
 
-    fn parse_meta(src: &str) -> Option<tomet_ast::Value> {
-        let doc = tomet_parser::parse_document(src).expect("valid Tomet source");
-        tomet_semantics::document_meta(&doc)
+    fn parse_meta(src: &str) -> Option<Value> {
+        let doc = tomet::parser::parse_document(src).expect("valid Tomet source");
+        tomet::declaration::document_meta(&doc)
     }
 
     #[test]
     fn meta_icon_renders_a_real_doc_icon_element() {
-        let raw_meta = parse_meta("@meta{icon: @doc.icon(\"cake\")}\n");
+        let raw_meta = parse_meta("::meta{icon: @doc.icon(\"cake\")}\n");
         let html = meta_icon_element(raw_meta.as_ref(), "").unwrap();
         assert!(html.contains("<svg"));
         assert!(html.contains("data-icon=\"cake\""));
@@ -330,7 +326,7 @@ mod tests {
 
     #[test]
     fn meta_icon_renders_with_base_path() {
-        let raw_meta = parse_meta("@meta{icon: @doc.icon(\"cake\")}\n");
+        let raw_meta = parse_meta("::meta{icon: @doc.icon(\"cake\")}\n");
         let html = meta_icon_element(raw_meta.as_ref(), "/subpath").unwrap();
         assert!(html.contains("<use href=\"/subpath/icons/lucide.svg#cake\"></use>"));
     }
@@ -340,19 +336,19 @@ mod tests {
         // `MetaProperties::icon`'s own JSON-based read covers this case;
         // `meta_icon_element` deliberately answers only for an embedded
         // element, not a plain string/emoji.
-        let raw_meta = parse_meta("@meta{icon: \"\u{1F382}\"}\n");
+        let raw_meta = parse_meta("::meta{icon: \"\u{1F382}\"}\n");
         assert!(meta_icon_element(raw_meta.as_ref(), "").is_none());
     }
 
     #[test]
     fn meta_icon_is_none_with_no_icon_key_at_all() {
-        let raw_meta = parse_meta("@meta{title: \"a\"}\n");
+        let raw_meta = parse_meta("::meta{title: \"a\"}\n");
         assert!(meta_icon_element(raw_meta.as_ref(), "").is_none());
     }
 
     #[test]
     fn meta_icon_falls_back_to_a_placeholder_for_an_unknown_name() {
-        let raw_meta = parse_meta("@meta{icon: @doc.icon(\"not-a-real-icon\")}\n");
+        let raw_meta = parse_meta("::meta{icon: @doc.icon(\"not-a-real-icon\")}\n");
         let html = meta_icon_element(raw_meta.as_ref(), "").unwrap();
         assert!(html.contains("tm-doc-icon-missing"));
     }

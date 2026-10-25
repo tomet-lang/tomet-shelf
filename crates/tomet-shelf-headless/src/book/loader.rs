@@ -8,9 +8,9 @@ use crate::config::BookConfig;
 pub struct ScannedVault {
     pub doc_files: Vec<DocFileInfo>,
     pub media_files: Vec<MediaFileInfo>,
-    pub vault_index: tomet_links::VaultLinkIndex,
+    pub vault_index: tomet::links::VaultLinkIndex,
     pub workspace_config_src: Option<String>,
-    pub workspace_config_blocks: Vec<tomet_ast::Block>,
+    pub workspace_config_blocks: Vec<tomet::ast::Block>,
     /// The documents that shape the book without being part of it:
     /// `*.index.tmt` and `*.config.tmt`, in filename order, so a long index
     /// can be split the way a long stylesheet is.
@@ -149,7 +149,7 @@ pub fn scan_vault(src_dir: &Path, config: &BookConfig) -> Result<ScannedVault> {
     }
 
     // Build link resolution index
-    let vault_index = tomet_links::VaultLinkIndex::from_paths(&all_rel_paths);
+    let vault_index = tomet::links::VaultLinkIndex::from_paths(&all_rel_paths);
 
     // Check for default.config.tmt
     let workspace_cfg_path = if let Some(custom) = &config.build.config_path {

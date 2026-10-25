@@ -9,8 +9,7 @@ description = "URL slug generation and routing table for tomet-shelf"
 tomet-shelf-config = { workspace = true }
 
 #= Tomet
-tomet-ast = { workspace = true }
-tomet-semantics = { workspace = true }
+tomet = { workspace = true }
 
 #= Crates.io
 anyhow = { workspace = true }

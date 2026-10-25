@@ -7,14 +7,14 @@
 
 @callout(info)
 | この本自身の tmtroot/book.index.tmt がまさにそれ。
-| `@kind(doc.index)` を宣言し、載せたノートだけがこの索引ページになる。
+| `::kind(doc.index)` を宣言し、載せたノートだけがこの索引ページになる。
 
 =[ 書き方 ]
 
 索引はただのTomet文書 -- リンクのネストされたリストなので、専用の構文はいらない。
 
 ```tmt
-@kind(doc.index)
+::kind(doc.index)
 
 - @link(ref:"getting-started")
 - @link(ref:"concepts")

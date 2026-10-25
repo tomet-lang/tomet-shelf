@@ -23,11 +23,10 @@
 
 use std::path::Path;
 
-use rayon::prelude::*;
-use tomet_ast::{Block, Document, ListItem};
+use tomet::ast::{Block, Document, ListItem};
+use tomet::links::VaultLinkIndex;
 
 use super::document::strip_doc_extension;
-use super::loader::DocFileInfo;
 
 /// The suffix that marks a document as an index rather than a page.
 pub const INDEX_SUFFIX: &str = ".index.tmt";
@@ -62,11 +61,10 @@ pub struct IndexOutline {
     pub entries: Vec<IndexEntry>,
     /// Targets that resolved to nothing, kept so the build can name them.
     pub unresolved: Vec<String>,
-    /// True when the document did not declare `@kind(doc.index)`.
+    /// True when the document did not declare `::kind(doc.index)`.
     pub kind_missing: bool,
-    /// A `${filter(...)}` that could not be answered (an unknown field, a
-    /// bad `by(...)` direction, ...), kept so the build can name it the
-    /// same way it names an unresolved link.
+    /// An expression that could not be answered, kept so the build can name it
+    /// the same way it names an unresolved link.
     pub query_errors: Vec<String>,
 }
 
@@ -74,33 +72,33 @@ pub struct IndexOutline {
 ///
 /// `from_path` is the index document's own vault-relative path, which is what
 /// makes a relative `ref:` resolve against the folder the file sits in.
-/// `rows` is the vault-wide metadata table a `${filter(...)}` in this
-/// document answers from -- see [`index_rows`]; an index with no query in
-/// it costs nothing beyond a walk of its own blocks either way.
+/// `vault_root` is the root path of the vault to resolve `${...}` expressions.
 pub fn parse_index_document(
     source: &str,
     from_path: &Path,
-    vault_index: &tomet_links::VaultLinkIndex,
-    rows: &[tomet_transform::IndexRow],
+    vault_index: &VaultLinkIndex,
+    vault_root: Option<&Path>,
     route_table: Option<&crate::book::slug::RouteTable>,
 ) -> IndexOutline {
-    let Ok(mut doc) = tomet_parser::parse_document(source) else {
+    let Ok(mut doc) = tomet::parser::parse_document(source) else {
         return IndexOutline::default();
     };
 
-    let kind_missing = tomet_semantics::document_kind(&doc).as_deref() != Some("doc.index");
+    let kind_missing = tomet::declaration::document_kind(&doc).as_deref() != Some("doc.index");
 
     let mut outline = IndexOutline {
         kind_missing,
         ..Default::default()
     };
 
-    // Expanded *before* `collect_blocks` walks the tree, so a query-
-    // generated entry is, by the time collection sees it, indistinguishable
-    // from one typed by hand -- `collect_blocks` needs no query-awareness
-    // of its own.
-    if let Err(e) = tomet_transform::expand_index_queries(&mut doc, rows) {
-        outline.query_errors.push(e.to_string());
+    if let Some(root) = vault_root {
+        let vault = tomet::Vault::discover(root);
+        let prep = vault.prepare(&mut doc, from_path);
+        for u in prep.unresolved {
+            outline
+                .query_errors
+                .push(format!("{}: {}", u.source, u.reason));
+        }
     }
 
     outline.entries = collect_blocks(
@@ -113,38 +111,11 @@ pub fn parse_index_document(
     outline
 }
 
-/// Turn already parsed documents into the rows a `${filter(...)}` query reads against.
-///
-/// Reuses ASTs already parsed in the build pipeline, avoiding redundant disk reads and parsing.
-pub fn index_rows<'a>(
-    docs: impl IntoParallelIterator<Item = (&'a Document, &'a DocFileInfo)>,
-    src_dir: &Path,
-) -> Vec<tomet_transform::IndexRow> {
-    docs.into_par_iter()
-        .map(|(doc, file)| make_index_row(doc, &file.abs_path, &file.rel_path, src_dir))
-        .collect()
-}
-
-/// Build an [`IndexRow`] from an AST and document metadata.
-pub fn make_index_row(
-    doc: &Document,
-    abs_path: &Path,
-    rel_path: &str,
-    src_dir: &Path,
-) -> tomet_transform::IndexRow {
-    let fields = tomet_indexer::document_fields(doc, abs_path, src_dir);
-    let path = match fields.get("path") {
-        Some(tomet_ast::Value::String(p)) => p.clone(),
-        _ => rel_path.to_string(),
-    };
-    tomet_transform::IndexRow { path, fields }
-}
-
 /// Walk the lists in a run of blocks, in source order.
 fn collect_blocks(
     blocks: &[Block],
     from_path: &Path,
-    vault_index: &tomet_links::VaultLinkIndex,
+    vault_index: &VaultLinkIndex,
     unresolved: &mut Vec<String>,
     route_table: Option<&crate::book::slug::RouteTable>,
 ) -> Vec<IndexEntry> {
@@ -167,7 +138,7 @@ fn collect_blocks(
 fn collect_list_items(
     items: &[ListItem],
     from_path: &Path,
-    vault_index: &tomet_links::VaultLinkIndex,
+    vault_index: &VaultLinkIndex,
     unresolved: &mut Vec<String>,
     route_table: Option<&crate::book::slug::RouteTable>,
 ) -> Vec<IndexEntry> {
@@ -215,17 +186,17 @@ fn collect_list_items(
 /// Wrapping the item's blocks in a throwaway document is what lets this
 /// reuse `collect_links` rather than re-deriving which elements and which
 /// schemes count as a link.
-fn first_page_target(blocks: &[tomet_ast::Block], span: tomet_ast::Span) -> Option<String> {
+fn first_page_target(blocks: &[Block], span: tomet::ast::Span) -> Option<String> {
     let probe = Document::new(blocks.to_vec(), span);
 
-    tomet_links::collect_links(&probe)
+    tomet::links::collect_links(&probe)
         .into_iter()
         .find(|link| {
             matches!(
                 link.kind,
-                tomet_links::LinkKind::Ref
-                    | tomet_links::LinkKind::Tm
-                    | tomet_links::LinkKind::File
+                tomet::links::LinkKind::Ref
+                    | tomet::links::LinkKind::Tmt
+                    | tomet::links::LinkKind::File
             )
         })
         .map(|link| link.target)
@@ -236,7 +207,7 @@ fn first_page_target(blocks: &[tomet_ast::Block], span: tomet_ast::Span) -> Opti
 fn resolve_page_slug(
     target: &str,
     from_path: &Path,
-    vault_index: &tomet_links::VaultLinkIndex,
+    vault_index: &VaultLinkIndex,
     route_table: Option<&crate::book::slug::RouteTable>,
 ) -> Option<String> {
     let resolved = vault_index.resolve_ref(target, Some(from_path))?;
@@ -257,9 +228,9 @@ fn resolve_page_slug(
 mod tests {
     use super::*;
 
-    fn index_of(paths: &[&str]) -> tomet_links::VaultLinkIndex {
+    fn index_of(paths: &[&str]) -> VaultLinkIndex {
         let owned: Vec<String> = paths.iter().map(|p| p.to_string()).collect();
-        tomet_links::VaultLinkIndex::from_paths(&owned)
+        VaultLinkIndex::from_paths(&owned)
     }
 
     fn parse(source: &str, paths: &[&str]) -> IndexOutline {
@@ -267,29 +238,15 @@ mod tests {
             source,
             Path::new("book.index.tmt"),
             &index_of(paths),
-            &[],
+            None,
             None,
         )
-    }
-
-    fn row(path: &str, tags: &[&str]) -> tomet_transform::IndexRow {
-        tomet_transform::IndexRow {
-            path: path.to_string(),
-            fields: std::collections::BTreeMap::from([(
-                "meta.tags".to_string(),
-                tomet_ast::Value::Seq(
-                    tags.iter()
-                        .map(|t| tomet_ast::Value::String(t.to_string()))
-                        .collect(),
-                ),
-            )]),
-        }
     }
 
     #[test]
     fn the_written_order_is_the_order() {
         let out = parse(
-            "@kind(doc.index)\n\n- @link(ref:\"zebra\")\n- @link(ref:\"apple\")\n- @link(ref:\"mango\")\n",
+            "::kind(doc.index)\n\n- @link(ref:\"zebra\")\n- @link(ref:\"apple\")\n- @link(ref:\"mango\")\n",
             &["apple.tmt", "mango.tmt", "zebra.tmt"],
         );
 
@@ -302,7 +259,7 @@ mod tests {
     #[test]
     fn nesting_is_kept() {
         let out = parse(
-            "@kind(doc.index)\n\n- @link(ref:\"guide\")\n  - @link(ref:\"install\")\n  - @link(ref:\"usage\")\n- @link(ref:\"reference\")\n",
+            "::kind(doc.index)\n\n- @link(ref:\"guide\")\n  - @link(ref:\"install\")\n  - @link(ref:\"usage\")\n- @link(ref:\"reference\")\n",
             &["guide.tmt", "install.tmt", "usage.tmt", "reference.tmt"],
         );
 
@@ -321,7 +278,7 @@ mod tests {
     #[test]
     fn a_target_that_resolves_to_nothing_is_reported() {
         let out = parse(
-            "@kind(doc.index)\n\n- @link(ref:\"ghost\")\n- @link(ref:\"real\")\n",
+            "::kind(doc.index)\n\n- @link(ref:\"ghost\")\n- @link(ref:\"real\")\n",
             &["real.tmt"],
         );
 
@@ -333,7 +290,7 @@ mod tests {
     #[test]
     fn a_bullet_without_a_link_hands_its_children_up() {
         let out = parse(
-            "@kind(doc.index)\n\nはじめに\n\n- 読み物\n  - @link(ref:\"essay\")\n- @link(ref:\"notes\")\n",
+            "::kind(doc.index)\n\nはじめに\n\n- 読み物\n  - @link(ref:\"essay\")\n- @link(ref:\"notes\")\n",
             &["essay.tmt", "notes.tmt"],
         );
 
@@ -344,7 +301,7 @@ mod tests {
     #[test]
     fn a_link_to_an_image_is_not_a_page() {
         let out = parse(
-            "@kind(doc.index)\n\n- @link(ref:\"cover.png\")\n- @link(ref:\"page\")\n",
+            "::kind(doc.index)\n\n- @link(ref:\"cover.png\")\n- @link(ref:\"page\")\n",
             &["cover.png", "page.tmt"],
         );
 
@@ -369,50 +326,5 @@ mod tests {
         assert!(is_root_index("book.index.tmt"));
         assert!(is_root_index("10-guides.index.tmt"));
         assert!(!is_root_index("creation/book.index.tmt"));
-    }
-
-    /// The integration claim this module's own doc comment makes: a query
-    /// expands into the same `@link(ref:"...")` shape a hand-written entry
-    /// is, so `collect_blocks` needs no special-casing for it -- proven
-    /// here rather than assumed, mixed with a hand-written sibling and a
-    /// hand-written parent.
-    #[test]
-    fn a_query_produces_the_same_outline_as_writing_it_by_hand() {
-        let rows = [row("go.tmt", &["go"]), row("rust.tmt", &["rust"])];
-        let paths = ["guide.tmt", "go.tmt", "rust.tmt"];
-
-        let generated = parse_index_document(
-            "@kind(doc.index)\n\n- @link(ref:\"guide\")\n  - ${filter(contains(meta.tags, \"go\"))}\n- ${filter(contains(meta.tags, \"rust\"))}\n",
-            Path::new("book.index.tmt"),
-            &index_of(&paths),
-            &rows,
-            None,
-        );
-        let by_hand = parse_index_document(
-            "@kind(doc.index)\n\n- @link(ref:\"guide\")\n  - @link(ref:\"go\")\n- @link(ref:\"rust\")\n",
-            Path::new("book.index.tmt"),
-            &index_of(&paths),
-            &[],
-            None,
-        );
-
-        assert!(
-            generated.query_errors.is_empty(),
-            "{:?}",
-            generated.query_errors
-        );
-        assert_eq!(generated.entries, by_hand.entries);
-    }
-
-    #[test]
-    fn a_query_that_cannot_be_answered_is_reported_not_dropped() {
-        let out = parse_index_document(
-            "@kind(doc.index)\n\n- ${filter(contains(meta.typo, \"go\"))}\n",
-            Path::new("book.index.tmt"),
-            &index_of(&["go.tmt"]),
-            &[row("go.tmt", &["go"])],
-            None,
-        );
-        assert!(!out.query_errors.is_empty());
     }
 }

@@ -76,7 +76,7 @@ pub fn clean_ref_target(raw: &str) -> String {
 pub fn resolve_meta_link(
     raw: &str,
     from_path: &Path,
-    vault_index: &tomet_links::VaultLinkIndex,
+    vault_index: &tomet::links::VaultLinkIndex,
     url_prefix: &str,
     route_table: Option<&RouteTable>,
 ) -> Option<(String, String)> {
@@ -119,7 +119,7 @@ pub fn resolve_meta_link(
 pub fn format_meta_value_to_html(
     raw_str: &str,
     from_path: &Path,
-    vault_index: &tomet_links::VaultLinkIndex,
+    vault_index: &tomet::links::VaultLinkIndex,
     url_prefix: &str,
     unresolved_title: &str,
     route_table: Option<&RouteTable>,
@@ -144,7 +144,7 @@ pub fn format_meta_value_to_html(
 pub fn resolve_meta_media_path(
     raw: &str,
     from_path: &Path,
-    vault_index: &tomet_links::VaultLinkIndex,
+    vault_index: &tomet::links::VaultLinkIndex,
     asset_prefix: &str,
 ) -> String {
     let s = raw.trim();
@@ -166,8 +166,8 @@ pub fn resolve_meta_media_path(
 mod tests {
     use super::*;
 
-    fn index(paths: &[&str]) -> tomet_links::VaultLinkIndex {
-        tomet_links::VaultLinkIndex::from_paths(paths)
+    fn index(paths: &[&str]) -> tomet::links::VaultLinkIndex {
+        tomet::links::VaultLinkIndex::from_paths(paths)
     }
 
     #[test]
@@ -305,20 +305,22 @@ mod tests {
 /// another Tomet document count -- media and external URLs are not pages, and
 /// a document linking to itself is not a backlink.
 pub fn outgoing_page_slugs(
-    doc: &tomet_ast::Document,
+    doc: &tomet::ast::Document,
     from_path: &Path,
     own_slug: &str,
-    vault_index: &tomet_links::VaultLinkIndex,
+    vault_index: &tomet::links::VaultLinkIndex,
     unpublished: &std::collections::HashSet<String>,
     route_table: Option<&RouteTable>,
 ) -> Vec<String> {
     let mut slugs: Vec<String> = Vec::new();
 
-    for link in tomet_links::collect_links(doc) {
+    for link in tomet::links::collect_links(doc) {
         // Dir and Embed point at folders and media, never at a page.
         if !matches!(
             link.kind,
-            tomet_links::LinkKind::Ref | tomet_links::LinkKind::Tm | tomet_links::LinkKind::File
+            tomet::links::LinkKind::Ref
+                | tomet::links::LinkKind::Tmt
+                | tomet::links::LinkKind::File
         ) {
             continue;
         }
@@ -378,8 +380,8 @@ mod outgoing_tests {
     }
 
     fn slugs(source: &str, paths: &[&str], own: &str) -> Vec<String> {
-        let doc = tomet_parser::parse_document(source).unwrap();
-        let index = tomet_links::VaultLinkIndex::from_paths(paths);
+        let doc = tomet::parser::parse_document(source).unwrap();
+        let index = tomet::links::VaultLinkIndex::from_paths(paths);
         outgoing_page_slugs(
             &doc,
             Path::new(own),

@@ -100,7 +100,7 @@ pub fn write_if_changed(path: &Path, content: &str) -> Result<bool> {
 }
 pub(crate) fn read_written_index(
     scanned: &ScannedVault,
-    parsed: &[Result<(tomet_ast::Document, Option<String>), DocFailure>],
+    _parsed: &[Result<(tomet::ast::Document, Option<String>), DocFailure>],
     src_dir: &Path,
     route_table: Option<&slug::RouteTable>,
 ) -> Option<Vec<catalog::IndexEntry>> {
@@ -112,19 +112,6 @@ pub(crate) fn read_written_index(
     if index_files.is_empty() {
         return None;
     }
-
-    // Built once and shared across every index file this build has, the
-    // same way `vault_index` already is -- each `${filter(...)}` answers
-    // from the vault as this build's own scan sees it, not a second,
-    // independently-filtered walk.
-    // Reuses the ASTs already parsed during the build pipeline.
-    let rows = catalog::index_rows(
-        parsed
-            .par_iter()
-            .zip(scanned.doc_files.par_iter())
-            .filter_map(|(res, file)| res.as_ref().ok().map(|(doc, _)| (doc, file))),
-        src_dir,
-    );
 
     let mut entries = Vec::new();
     for file in index_files {
@@ -138,12 +125,12 @@ pub(crate) fn read_written_index(
             &source,
             from_path,
             &scanned.vault_index,
-            &rows,
+            Some(src_dir),
             route_table,
         );
 
         if outline.kind_missing {
-            warn!("{} does not declare @kind(doc.index)", file.rel_path);
+            warn!("{} does not declare ::kind(doc.index)", file.rel_path);
         }
         for target in &outline.unresolved {
             warn!(
@@ -279,7 +266,7 @@ pub fn build_book(
     // what the site publishes, and that has to be settled before any link is
     // resolved, since a link to a document left out has to come out broken.
     info!("Parsing {} document(s)...", scanned.doc_files.len());
-    let parsed: Vec<Result<(tomet_ast::Document, Option<String>), DocFailure>> = scanned
+    let parsed: Vec<Result<(tomet::ast::Document, Option<String>), DocFailure>> = scanned
         .doc_files
         .par_iter()
         .map(|doc_file| {

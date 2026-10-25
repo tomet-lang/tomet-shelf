@@ -43,7 +43,7 @@ fn is_boilerplate_heading(text: &str) -> bool {
 ///
 /// Only levels 1-4 make it into the TOC; deeper headings are structure the
 /// sticky tabs have no room for.
-pub fn toc_from_outline(outline: &[tomet_html::HeadingInfo]) -> (Option<String>, Vec<TocItem>) {
+pub fn toc_from_outline(outline: &[tomet::html::HeadingInfo]) -> (Option<String>, Vec<TocItem>) {
     let mut first_h1 = None;
     let mut toc = Vec::new();
 
@@ -148,7 +148,7 @@ pub fn build_section_tabs(toc: &[TocItem]) -> Vec<TocNode> {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use tomet_html::HeadingInfo;
+    use tomet::html::HeadingInfo;
 
     fn heading(level: u8, id: Option<&str>, text: &str) -> HeadingInfo {
         HeadingInfo {

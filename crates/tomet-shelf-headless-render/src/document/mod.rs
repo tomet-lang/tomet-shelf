@@ -53,9 +53,9 @@ pub struct ProcessedDoc {
     pub outgoing: Vec<String>,
 }
 
-/// Extract the `@config`/`@settings` blocks of a workspace-wide document.
-pub fn extract_workspace_config_blocks(workspace_cfg_src: &str) -> Vec<tomet_ast::Block> {
-    let Ok(cfg_doc) = tomet_parser::parse_document(workspace_cfg_src) else {
+/// Extract the `::config`/`::settings` blocks of a workspace-wide document.
+pub fn extract_workspace_config_blocks(workspace_cfg_src: &str) -> Vec<tomet::ast::Block> {
+    let Ok(cfg_doc) = tomet::parser::parse_document(workspace_cfg_src) else {
         return Vec::new();
     };
 
@@ -63,9 +63,9 @@ pub fn extract_workspace_config_blocks(workspace_cfg_src: &str) -> Vec<tomet_ast
         .blocks
         .into_iter()
         .filter(|block| match block {
-            tomet_ast::Block::Element(el) => {
-                let kind = tomet_semantics::classify_std_lenient(el);
-                kind == tomet_semantics::ElementKind::Config || kind.as_str() == "settings"
+            tomet::ast::Block::Element(el) => {
+                let kind = tomet::semantics::classify_std_lenient(el);
+                kind.as_str() == "config" || kind.as_str() == "settings"
             }
             _ => false,
         })
@@ -74,8 +74,8 @@ pub fn extract_workspace_config_blocks(workspace_cfg_src: &str) -> Vec<tomet_ast
 
 /// Prepend pre-parsed workspace-wide config blocks so shared macros are in scope.
 pub fn inject_workspace_config_blocks(
-    doc: &mut tomet_ast::Document,
-    prefix_blocks: &[tomet_ast::Block],
+    doc: &mut tomet::ast::Document,
+    prefix_blocks: &[tomet::ast::Block],
 ) {
     if !prefix_blocks.is_empty() {
         let mut new_blocks = prefix_blocks.to_vec();
@@ -120,10 +120,11 @@ fn resolve_title(
 #[cfg(test)]
 mod kind_tests {
     use super::*;
+    use tomet::links::VaultLinkIndex;
 
     #[test]
     fn a_document_reports_the_kind_it_declares() {
-        let (_, kind) = parse_tomet_document("@kind(config)\n\n#[ x ]\n", "a.tmt").unwrap();
+        let (_, kind) = parse_tomet_document("::kind(config)\n\n#[ x ]\n", "a.tmt").unwrap();
         assert_eq!(kind.as_deref(), Some("config"));
 
         let (_, none) = parse_tomet_document("#[ x ]\n", "b.tmt").unwrap();
@@ -133,10 +134,7 @@ mod kind_tests {
     #[test]
     fn a_link_to_an_unpublished_document_resolves_to_nothing() {
         let config = BookConfig::default();
-        let vault = tomet_links::VaultLinkIndex::from_paths(&[
-            "page.tmt".to_string(),
-            "secret.tmt".to_string(),
-        ]);
+        let vault = VaultLinkIndex::from_paths(&["page.tmt".to_string(), "secret.tmt".to_string()]);
 
         let unpublished: HashSet<String> = ["secret.tmt".to_string()].into_iter().collect();
         let out = process_tomet_document(
@@ -161,10 +159,7 @@ mod kind_tests {
     #[test]
     fn the_same_link_resolves_when_the_page_is_published() {
         let config = BookConfig::default();
-        let vault = tomet_links::VaultLinkIndex::from_paths(&[
-            "page.tmt".to_string(),
-            "secret.tmt".to_string(),
-        ]);
+        let vault = VaultLinkIndex::from_paths(&["page.tmt".to_string(), "secret.tmt".to_string()]);
 
         let out = process_tomet_document(
             "#[ Page ]\n\n@link(ref:\"secret\")\n",
@@ -188,7 +183,7 @@ mod kind_tests {
     #[test]
     fn a_page_renders_ruby_and_doc_icon() {
         let config = BookConfig::default();
-        let vault = tomet_links::VaultLinkIndex::from_paths(&["page.tmt".to_string()]);
+        let vault = VaultLinkIndex::from_paths(&["page.tmt".to_string()]);
 
         let out = process_tomet_document(
             "#[ Page ]\n\n@ruby[漢字](rt:\"かんじ\") and @doc.icon(\"star\", pkg:\"lucide\").\n",
@@ -217,10 +212,10 @@ mod kind_tests {
     #[test]
     fn a_meta_icon_written_as_a_doc_icon_element_renders_as_svg() {
         let config = BookConfig::default();
-        let vault = tomet_links::VaultLinkIndex::from_paths(&["page.tmt".to_string()]);
+        let vault = VaultLinkIndex::from_paths(&["page.tmt".to_string()]);
 
         let out = process_tomet_document(
-            "@meta{icon: @doc.icon(\"cake\")}\n\n#[ Page ]\n\nbody\n",
+            "::meta{icon: @doc.icon(\"cake\")}\n\n#[ Page ]\n\nbody\n",
             "page.tmt",
             None,
             &config,
@@ -240,10 +235,10 @@ mod kind_tests {
     #[test]
     fn a_meta_icon_written_as_a_plain_string_still_works() {
         let config = BookConfig::default();
-        let vault = tomet_links::VaultLinkIndex::from_paths(&["page.tmt".to_string()]);
+        let vault = VaultLinkIndex::from_paths(&["page.tmt".to_string()]);
 
         let out = process_tomet_document(
-            "@meta{icon: \"\u{1F382}\"}\n\n#[ Page ]\n\nbody\n",
+            "::meta{icon: \"\u{1F382}\"}\n\n#[ Page ]\n\nbody\n",
             "page.tmt",
             None,
             &config,
@@ -262,7 +257,7 @@ mod kind_tests {
     #[test]
     fn list_markers_render_as_badges_by_default_without_icons() {
         let config = BookConfig::default();
-        let vault = tomet_links::VaultLinkIndex::from_paths(&["page.tmt".to_string()]);
+        let vault = VaultLinkIndex::from_paths(&["page.tmt".to_string()]);
 
         let out = process_tomet_document(
             "#[ Page ]\n\n- (x) task\n- (\"12:01\") breakfast\n",
@@ -291,7 +286,7 @@ mod kind_tests {
     fn list_markers_render_as_icons_when_enabled() {
         let mut config = BookConfig::default();
         config.ui.markers.enable = true;
-        let vault = tomet_links::VaultLinkIndex::from_paths(&["page.tmt".to_string()]);
+        let vault = VaultLinkIndex::from_paths(&["page.tmt".to_string()]);
 
         let out = process_tomet_document(
             "#[ Page ]\n\n- (x) done task\n- (\"12:01\") breakfast\n",
@@ -320,7 +315,7 @@ mod kind_tests {
     #[test]
     fn a_meta_banner_and_images_written_as_link_elements_resolve() {
         let config = BookConfig::default();
-        let vault = tomet_links::VaultLinkIndex::from_paths(&[
+        let vault = VaultLinkIndex::from_paths(&[
             "page.tmt".to_string(),
             "+771a262c8eeb5a2459a01a44a2404eaa2999bc54.svg".to_string(),
             "a.png".to_string(),
@@ -328,7 +323,7 @@ mod kind_tests {
         ]);
 
         let out = process_tomet_document(
-            r#"@meta{
+            r#"::meta{
     banner: @link(ref:+771a262c8eeb5a2459a01a44a2404eaa2999bc54.svg),
     images: list(@link(ref: "a.png"), @link(ref: "b.png"))
 }
@@ -356,13 +351,10 @@ body
     #[test]
     fn a_meta_icon_written_as_embed_element_renders_as_img() {
         let config = BookConfig::default();
-        let vault = tomet_links::VaultLinkIndex::from_paths(&[
-            "page.tmt".to_string(),
-            "avatar.png".to_string(),
-        ]);
+        let vault = VaultLinkIndex::from_paths(&["page.tmt".to_string(), "avatar.png".to_string()]);
 
         let out = process_tomet_document(
-            r#"@meta{
+            r#"::meta{
     icon: @embed("avatar.png")
 }
 
@@ -392,13 +384,13 @@ body
     fn a_meta_parent_and_row_written_as_link_element_resolve() {
         let mut config = BookConfig::default();
         tomet_shelf_config::i18n::apply_defaults(&mut config);
-        let vault = tomet_links::VaultLinkIndex::from_paths(&[
+        let vault = VaultLinkIndex::from_paths(&[
             "page.tmt".to_string(),
             "30-39 Knowledge/rust.tmt".to_string(),
         ]);
 
         let out = process_tomet_document(
-            r#"@meta{
+            r#"::meta{
     parent: @link(ref: "rust"),
     author: @link(ref: "rust")
 }
@@ -440,18 +432,16 @@ body
     #[test]
     fn macro_and_variable_interpolations_resolve_in_body() {
         let config = BookConfig::default();
-        let vault = tomet_links::VaultLinkIndex::from_paths(&["notes/page.tmt".to_string()]);
+        let vault = VaultLinkIndex::from_paths(&["notes/page.tmt".to_string()]);
 
         let out = process_tomet_document(
-            r#"@config{
-    macros: {
-        gh: "https://github.com/${1}"
-    }
+            r#"::macros{
+    gh: "https://github.com/${1}"
 }
 
 #[ Page ]
 
-Here is issue $gh("tomet-lang/tomet") and path is ${self.path}.
+Here is issue ${macro.gh("tomet-lang/tomet")} and path is ${self.path}.
 "#,
             "notes/page.tmt",
             None,
@@ -474,7 +464,7 @@ Here is issue $gh("tomet-lang/tomet") and path is ${self.path}.
     #[test]
     fn list_marker_with_inline_elements_render_as_badges() {
         let config = BookConfig::default();
-        let vault = tomet_links::VaultLinkIndex::from_paths(&["notes/page.tmt".to_string()]);
+        let vault = VaultLinkIndex::from_paths(&["notes/page.tmt".to_string()]);
 
         let out = process_tomet_document(
             r#"#[ Page ]
@@ -510,7 +500,7 @@ Here is issue $gh("tomet-lang/tomet") and path is ${self.path}.
     #[test]
     fn external_links_are_enhanced_in_document_body() {
         let config = BookConfig::default();
-        let vault = tomet_links::VaultLinkIndex::from_paths(&["notes/page.tmt".to_string()]);
+        let vault = VaultLinkIndex::from_paths(&["notes/page.tmt".to_string()]);
 
         let out = process_tomet_document(
             r#"#[ Links ]
@@ -545,13 +535,13 @@ Visit @link(https://github.com/tomet-lang/tomet)[GitHub Repo] and @link(https://
     #[test]
     fn internal_links_are_enhanced_with_note_icon() {
         let config = BookConfig::default();
-        let vault = tomet_links::VaultLinkIndex::from_paths(&[
+        let vault = VaultLinkIndex::from_paths(&[
             "notes/source.tmt".to_string(),
             "notes/target.tmt".to_string(),
         ]);
 
         let target_doc = process_tomet_document(
-            "@meta{icon: @doc.icon(\"star\")}\n\n#[ Target ]\n\nTarget note.\n",
+            "::meta{icon: @doc.icon(\"star\")}\n\n#[ Target ]\n\nTarget note.\n",
             "notes/target.tmt",
             None,
             &config,
@@ -592,17 +582,19 @@ Visit @link(https://github.com/tomet-lang/tomet)[GitHub Repo] and @link(https://
 
 /// Read a document far enough to know what it is.
 ///
+/// Read a document far enough to know what it is.
+///
 /// The build has to decide what the site publishes before it resolves a
 /// single link, since a link to a document the site leaves out has to come
-/// out broken. That decision needs the `@kind`, and the `@kind` needs a
+/// out broken. That decision needs the `::kind`, and the `::kind` needs a
 /// parse -- so the parse is done once, here, and handed on.
 pub fn parse_tomet_document(
     source: &str,
     rel_path: &str,
-) -> Result<(tomet_ast::Document, Option<String>)> {
-    let doc = tomet_parser::parse_document(source)
+) -> Result<(tomet::ast::Document, Option<String>)> {
+    let doc = tomet::parser::parse_document(source)
         .map_err(|e| anyhow::anyhow!("Failed to parse {rel_path}: {e}"))?;
-    let kind = tomet_semantics::document_kind(&doc).map(|s| s.to_string());
+    let kind = tomet::declaration::document_kind(&doc).map(|s| s.to_string());
     Ok((doc, kind))
 }
 
@@ -611,7 +603,7 @@ pub fn process_tomet_document(
     rel_path: &str,
     abs_path: Option<&Path>,
     config: &BookConfig,
-    vault_index: &tomet_links::VaultLinkIndex,
+    vault_index: &tomet::links::VaultLinkIndex,
     workspace_cfg_src: Option<&str>,
     unpublished: &HashSet<String>,
 ) -> Result<ProcessedDoc> {
@@ -630,11 +622,11 @@ pub fn process_tomet_document(
 
 #[allow(clippy::too_many_arguments)]
 pub fn process_parsed_document(
-    doc: tomet_ast::Document,
+    doc: tomet::ast::Document,
     rel_path: &str,
     abs_path: Option<&Path>,
     config: &BookConfig,
-    vault_index: &tomet_links::VaultLinkIndex,
+    vault_index: &tomet::links::VaultLinkIndex,
     workspace_cfg_src: Option<&str>,
     unpublished: &HashSet<String>,
     route_table: Option<&RouteTable>,
@@ -657,45 +649,25 @@ pub fn process_parsed_document(
 /// Turn a parsed document into the page it becomes using pre-parsed workspace config blocks.
 #[allow(clippy::too_many_arguments)]
 pub fn process_parsed_document_with_blocks(
-    mut doc: tomet_ast::Document,
+    mut doc: tomet::ast::Document,
     rel_path: &str,
     abs_path: Option<&Path>,
     config: &BookConfig,
-    vault_index: &tomet_links::VaultLinkIndex,
-    workspace_cfg_blocks: &[tomet_ast::Block],
+    vault_index: &tomet::links::VaultLinkIndex,
+    workspace_cfg_blocks: &[tomet::ast::Block],
     unpublished: &HashSet<String>,
     route_table: Option<&RouteTable>,
 ) -> Result<ProcessedDoc> {
     // 1. Bring in the vault-wide config (e.g. default.config.tmt)
     inject_workspace_config_blocks(&mut doc, workspace_cfg_blocks);
 
-    // 2. Expand macros and interpolations
-    let doc_cfg = tomet_semantics::document_config(&doc);
-    tomet_transform::expand_document_macros(&mut doc, &doc_cfg);
-
-    let eval_vars = tomet_compute::EvaluationContext::new().with_var(
-        "self",
-        tomet_ast::Value::Map(vec![
-            (
-                "path".to_string(),
-                tomet_ast::Value::String(rel_path.to_string()),
-            ),
-            (
-                "filename".to_string(),
-                tomet_ast::Value::String(
-                    Path::new(rel_path)
-                        .file_name()
-                        .and_then(|s| s.to_str())
-                        .unwrap_or("")
-                        .to_string(),
-                ),
-            ),
-        ]),
-    );
-    let unresolved = tomet_transform::resolve_interpolations(&mut doc, &doc_cfg, &eval_vars);
-    for u in &unresolved {
+    // 2. Prepare expressions and macros via Tomet Vault
+    let vault_root = abs_path.and_then(|p| p.parent()).unwrap_or(Path::new("."));
+    let vault = tomet::Vault::discover(vault_root);
+    let prepared = vault.prepare(&mut doc, Path::new(rel_path));
+    for u in &prepared.unresolved {
         tracing::debug!(
-            "{rel_path}: unresolved interpolation: ${{{}}} ({})",
+            "{rel_path}: unresolved expression: ${{{}}} ({})",
             u.source,
             u.reason
         );
@@ -715,11 +687,11 @@ pub fn process_parsed_document_with_blocks(
         route_table,
     );
 
-    let mode = tomet_transform::TargetMode::WebSlug {
+    let mode = tomet::transform::TargetMode::WebSlug {
         url_prefix: config.build.full_url_prefix(),
         asset_prefix: config.build.full_asset_prefix(),
     };
-    tomet_transform::resolve_document_links(
+    tomet::transform::resolve_document_links(
         &mut doc,
         Some(from_path),
         |target, from| {
@@ -744,23 +716,23 @@ pub fn process_parsed_document_with_blocks(
     );
 
     // 4. Metadata and kind
-    let kind = tomet_semantics::document_kind(&doc).map(|s| s.to_string());
-    let raw_meta = tomet_semantics::document_meta(&doc);
-    let meta_json = raw_meta.as_ref().map(tomet_semantics::value_to_json);
+    let kind = tomet::declaration::document_kind(&doc).map(|s| s.to_string());
+    let raw_meta = tomet::declaration::document_meta(&doc);
+    let meta_json = raw_meta.as_ref().map(tomet::semantics::value_to_json);
 
     // 5. Render, and take the heading outline the renderer reports
     let base_path = config.build.clean_base_path();
     let base_for_custom = base_path.to_string();
-    let render_opts = tomet_html::RenderOptions {
+    let render_opts = tomet::html::RenderOptions {
         number_headings: true,
         auto_slug_headings: true,
         lang: Some(config.book.lang.clone()),
-        custom_element: Some(tomet_html::CustomElementRenderer::new(move |ctx| {
+        custom_element: Some(tomet::html::CustomElementRenderer::new(move |ctx| {
             icon::render_with_base(ctx, &base_for_custom)
         })),
         ..Default::default()
     };
-    let (raw_body_html, outline) = tomet_html::render_body_with_outline(&doc, &render_opts);
+    let (raw_body_html, outline) = tomet::html::render_body_with_outline(&doc, &render_opts);
     let body_html = marker::enhance_list_markers(&raw_body_html, &config.ui.markers, base_path);
     let body_html = code::enhance_code_blocks(&body_html, Some(&config.book.lang), base_path);
     let body_html = external_links::enhance_external_links(&body_html, &config.ui.links, base_path);

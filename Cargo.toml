@@ -20,15 +20,11 @@ tomet-shelf-search = { path = "crates/tomet-shelf-headless-search" }
 tomet-shelf-serve = { path = "crates/tomet-shelf-headless-serve" }
 
 #= Tomet
-tomet-ast = { git = "https://github.com/tomet-lang/tomet.git" }
-tomet-compute = { git = "https://github.com/tomet-lang/tomet.git" }
-tomet-html = { git = "https://github.com/tomet-lang/tomet.git" }
-tomet-indexer = { git = "https://github.com/tomet-lang/tomet.git" }
-tomet-links = { git = "https://github.com/tomet-lang/tomet.git" }
-tomet-parser = { git = "https://github.com/tomet-lang/tomet.git" }
-tomet-semantics = { git = "https://github.com/tomet-lang/tomet.git" }
-tomet-transform = { git = "https://github.com/tomet-lang/tomet.git" }
-tomet-tree = { git = "https://github.com/tomet-lang/tomet.git" }
+tomet = { git = "https://github.com/tomet-lang/tomet.git", features = [
+  "html",
+  "links",
+  "parser",
+] }
 
 #= Crates.io
 anyhow = "1.0"
