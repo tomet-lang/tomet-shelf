@@ -3569,7 +3569,7 @@ dependencies = [
  "clap",
  "tokio",
  "tomet-shelf-assets",
- "tomet-shelf-core",
+ "tomet-shelf-headless",
  "tracing",
  "tracing-subscriber",
 ]
@@ -3584,7 +3584,7 @@ dependencies = [
 ]
 
 [[package]]
-name = "tomet-shelf-core"
+name = "tomet-shelf-headless"
 version = "0.1.0"
 dependencies = [
  "anyhow",

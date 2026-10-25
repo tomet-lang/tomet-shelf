@@ -1,4 +1,4 @@
-//! Headless engine library surface for `tomet-shelf-core`.
+//! Headless engine library surface for `tomet-shelf-headless`.
 //!
 //! Provides the primary API for building and serving Tomet books:
 //! - [`book::build_book`]: Builds an entire book from a vault directory.

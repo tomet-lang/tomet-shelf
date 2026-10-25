@@ -9,8 +9,8 @@ mod cli;
 
 use cli::{Cli, Commands};
 use tomet_shelf_assets::ASSETS;
-use tomet_shelf_core::book;
-use tomet_shelf_core::config::BookConfig;
+use tomet_shelf_headless::book;
+use tomet_shelf_headless::config::BookConfig;
 
 #[tokio::main]
 async fn main() -> Result<()> {
@@ -46,7 +46,7 @@ async fn main() -> Result<()> {
         } => {
             let (src_dir, out_dir, config) = resolve_build_paths(&dir, dest)?;
 
-            tomet_shelf_core::run_dev_server(
+            tomet_shelf_headless::run_dev_server(
                 src_dir,
                 out_dir,
                 config,
