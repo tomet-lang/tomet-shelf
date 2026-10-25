@@ -9,11 +9,25 @@
 //! - Preserving directory hierarchy (`/`).
 //! - Falling back to a deterministic hash (`doc-{hash}`) if a segment becomes empty.
 
-use std::collections::HashMap;
+use std::collections::{HashMap, HashSet};
 use std::path::Path;
-use tomet_shelf_config::BuildConfig;
+use tomet_shelf_config::{BuildConfig, CollisionStrategy, RoutingStrategy};
 
-use crate::document::strip_doc_extension;
+/// Suffixes that mark a file as a Tomet document.
+pub const DOC_EXTENSIONS: &[&str] = &[".tmt", ".tm"];
+
+/// Strip a single Tomet document extension: `foo/bar.tmt` -> `foo/bar`.
+///
+/// Uses `strip_suffix` rather than `trim_end_matches`, which would chew through
+/// repeated suffixes and turn `notes.tmt.tmt` into `notes`.
+pub fn strip_doc_extension(path: &str) -> &str {
+    for ext in DOC_EXTENSIONS {
+        if let Some(stem) = path.strip_suffix(ext) {
+            return stem;
+        }
+    }
+    path
+}
 
 pub fn normalize_path(path: &Path) -> String {
     path.to_string_lossy().replace('\\', "/")
@@ -80,9 +94,6 @@ pub fn clean_doc_slug(rel_path: &str) -> String {
         .collect::<Vec<String>>()
         .join("/")
 }
-
-use std::collections::HashSet;
-use tomet_shelf_config::{CollisionStrategy, RoutingStrategy};
 
 /// Metadata extracted from a document for routing resolution.
 #[derive(Debug, Clone)]

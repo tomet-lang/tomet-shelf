@@ -10,7 +10,7 @@ use super::document::{self, ProcessedDoc};
 use super::image_opt;
 use super::kinds;
 use super::loader::{ScannedVault, scan_vault};
-use super::renderer::{Backlink, BookRenderer, EntrySummary, SectionSummary};
+use super::renderer::{Backlink, EntrySummary, PageRenderer, RendererFactory, SectionSummary};
 use super::slug;
 use super::{
     DocFailure, arrange_entries, build_backlink_index, read_written_index, write_if_changed,
@@ -28,7 +28,7 @@ pub struct RenderContext<'a> {
     pub vault_index: &'a tomet_links::VaultLinkIndex,
     pub workspace_cfg_src: Option<&'a str>,
     pub workspace_cfg_blocks: &'a [tomet_ast::Block],
-    pub renderer: &'a BookRenderer,
+    pub renderer: &'a dyn PageRenderer,
     /// The documents the last full build left out, so a page re-rendered on
     /// its own still shows links to them as broken.
     pub unpublished: &'a HashSet<String>,
@@ -44,7 +44,6 @@ pub struct RenderContext<'a> {
 /// Holds metadata, routes, backlinks, catalog, and renderer for on-demand SSR.
 pub struct VaultState {
     pub config: BookConfig,
-    pub assets: tomet_shelf_render::ShelfAssets,
     pub src_dir: PathBuf,
     pub scanned: ScannedVault,
     pub route_table: slug::RouteTable,
@@ -52,7 +51,7 @@ pub struct VaultState {
     pub unpublished: HashSet<String>,
     pub book_index: Vec<EntrySummary>,
     pub doc_icons: HashMap<String, String>,
-    pub renderer: BookRenderer,
+    pub renderer: Box<dyn PageRenderer>,
     pub sections: Vec<SectionSummary>,
     pub catalog_entries: Vec<EntrySummary>,
     pub search_index: Option<tomet_shelf_search::SearchIndex>,
@@ -63,7 +62,7 @@ impl VaultState {
     pub fn init(
         src_dir: &Path,
         config: &BookConfig,
-        assets: tomet_shelf_render::ShelfAssets,
+        renderer_factory: &dyn RendererFactory,
         is_dev: bool,
     ) -> Result<Self> {
         let scanned = scan_vault(src_dir, config).context("Failed to scan vault")?;
@@ -228,11 +227,10 @@ impl VaultState {
             None => processed_entries,
         };
 
-        let renderer = BookRenderer::new(config, &assets, is_dev)?;
+        let renderer = renderer_factory.create(config, is_dev)?;
 
         Ok(Self {
             config: config.clone(),
-            assets,
             src_dir: src_dir.to_path_buf(),
             scanned,
             route_table,
@@ -255,7 +253,7 @@ impl VaultState {
             vault_index: &self.scanned.vault_index,
             workspace_cfg_src: self.scanned.workspace_config_src.as_deref(),
             workspace_cfg_blocks: &self.scanned.workspace_config_blocks,
-            renderer: &self.renderer,
+            renderer: self.renderer.as_ref(),
             unpublished: &self.unpublished,
             book_index: &self.book_index,
             doc_icons: &self.doc_icons,

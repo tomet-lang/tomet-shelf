@@ -3,14 +3,12 @@ name = "tomet-shelf-assets"
 version.workspace = true
 edition.workspace = true
 rust-version.workspace = true
-description = "Static assets, templates, and i18n dictionaries for tomet-shelf"
+description = "Official UI assets and templates for tomet-shelf"
 
 [dependencies]
 tomet-shelf-config = { workspace = true }
 tomet-shelf-render = { workspace = true }
+tomet-shelf-template = { workspace = true }
 
 #= Crates.io
 anyhow = { workspace = true }
-rayon = { workspace = true }
-serde = { workspace = true }
-serde_json = { workspace = true }

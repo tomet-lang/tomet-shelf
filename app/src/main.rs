@@ -1,6 +1,7 @@
 use anyhow::{Context, Result};
 use clap::Parser;
 use std::fs;
+use std::sync::Arc;
 use tracing::info;
 use tracing_subscriber::{EnvFilter, fmt};
 
@@ -45,7 +46,15 @@ async fn main() -> Result<()> {
         } => {
             let (src_dir, out_dir, config) = resolve_build_paths(&dir, dest)?;
 
-            tomet_shelf_core::run_dev_server(src_dir, out_dir, config, ASSETS, host, port).await?;
+            tomet_shelf_core::run_dev_server(
+                src_dir,
+                out_dir,
+                config,
+                Arc::new(ASSETS),
+                host,
+                port,
+            )
+            .await?;
         }
         Commands::Init { dir, title } => {
             let target_file = dir.join("shelf.toml");

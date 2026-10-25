@@ -1,0 +1,17 @@
+[package]
+name = "tomet-shelf-route"
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+description = "URL slug generation and routing table for tomet-shelf"
+
+[dependencies]
+tomet-shelf-config = { workspace = true }
+
+#= Tomet
+tomet-ast = { workspace = true }
+tomet-semantics = { workspace = true }
+
+#= Crates.io
+anyhow = { workspace = true }
+serde_json = { workspace = true }

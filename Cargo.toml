@@ -10,10 +10,12 @@ rust-version = "1.85"
 
 [workspace.dependencies]
 tomet-shelf-assets = { path = "crates/tomet-shelf-assets" }
+tomet-shelf-template = { path = "crates/tomet-shelf-template" }
 #--- Headless ---
 tomet-shelf-core = { path = "crates/tomet-shelf-headless-core" }
 tomet-shelf-config = { path = "crates/tomet-shelf-headless-config" }
 tomet-shelf-render = { path = "crates/tomet-shelf-headless-render" }
+tomet-shelf-route = { path = "crates/tomet-shelf-headless-route" }
 tomet-shelf-search = { path = "crates/tomet-shelf-headless-search" }
 tomet-shelf-serve = { path = "crates/tomet-shelf-headless-serve" }
 

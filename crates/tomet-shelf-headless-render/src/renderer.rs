@@ -1,15 +1,9 @@
-use anyhow::{Context, Result};
-use minijinja::{Environment, Value, context};
+use anyhow::Result;
 use serde::{Deserialize, Serialize};
 
-use crate::assets::{self, ShelfAssets};
+use crate::assets::StaticAsset;
 use crate::document::ProcessedDoc;
 use tomet_shelf_config::BookConfig;
-
-pub struct BookRenderer {
-    env: Environment<'static>,
-    clean_url_prefix: String,
-}
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct SectionSummary {
@@ -36,64 +30,71 @@ pub struct EntrySummary {
     pub children: Vec<EntrySummary>,
 }
 
-impl BookRenderer {
-    pub fn new(config: &BookConfig, assets: &ShelfAssets, is_dev: bool) -> Result<Self> {
-        let mut env = Environment::new();
+/// Template-engine-agnostic page renderer implemented by the application/theme layer.
+pub trait PageRenderer: Send + Sync {
+    /// Render a single document page into a complete HTML string.
+    fn render_page(
+        &self,
+        doc: &ProcessedDoc,
+        backlinks: &[Backlink],
+        book_index: &[EntrySummary],
+    ) -> Result<String>;
 
-        env.add_template("base.html", assets.base_html)
-            .context("Failed to add base.html template")?;
-        env.add_template("page.html", assets.page_html)
-            .context("Failed to add page.html template")?;
-        env.add_template("index.html", assets.index_html)
-            .context("Failed to add index.html template")?;
-        env.add_template("macros.html", assets.macros_html)
-            .context("Failed to add macros.html template")?;
+    /// Render the catalog/index page into a complete HTML string.
+    fn render_index(&self, sections: &[SectionSummary], entries: &[EntrySummary])
+    -> Result<String>;
 
-        let rail_title = config
-            .ui
-            .rail_title
-            .as_deref()
-            .unwrap_or(&config.book.title);
+    /// Static assets (CSS, JS, etc.) supplied by this theme.
+    fn static_assets(&self) -> &[StaticAsset] {
+        &[]
+    }
+}
 
-        let rail_letters: Vec<String> = rail_title.chars().map(|c| c.to_string()).collect();
+/// Factory that creates a [`PageRenderer`] bound to a [`BookConfig`].
+/// Used by `build_book` and by the dev server (which re-creates the renderer on config hot-reload).
+pub trait RendererFactory: Send + Sync {
+    fn create(&self, config: &BookConfig, is_dev: bool) -> Result<Box<dyn PageRenderer>>;
+}
 
-        // Vault-wide invariant values registered once as globals rather than
-        // rebuilt per-page in context!().
-        env.add_global("site_title", Value::from(&config.book.title));
-        env.add_global(
-            "description",
-            Value::from_serialize(&config.book.description),
-        );
-        env.add_global("lang", Value::from(&config.book.lang));
-        env.add_global("default_view", Value::from(&config.ui.default_view));
-        env.add_global("custom_css", Value::from_serialize(&config.ui.custom_css));
-        env.add_global("t", Value::from_serialize(&config.ui.strings));
-        env.add_global("css_version", Value::from(assets.css_version()));
-        env.add_global("js_version", Value::from(assets.js_version()));
-        env.add_global(
-            "tmt_btn_css_version",
-            Value::from(assets::TMT_BTN_CSS_VERSION.as_str()),
-        );
-        env.add_global(
-            "tmt_badge_css_version",
-            Value::from(assets::TMT_BADGE_CSS_VERSION.as_str()),
-        );
-        env.add_global(
-            "tmt_icon_css_version",
-            Value::from(assets::TMT_ICON_CSS_VERSION.as_str()),
-        );
-        env.add_global(
-            "tmt_swatch_css_version",
-            Value::from(assets::TMT_SWATCH_CSS_VERSION.as_str()),
-        );
-        env.add_global(
-            "tmt_switch_css_version",
-            Value::from(assets::TMT_SWITCH_CSS_VERSION.as_str()),
-        );
-        env.add_global("is_dev", Value::from(is_dev));
-        env.add_global("rail_letters", Value::from_serialize(&rail_letters));
+impl<F> RendererFactory for F
+where
+    F: Fn(&BookConfig, bool) -> Result<Box<dyn PageRenderer>> + Send + Sync,
+{
+    fn create(&self, config: &BookConfig, is_dev: bool) -> Result<Box<dyn PageRenderer>> {
+        self(config, is_dev)
+    }
+}
 
-        let base_path = config.build.clean_base_path();
+const MINIMAL_STATIC_ASSETS: &[StaticAsset] = &[
+    StaticAsset {
+        path: "shelf.css",
+        mime: "text/css; charset=utf-8",
+        content: "",
+    },
+    StaticAsset {
+        path: "shelf.js",
+        mime: "application/javascript; charset=utf-8",
+        content: "",
+    },
+];
+
+/// Minimal template-engine-free renderer for headless tests and barebones rendering.
+#[derive(Debug, Clone, Default)]
+pub struct MinimalRenderer {
+    site_title: String,
+    lang: String,
+    default_view: String,
+    base_path: String,
+    clean_url_prefix: String,
+    full_url_prefix: String,
+    home_url: String,
+    strings_json: String,
+}
+
+impl MinimalRenderer {
+    pub fn new(config: &BookConfig) -> Self {
+        let base_path = config.build.clean_base_path().to_string();
+        let clean_url_prefix = config.build.clean_url_prefix().to_string();
         let full_url_prefix = config.build.full_url_prefix();
         let home_url = if full_url_prefix.is_empty() {
             if base_path.is_empty() {
@@ -104,73 +105,129 @@ impl BookRenderer {
         } else {
             full_url_prefix.clone()
         };
+        let strings_json =
+            serde_json::to_string(&config.ui.strings).unwrap_or_else(|_| "{}".to_string());
 
-        env.add_global("base_path", Value::from(base_path));
-        env.add_global(
-            "clean_url_prefix",
-            Value::from(config.build.clean_url_prefix()),
-        );
-        env.add_global("full_url_prefix", Value::from(&full_url_prefix));
-        env.add_global("home_url", Value::from(&home_url));
-
-        Ok(Self {
-            env,
-            clean_url_prefix: full_url_prefix,
-        })
+        Self {
+            site_title: config.book.title.clone(),
+            lang: config.book.lang.clone(),
+            default_view: config.ui.default_view.clone(),
+            base_path,
+            clean_url_prefix,
+            full_url_prefix,
+            home_url,
+            strings_json,
+        }
     }
 
-    pub fn render_page(
+    fn wrap_base(&self, page_title: Option<&str>, content_html: &str) -> String {
+        let title_prefix = match page_title {
+            Some(t) if !t.is_empty() => format!("{t} | "),
+            _ => String::new(),
+        };
+        let base = &self.base_path;
+        let site_title = &self.site_title;
+        let lang = &self.lang;
+        let view = &self.default_view;
+        let home_url = &self.home_url;
+        let base_json = serde_json::to_string(&self.base_path).unwrap_or_default();
+        let clean_prefix_json = serde_json::to_string(&self.clean_url_prefix).unwrap_or_default();
+        let full_prefix_json = serde_json::to_string(&self.full_url_prefix).unwrap_or_default();
+        let home_url_json = serde_json::to_string(&self.home_url).unwrap_or_default();
+        let strings_json = &self.strings_json;
+
+        format!(
+            r#"<!DOCTYPE html>
+<html lang="{lang}" data-view="{view}">
+<head>
+  <meta charset="utf-8" />
+  <title>{title_prefix}{site_title}</title>
+  <link rel="stylesheet" href="{base}/shelf.css" />
+</head>
+<body>
+  <a href="{home_url}">{site_title}</a>
+  {content_html}
+  <script>
+    window.tmtBasePath = {base_json};
+    window.tmtUrlPrefix = {clean_prefix_json};
+    window.tmtFullUrlPrefix = {full_prefix_json};
+    window.tmtHomeUrl = {home_url_json};
+    window.tmtStrings = {strings_json};
+  </script>
+  <script src="{base}/shelf.js"></script>
+</body>
+</html>"#
+        )
+    }
+}
+
+impl PageRenderer for MinimalRenderer {
+    fn render_page(
         &self,
         doc: &ProcessedDoc,
-        backlinks: &[Backlink],
-        book_index: &[EntrySummary],
+        _backlinks: &[Backlink],
+        _book_index: &[EntrySummary],
     ) -> Result<String> {
-        let tmpl = self.env.get_template("page.html")?;
-
-        let ctx = context! {
-            source_path => &doc.source_path,
-            rel_path => &doc.rel_path,
-            slug => &doc.slug,
-            page_title => &doc.title,
-            section => &doc.section,
-            kind => &doc.kind,
-            primary_color => &doc.primary_color,
-            icon => &doc.icon,
-            icon_image_url => &doc.icon_image_url,
-            banner_url => &doc.banner_url,
-            banner_original_url => &doc.banner_original_url,
-            banner_y => doc.banner_y,
-            images => &doc.images,
-            original_images => &doc.original_images,
-            hero_chips => &doc.hero_chips,
-            infobox_rows => &doc.infobox_rows,
-            has_data => doc.has_data,
-            toc => &doc.toc,
-            section_tabs => &doc.section_tabs,
-            body_html => &doc.body_html,
-            backlinks => backlinks,
-            book_index => book_index,
-            // So the index can mark where the reader is standing.
-            page_url => format!("{}/{}", self.clean_url_prefix, doc.slug),
+        let slug_span = if !doc.slug.is_empty() {
+            format!(
+                r#"<span class="sr-only" data-pagefind-meta="path" data-pagefind-weight="10.0">{}</span>"#,
+                doc.slug
+            )
+        } else {
+            String::new()
         };
-
-        let rendered = tmpl.render(ctx)?;
-        Ok(rendered)
+        let rel_span = if !doc.rel_path.is_empty() && doc.rel_path != doc.slug {
+            format!(
+                r#"<span class="sr-only" data-pagefind-weight="10.0">{}</span>"#,
+                doc.rel_path
+            )
+        } else {
+            String::new()
+        };
+        let icon_span = match &doc.icon {
+            Some(ic) => format!(r#"<span class="page-icon">{ic}</span>"#),
+            None => String::new(),
+        };
+        let content = format!(
+            r#"<main data-pagefind-body>
+  {slug_span}
+  {rel_span}
+  {icon_span}
+  <h1>{}</h1>
+  <article>{}</article>
+</main>"#,
+            doc.title, doc.body_html
+        );
+        Ok(self.wrap_base(Some(&doc.title), &content))
     }
 
-    pub fn render_index(
+    fn render_index(
         &self,
-        sections: &[SectionSummary],
+        _sections: &[SectionSummary],
         entries: &[EntrySummary],
     ) -> Result<String> {
-        let tmpl = self.env.get_template("index.html")?;
+        let mut items = String::new();
+        for entry in entries {
+            items.push_str(&format!(
+                r#"<li><a href="{}">{}</a></li>"#,
+                entry.url, entry.title
+            ));
+        }
+        let content = format!("<main><ul>{items}</ul></main>");
+        Ok(self.wrap_base(None, &content))
+    }
 
-        let ctx = context! {
-            sections => sections,
-            entries => entries,
-        };
+    fn static_assets(&self) -> &[StaticAsset] {
+        MINIMAL_STATIC_ASSETS
+    }
+}
 
-        let rendered = tmpl.render(ctx)?;
-        Ok(rendered)
+/// Unit factory that creates a [`MinimalRenderer`] for headless tests.
+#[derive(Debug, Clone, Copy, Default)]
+pub struct MinimalRendererFactory;
+
+impl RendererFactory for MinimalRendererFactory {
+    fn create(&self, config: &BookConfig, _is_dev: bool) -> Result<Box<dyn PageRenderer>> {
+        Ok(Box::new(MinimalRenderer::new(config)))
     }
 }

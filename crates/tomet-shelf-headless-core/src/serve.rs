@@ -10,7 +10,7 @@ use tracing::{info, warn};
 use crate::book::VaultState;
 use crate::book::loader::{exclude_prefixes, is_ignored_rel};
 use crate::config::BookConfig;
-use tomet_shelf_render::ShelfAssets;
+use tomet_shelf_render::{ICON_ASSETS, RendererFactory};
 use tomet_shelf_serve::axum::Router;
 use tomet_shelf_serve::axum::http::{StatusCode, Uri, header};
 use tomet_shelf_serve::axum::response::{Html, IntoResponse, Response};
@@ -20,7 +20,7 @@ pub struct TometDevHandler {
     src_dir: PathBuf,
     out_dir: PathBuf,
     config: RwLock<BookConfig>,
-    assets: ShelfAssets,
+    renderer_factory: Arc<dyn RendererFactory>,
     excludes: RwLock<Vec<String>>,
     state: Arc<RwLock<Option<VaultState>>>,
 }
@@ -30,14 +30,14 @@ impl TometDevHandler {
         src_dir: PathBuf,
         out_dir: PathBuf,
         config: BookConfig,
-        assets: ShelfAssets,
+        renderer_factory: Arc<dyn RendererFactory>,
     ) -> Self {
         let excludes = exclude_prefixes(&config);
         Self {
             src_dir,
             out_dir,
             config: RwLock::new(config),
-            assets,
+            renderer_factory,
             excludes: RwLock::new(excludes),
             state: Arc::new(RwLock::new(None)),
         }
@@ -64,7 +64,12 @@ impl TometDevHandler {
             }
         };
 
-        match VaultState::init(&self.src_dir, &reloaded_config, self.assets, true) {
+        match VaultState::init(
+            &self.src_dir,
+            &reloaded_config,
+            self.renderer_factory.as_ref(),
+            true,
+        ) {
             Ok(vault_state) => {
                 info!(
                     "⚡ In-memory vault index ready in {:?} ({} docs, {} routes)",
@@ -87,7 +92,7 @@ impl DevServerHandler for TometDevHandler {
     fn on_init(&self) -> Result<()> {
         let start = Instant::now();
         let config = self.config.read().unwrap().clone();
-        match VaultState::init(&self.src_dir, &config, self.assets, true) {
+        match VaultState::init(&self.src_dir, &config, self.renderer_factory.as_ref(), true) {
             Ok(vault_state) => {
                 info!(
                     "⚡ Dev server ready in {:?} (in-memory SSR, {} docs)",
@@ -161,13 +166,12 @@ impl DevServerHandler for TometDevHandler {
         let state = Arc::clone(&self.state);
         let src_dir = self.src_dir.clone();
         let fallback_config = self.config.read().unwrap().clone();
-        let assets = self.assets;
 
         router.fallback(move |uri: Uri| {
             let state = Arc::clone(&state);
             let src_dir = src_dir.clone();
             let fallback_config = fallback_config.clone();
-            async move { handle_http_request(&uri, &state, &src_dir, &fallback_config, &assets) }
+            async move { handle_http_request(&uri, &state, &src_dir, &fallback_config) }
         })
     }
 }
@@ -177,7 +181,6 @@ pub fn handle_http_request(
     state: &RwLock<Option<VaultState>>,
     src_dir: &Path,
     config: &BookConfig,
-    assets: &ShelfAssets,
 ) -> Response {
     let raw_path = uri.path();
     let path = percent_decode_str(raw_path)
@@ -210,84 +213,32 @@ pub fn handle_http_request(
         path.as_str()
     };
 
-    // 1. Embedded static assets
-    match unbased_path {
-        "/shelf.css" => {
+    // 1. Embedded static assets (icon sprites + theme static assets)
+    let rel_asset = unbased_path.trim_start_matches('/');
+    for asset in ICON_ASSETS {
+        if asset.path.trim_start_matches('/') == rel_asset {
             return (
                 StatusCode::OK,
-                [(header::CONTENT_TYPE, "text/css; charset=utf-8")],
-                assets.book_css,
+                [(header::CONTENT_TYPE, asset.mime)],
+                asset.content,
             )
                 .into_response();
         }
-        "/shelf.js" => {
-            return (
-                StatusCode::OK,
-                [(
-                    header::CONTENT_TYPE,
-                    "application/javascript; charset=utf-8",
-                )],
-                assets.book_js,
-            )
-                .into_response();
+    }
+    {
+        let state_lock = state.read().unwrap();
+        if let Some(ref st) = *state_lock {
+            for asset in st.renderer.static_assets() {
+                if asset.path.trim_start_matches('/') == rel_asset {
+                    return (
+                        StatusCode::OK,
+                        [(header::CONTENT_TYPE, asset.mime)],
+                        asset.content,
+                    )
+                        .into_response();
+                }
+            }
         }
-        "/icons/lucide.svg" => {
-            return (
-                StatusCode::OK,
-                [(header::CONTENT_TYPE, "image/svg+xml")],
-                assets.lucide_sprite,
-            )
-                .into_response();
-        }
-        "/icons/simple.svg" => {
-            return (
-                StatusCode::OK,
-                [(header::CONTENT_TYPE, "image/svg+xml")],
-                assets.simple_sprite,
-            )
-                .into_response();
-        }
-        "/components/tmt-btn.css" => {
-            return (
-                StatusCode::OK,
-                [(header::CONTENT_TYPE, "text/css; charset=utf-8")],
-                assets.tmt_btn_css,
-            )
-                .into_response();
-        }
-        "/components/tmt-badge.css" => {
-            return (
-                StatusCode::OK,
-                [(header::CONTENT_TYPE, "text/css; charset=utf-8")],
-                assets.tmt_badge_css,
-            )
-                .into_response();
-        }
-        "/components/tmt-icon.css" => {
-            return (
-                StatusCode::OK,
-                [(header::CONTENT_TYPE, "text/css; charset=utf-8")],
-                assets.tmt_icon_css,
-            )
-                .into_response();
-        }
-        "/components/tmt-swatch.css" => {
-            return (
-                StatusCode::OK,
-                [(header::CONTENT_TYPE, "text/css; charset=utf-8")],
-                assets.tmt_swatch_css,
-            )
-                .into_response();
-        }
-        "/components/tmt-switch.css" => {
-            return (
-                StatusCode::OK,
-                [(header::CONTENT_TYPE, "text/css; charset=utf-8")],
-                assets.tmt_switch_css,
-            )
-                .into_response();
-        }
-        _ => {}
     }
 
     // 2. Search index (in-memory)
@@ -723,6 +674,7 @@ mod event_kind_tests {
 mod ssr_tests {
     use super::*;
     use std::fs;
+    use tomet_shelf_render::MinimalRendererFactory;
     use tomet_shelf_serve::axum::body::to_bytes;
     use tomet_shelf_serve::axum::http::header;
 
@@ -749,9 +701,13 @@ mod ssr_tests {
 
         let mut config = BookConfig::default();
         config.build.url_prefix = "/wiki".to_string();
-        let assets = ShelfAssets::minimal();
 
-        let handler = TometDevHandler::new(src.clone(), src.join("dist"), config.clone(), assets);
+        let handler = TometDevHandler::new(
+            src.clone(),
+            src.join("dist"),
+            config.clone(),
+            Arc::new(MinimalRendererFactory),
+        );
         handler.on_init().unwrap();
 
         // Check that NO files were written to src/dist!
@@ -762,7 +718,7 @@ mod ssr_tests {
 
         // Request /wiki/tech/rust/closures
         let uri = Uri::from_static("/wiki/tech/rust/closures");
-        let resp = handle_http_request(&uri, handler.state(), &src, &config, &assets);
+        let resp = handle_http_request(&uri, handler.state(), &src, &config);
         assert_eq!(resp.status(), StatusCode::OK);
         assert_eq!(
             resp.headers().get(header::CONTENT_TYPE).unwrap(),
@@ -784,13 +740,17 @@ mod ssr_tests {
     async fn test_dev_server_serves_embedded_assets() {
         let src = scratch("ssr-assets-src");
         let config = BookConfig::default();
-        let assets = ShelfAssets::minimal();
-        let handler = TometDevHandler::new(src.clone(), src.join("dist"), config.clone(), assets);
+        let handler = TometDevHandler::new(
+            src.clone(),
+            src.join("dist"),
+            config.clone(),
+            Arc::new(MinimalRendererFactory),
+        );
         handler.on_init().unwrap();
 
         // 1. CSS
         let uri = Uri::from_static("/shelf.css?v=12345");
-        let resp = handle_http_request(&uri, handler.state(), &src, &config, &assets);
+        let resp = handle_http_request(&uri, handler.state(), &src, &config);
         assert_eq!(resp.status(), StatusCode::OK);
         assert_eq!(
             resp.headers().get(header::CONTENT_TYPE).unwrap(),
@@ -799,7 +759,7 @@ mod ssr_tests {
 
         // 2. JS
         let uri = Uri::from_static("/shelf.js?v=12345");
-        let resp = handle_http_request(&uri, handler.state(), &src, &config, &assets);
+        let resp = handle_http_request(&uri, handler.state(), &src, &config);
         assert_eq!(resp.status(), StatusCode::OK);
         assert_eq!(
             resp.headers().get(header::CONTENT_TYPE).unwrap(),
@@ -808,7 +768,7 @@ mod ssr_tests {
 
         // 3. Icons SVG
         let uri = Uri::from_static("/icons/lucide.svg");
-        let resp = handle_http_request(&uri, handler.state(), &src, &config, &assets);
+        let resp = handle_http_request(&uri, handler.state(), &src, &config);
         assert_eq!(resp.status(), StatusCode::OK);
         assert_eq!(
             resp.headers().get(header::CONTENT_TYPE).unwrap(),
@@ -825,20 +785,24 @@ mod ssr_tests {
 
         let mut config = BookConfig::default();
         config.build.url_prefix = "/wiki".to_string();
-        let assets = ShelfAssets::minimal();
 
-        let handler = TometDevHandler::new(src.clone(), src.join("dist"), config.clone(), assets);
+        let handler = TometDevHandler::new(
+            src.clone(),
+            src.join("dist"),
+            config.clone(),
+            Arc::new(MinimalRendererFactory),
+        );
         handler.on_init().unwrap();
 
         // 1. Root redirect / -> /wiki/
         let uri = Uri::from_static("/");
-        let resp = handle_http_request(&uri, handler.state(), &src, &config, &assets);
+        let resp = handle_http_request(&uri, handler.state(), &src, &config);
         assert_eq!(resp.status(), StatusCode::FOUND);
         assert_eq!(resp.headers().get(header::LOCATION).unwrap(), "/wiki/");
 
         // 2. Catalog index /wiki/
         let uri = Uri::from_static("/wiki/");
-        let resp = handle_http_request(&uri, handler.state(), &src, &config, &assets);
+        let resp = handle_http_request(&uri, handler.state(), &src, &config);
         assert_eq!(resp.status(), StatusCode::OK);
         let body_bytes = to_bytes(resp.into_body(), usize::MAX).await.unwrap();
         let body_str = String::from_utf8_lossy(&body_bytes);
@@ -860,13 +824,17 @@ mod ssr_tests {
 
         let mut config = BookConfig::default();
         config.build.asset_prefix = "/assets".to_string();
-        let assets = ShelfAssets::minimal();
 
-        let handler = TometDevHandler::new(src.clone(), src.join("dist"), config.clone(), assets);
+        let handler = TometDevHandler::new(
+            src.clone(),
+            src.join("dist"),
+            config.clone(),
+            Arc::new(MinimalRendererFactory),
+        );
         handler.on_init().unwrap();
 
         let uri = Uri::from_static("/assets/media/photo.png");
-        let resp = handle_http_request(&uri, handler.state(), &src, &config, &assets);
+        let resp = handle_http_request(&uri, handler.state(), &src, &config);
         assert_eq!(resp.status(), StatusCode::OK);
         assert_eq!(
             resp.headers().get(header::CONTENT_TYPE).unwrap(),
@@ -895,13 +863,17 @@ mod ssr_tests {
 
         let mut config = BookConfig::default();
         config.build.asset_prefix = "/assets".to_string();
-        let assets = ShelfAssets::minimal();
 
-        let handler = TometDevHandler::new(src.clone(), src.join("dist"), config.clone(), assets);
+        let handler = TometDevHandler::new(
+            src.clone(),
+            src.join("dist"),
+            config.clone(),
+            Arc::new(MinimalRendererFactory),
+        );
         handler.on_init().unwrap();
 
         let uri = Uri::from_static("/assets/media/+771a262c.png");
-        let resp = handle_http_request(&uri, handler.state(), &src, &config, &assets);
+        let resp = handle_http_request(&uri, handler.state(), &src, &config);
         assert_eq!(resp.status(), StatusCode::OK);
 
         let _ = fs::remove_dir_all(&src);
@@ -911,12 +883,16 @@ mod ssr_tests {
     async fn test_dev_server_handles_404() {
         let src = scratch("ssr-404-src");
         let config = BookConfig::default();
-        let assets = ShelfAssets::minimal();
-        let handler = TometDevHandler::new(src.clone(), src.join("dist"), config.clone(), assets);
+        let handler = TometDevHandler::new(
+            src.clone(),
+            src.join("dist"),
+            config.clone(),
+            Arc::new(MinimalRendererFactory),
+        );
         handler.on_init().unwrap();
 
         let uri = Uri::from_static("/wiki/non-existent-page");
-        let resp = handle_http_request(&uri, handler.state(), &src, &config, &assets);
+        let resp = handle_http_request(&uri, handler.state(), &src, &config);
         assert_eq!(resp.status(), StatusCode::NOT_FOUND);
 
         let _ = fs::remove_dir_all(&src);
@@ -947,18 +923,17 @@ title = "Original Title"
         .unwrap();
 
         let initial_config = BookConfig::load_from_dir(&src).unwrap();
-        let assets = ShelfAssets::minimal();
         let handler = TometDevHandler::new(
             src.clone(),
             src.join("dist"),
             initial_config.clone(),
-            assets,
+            Arc::new(MinimalRendererFactory),
         );
         handler.on_init().unwrap();
 
         // 1. Initial request: should render with Initial Contents Label
         let uri = Uri::from_static("/wiki/hello");
-        let resp = handle_http_request(&uri, handler.state(), &src, &initial_config, &assets);
+        let resp = handle_http_request(&uri, handler.state(), &src, &initial_config);
         assert_eq!(resp.status(), StatusCode::OK);
         let body_bytes = to_bytes(resp.into_body(), usize::MAX).await.unwrap();
         let body_str = String::from_utf8_lossy(&body_bytes);
@@ -988,7 +963,7 @@ title = "Updated Title"
         assert_eq!(signals, vec![ReloadSignal::Full]);
 
         // 4. Subsequent request: should immediately render with updated label!
-        let resp_after = handle_http_request(&uri, handler.state(), &src, &initial_config, &assets);
+        let resp_after = handle_http_request(&uri, handler.state(), &src, &initial_config);
         assert_eq!(resp_after.status(), StatusCode::OK);
         let body_bytes_after = to_bytes(resp_after.into_body(), usize::MAX).await.unwrap();
         let body_str_after = String::from_utf8_lossy(&body_bytes_after);
@@ -1009,14 +984,18 @@ title = "Updated Title"
 
         let mut config = BookConfig::default();
         config.build.url_prefix = "/wiki".to_string();
-        let assets = ShelfAssets::minimal();
 
-        let handler = TometDevHandler::new(src.clone(), src.join("dist"), config.clone(), assets);
+        let handler = TometDevHandler::new(
+            src.clone(),
+            src.join("dist"),
+            config.clone(),
+            Arc::new(MinimalRendererFactory),
+        );
         handler.on_init().unwrap();
 
         // 1. Request /search-index.json
         let uri = Uri::from_static("/search-index.json");
-        let resp = handle_http_request(&uri, handler.state(), &src, &config, &assets);
+        let resp = handle_http_request(&uri, handler.state(), &src, &config);
         assert_eq!(resp.status(), StatusCode::OK);
         assert_eq!(
             resp.headers().get(header::CONTENT_TYPE).unwrap(),
@@ -1030,7 +1009,7 @@ title = "Updated Title"
 
         // 2. Also available at /wiki/search-index.json
         let uri_prefixed = Uri::from_static("/wiki/search-index.json");
-        let resp_pref = handle_http_request(&uri_prefixed, handler.state(), &src, &config, &assets);
+        let resp_pref = handle_http_request(&uri_prefixed, handler.state(), &src, &config);
         assert_eq!(resp_pref.status(), StatusCode::OK);
 
         // 3. Ensure NO disk files written to dist
@@ -1051,14 +1030,18 @@ title = "Updated Title"
         let mut config = BookConfig::default();
         config.build.url_prefix = "/wiki".to_string();
         config.build.search = crate::config::SearchEngine::Pagefind;
-        let assets = ShelfAssets::minimal();
 
-        let handler = TometDevHandler::new(src.clone(), src.join("dist"), config.clone(), assets);
+        let handler = TometDevHandler::new(
+            src.clone(),
+            src.join("dist"),
+            config.clone(),
+            Arc::new(MinimalRendererFactory),
+        );
         handler.on_init().unwrap();
 
         // 1. /search-index.json is served even though search = "pagefind"
         let uri = Uri::from_static("/search-index.json");
-        let resp = handle_http_request(&uri, handler.state(), &src, &config, &assets);
+        let resp = handle_http_request(&uri, handler.state(), &src, &config);
         assert_eq!(resp.status(), StatusCode::OK);
         assert_eq!(
             resp.headers().get(header::CONTENT_TYPE).unwrap(),
@@ -1072,7 +1055,7 @@ title = "Updated Title"
 
         // 2. /wiki/search-index.json also works
         let uri_prefixed = Uri::from_static("/wiki/search-index.json");
-        let resp_pref = handle_http_request(&uri_prefixed, handler.state(), &src, &config, &assets);
+        let resp_pref = handle_http_request(&uri_prefixed, handler.state(), &src, &config);
         assert_eq!(resp_pref.status(), StatusCode::OK);
 
         let _ = fs::remove_dir_all(&src);
@@ -1090,14 +1073,18 @@ title = "Updated Title"
         let mut config = BookConfig::default();
         config.build.url_prefix = "/wiki".to_string();
         config.build.search = crate::config::SearchEngine::None;
-        let assets = ShelfAssets::minimal();
 
-        let handler = TometDevHandler::new(src.clone(), src.join("dist"), config.clone(), assets);
+        let handler = TometDevHandler::new(
+            src.clone(),
+            src.join("dist"),
+            config.clone(),
+            Arc::new(MinimalRendererFactory),
+        );
         handler.on_init().unwrap();
 
         // /search-index.json returns 404 because search = "none"
         let uri = Uri::from_static("/search-index.json");
-        let resp = handle_http_request(&uri, handler.state(), &src, &config, &assets);
+        let resp = handle_http_request(&uri, handler.state(), &src, &config);
         assert_eq!(resp.status(), StatusCode::NOT_FOUND);
 
         let _ = fs::remove_dir_all(&src);

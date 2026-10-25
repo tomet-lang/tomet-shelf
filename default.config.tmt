@@ -26,4 +26,8 @@
   workspace: {
     unswept: list( "tests/fixtures", "tests/ref", "tests/store" )
   }
+  blueprints: list(
+    "tmtroot/schema/blueprints/crate.blueprint.tmt",
+    "tmtroot/schema/blueprints/writ.blueprint.tmt",
+  )
 }

@@ -7,23 +7,8 @@
 use std::path::Path;
 
 use super::html::escape_html;
+pub use crate::slug::strip_doc_extension;
 use crate::slug::{RouteTable, clean_doc_slug, normalize_path, normalize_path_str};
-
-/// Suffixes that mark a file as a Tomet document.
-pub const DOC_EXTENSIONS: &[&str] = &[".tmt", ".tm"];
-
-/// Strip a single Tomet document extension: `foo/bar.tmt` -> `foo/bar`.
-///
-/// Uses `strip_suffix` rather than `trim_end_matches`, which would chew through
-/// repeated suffixes and turn `notes.tmt.tmt` into `notes`.
-pub fn strip_doc_extension(path: &str) -> &str {
-    for ext in DOC_EXTENSIONS {
-        if let Some(stem) = path.strip_suffix(ext) {
-            return stem;
-        }
-    }
-    path
-}
 
 pub fn is_link_ref(raw: &str) -> bool {
     let s = raw.trim();

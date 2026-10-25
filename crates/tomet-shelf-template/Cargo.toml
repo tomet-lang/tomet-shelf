@@ -1,0 +1,15 @@
+[package]
+name = "tomet-shelf-template"
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+description = "MiniJinja page template renderer for tomet-shelf"
+
+[dependencies]
+tomet-shelf-config = { workspace = true }
+tomet-shelf-render = { workspace = true }
+
+#= Crates.io
+anyhow = { workspace = true }
+minijinja = { workspace = true }
+serde = { workspace = true }

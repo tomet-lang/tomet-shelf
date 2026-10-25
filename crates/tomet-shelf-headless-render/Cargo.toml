@@ -7,6 +7,7 @@ description = "Document parsing, AST transformation, and HTML rendering for tome
 
 [dependencies]
 tomet-shelf-config = { workspace = true }
+tomet-shelf-route = { workspace = true }
 tomet-shelf-search = { workspace = true }
 
 #= Tomet
@@ -23,7 +24,6 @@ tomet-tree = { workspace = true }
 #= Crates.io
 anyhow = { workspace = true }
 image = { workspace = true }
-minijinja = { workspace = true }
 percent-encoding = { workspace = true }
 regex = { workspace = true }
 serde = { workspace = true }

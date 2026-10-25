@@ -40,6 +40,6 @@ mkShell rec {
   ];
 
   shellHook = ''
-    echo "📖 Rust Tomet Book"
+    echo "🦀📚 Rust Tomet"
   '';
 }

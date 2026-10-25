@@ -5,8 +5,8 @@ dest = "dist"
 
 [build]
 base = "/tomet-shelf"
-kinds = ["*", "!config", "!index"]
-routing = "id"                     # "hierarchical" (default) | "flat" | "id"
+kinds = ["*", "!config", "!index", "!blueprint", "!vocabulary"]
+routing = "id"                                                  # "hierarchical" (default) | "flat" | "id"
 
 [ui.markers]
 enable = true

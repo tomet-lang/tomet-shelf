@@ -4,11 +4,10 @@ use std::sync::LazyLock;
 
 pub use tomet_shelf_config::{BookConfig, i18n};
 pub use tomet_shelf_render::assets::{
-    LUCIDE_SPRITE, SIMPLE_SPRITE, ShelfAssets, TMT_BADGE_CSS, TMT_BADGE_CSS_VERSION, TMT_BTN_CSS,
-    TMT_BTN_CSS_VERSION, TMT_ICON_CSS, TMT_ICON_CSS_VERSION, TMT_SWATCH_CSS,
-    TMT_SWATCH_CSS_VERSION, TMT_SWITCH_CSS, TMT_SWITCH_CSS_VERSION, content_version,
-    write_if_changed,
+    ICON_ASSETS, LUCIDE_SPRITE, SIMPLE_SPRITE, StaticAsset, content_version, write_if_changed,
+    write_static_assets as write_render_assets,
 };
+pub use tomet_shelf_template::{BookRenderer, TemplateBundle};
 
 // Stylesheets
 pub const BOOK_CSS: &str = concat!(
@@ -30,37 +29,99 @@ pub const BOOK_CSS: &str = concat!(
 
 pub const BOOK_JS: &str = include_str!(concat!(env!("OUT_DIR"), "/shelf.js"));
 
+// Web Component Shadow DOM Stylesheets
+pub const TMT_BTN_CSS: &str = include_str!("../frontend/styles/components/tmt-btn.css");
+pub const TMT_BADGE_CSS: &str = include_str!("../frontend/styles/components/tmt-badge.css");
+pub const TMT_ICON_CSS: &str = include_str!("../frontend/styles/components/tmt-icon.css");
+pub const TMT_SWATCH_CSS: &str = include_str!("../frontend/styles/components/tmt-swatch.css");
+pub const TMT_SWITCH_CSS: &str = include_str!("../frontend/styles/components/tmt-switch.css");
+
+pub static TMT_BTN_CSS_VERSION: LazyLock<String> = LazyLock::new(|| content_version(TMT_BTN_CSS));
+pub static TMT_BADGE_CSS_VERSION: LazyLock<String> =
+    LazyLock::new(|| content_version(TMT_BADGE_CSS));
+pub static TMT_ICON_CSS_VERSION: LazyLock<String> = LazyLock::new(|| content_version(TMT_ICON_CSS));
+pub static TMT_SWATCH_CSS_VERSION: LazyLock<String> =
+    LazyLock::new(|| content_version(TMT_SWATCH_CSS));
+pub static TMT_SWITCH_CSS_VERSION: LazyLock<String> =
+    LazyLock::new(|| content_version(TMT_SWITCH_CSS));
+
+pub const COMPONENT_ASSETS: &[StaticAsset] = &[
+    StaticAsset {
+        path: "components/tmt-btn.css",
+        mime: "text/css; charset=utf-8",
+        content: TMT_BTN_CSS,
+    },
+    StaticAsset {
+        path: "components/tmt-badge.css",
+        mime: "text/css; charset=utf-8",
+        content: TMT_BADGE_CSS,
+    },
+    StaticAsset {
+        path: "components/tmt-icon.css",
+        mime: "text/css; charset=utf-8",
+        content: TMT_ICON_CSS,
+    },
+    StaticAsset {
+        path: "components/tmt-swatch.css",
+        mime: "text/css; charset=utf-8",
+        content: TMT_SWATCH_CSS,
+    },
+    StaticAsset {
+        path: "components/tmt-switch.css",
+        mime: "text/css; charset=utf-8",
+        content: TMT_SWITCH_CSS,
+    },
+];
+
+pub const COMPONENT_VERSIONS: &[(&str, &str)] = &[
+    ("tmt_btn_css_version", TMT_BTN_CSS),
+    ("tmt_badge_css_version", TMT_BADGE_CSS),
+    ("tmt_icon_css_version", TMT_ICON_CSS),
+    ("tmt_swatch_css_version", TMT_SWATCH_CSS),
+    ("tmt_switch_css_version", TMT_SWITCH_CSS),
+];
+
 // Templates
 pub const BASE_HTML: &str = include_str!("../frontend/templates/base.html");
 pub const PAGE_HTML: &str = include_str!("../frontend/templates/page.html");
 pub const INDEX_HTML: &str = include_str!("../frontend/templates/index.html");
 pub const MACROS_HTML: &str = include_str!("../frontend/templates/macros.html");
 
-/// Official `tomet-shelf` UI asset bundle.
-pub const ASSETS: ShelfAssets = ShelfAssets::new(
-    BASE_HTML,
-    PAGE_HTML,
-    INDEX_HTML,
-    MACROS_HTML,
-    BOOK_CSS,
-    BOOK_JS,
-);
+/// Official `tomet-shelf` UI template and asset bundle.
+pub const ASSETS: TemplateBundle = TemplateBundle {
+    base_html: BASE_HTML,
+    page_html: PAGE_HTML,
+    index_html: INDEX_HTML,
+    macros_html: MACROS_HTML,
+    book_css: BOOK_CSS,
+    book_js: BOOK_JS,
+    extra_assets: COMPONENT_ASSETS,
+    extra_asset_versions: COMPONENT_VERSIONS,
+};
 
 pub static CSS_VERSION: LazyLock<String> = LazyLock::new(|| content_version(BOOK_CSS));
 pub static JS_VERSION: LazyLock<String> = LazyLock::new(|| content_version(BOOK_JS));
 
 pub fn write_static_assets(out_dir: &Path, src_dir: &Path, config: &BookConfig) -> Result<()> {
-    ASSETS.write_static_assets(out_dir, src_dir, config)
+    let renderer = BookRenderer::new(config, &ASSETS, false)?;
+    use tomet_shelf_render::PageRenderer;
+    write_render_assets(out_dir, src_dir, config, renderer.static_assets())
 }
 
 #[cfg(test)]
 mod tests {
     use super::*;
+    use tomet_shelf_render::PageRenderer;
 
     #[test]
     fn assets_versions_are_valid() {
         assert_eq!(CSS_VERSION.len(), 16);
         assert_eq!(JS_VERSION.len(), 16);
+        assert_eq!(TMT_BTN_CSS_VERSION.len(), 16);
+        assert_eq!(TMT_BADGE_CSS_VERSION.len(), 16);
+        assert_eq!(TMT_ICON_CSS_VERSION.len(), 16);
+        assert_eq!(TMT_SWATCH_CSS_VERSION.len(), 16);
+        assert_eq!(TMT_SWITCH_CSS_VERSION.len(), 16);
     }
 
     #[test]
@@ -83,6 +144,20 @@ mod tests {
         assert!(
             BOOK_CSS.contains("tmt-btn"),
             "tmt-btn light DOM base rules are in BOOK_CSS"
+        );
+    }
+
+    #[test]
+    fn template_bundle_renders_base_path_correctly() {
+        let mut config = BookConfig::default();
+        config.book.title = "Docs".into();
+        config.build.base_path = Some("/sub".into());
+        let renderer = BookRenderer::new(&config, &ASSETS, false).unwrap();
+        let index_html = PageRenderer::render_index(&renderer, &[], &[]).unwrap();
+        assert!(index_html.contains("href=\"/sub/shelf.css?v="));
+        assert!(
+            index_html.contains("href=\"/sub/components/tmt-btn.css?v="),
+            "tmt-btn shadow stylesheet link inside macro uses base_path"
         );
     }
 }

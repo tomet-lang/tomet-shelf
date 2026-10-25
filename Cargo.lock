@@ -3556,11 +3556,9 @@ name = "tomet-shelf-assets"
 version = "0.1.0"
 dependencies = [
  "anyhow",
- "rayon",
- "serde",
- "serde_json",
  "tomet-shelf-config",
  "tomet-shelf-render",
+ "tomet-shelf-template",
 ]
 
 [[package]]
@@ -3608,6 +3606,7 @@ dependencies = [
  "tomet-semantics",
  "tomet-shelf-config",
  "tomet-shelf-render",
+ "tomet-shelf-route",
  "tomet-shelf-search",
  "tomet-shelf-serve",
  "tomet-transform",
@@ -3625,7 +3624,6 @@ version = "0.1.0"
 dependencies = [
  "anyhow",
  "image",
- "minijinja",
  "percent-encoding",
  "regex",
  "serde",
@@ -3638,11 +3636,23 @@ dependencies = [
  "tomet-parser",
  "tomet-semantics",
  "tomet-shelf-config",
+ "tomet-shelf-route",
  "tomet-shelf-search",
  "tomet-transform",
  "tomet-tree",
  "tracing",
  "unicode-segmentation",
+]
+
+[[package]]
+name = "tomet-shelf-route"
+version = "0.1.0"
+dependencies = [
+ "anyhow",
+ "serde_json",
+ "tomet-ast",
+ "tomet-semantics",
+ "tomet-shelf-config",
 ]
 
 [[package]]
@@ -3665,6 +3675,17 @@ dependencies = [
  "tokio",
  "tower-http 0.5.2",
  "tracing",
+]
+
+[[package]]
+name = "tomet-shelf-template"
+version = "0.1.0"
+dependencies = [
+ "anyhow",
+ "minijinja",
+ "serde",
+ "tomet-shelf-config",
+ "tomet-shelf-render",
 ]
 
 [[package]]

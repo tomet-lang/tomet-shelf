@@ -42,9 +42,11 @@ All Markdown files (`README.md`, `AGENTS.md`, `CLAUDE.md`) are generated build a
 
 - `app`: CLI entry point (`tomet-shelf-cli`).
 - `crates/tomet-shelf-assets`: Official web assets and frontend UI (`tomet-shelf-assets`, TypeScript, Tailwind).
+- `crates/tomet-shelf-template`: MiniJinja page template renderer (`tomet-shelf-template`).
 - `crates/tomet-shelf-headless-core`: Headless SSG engine and dev server orchestration (`tomet-shelf-core`).
 - `crates/tomet-shelf-headless-config`: Configuration parser, models, and i18n (`tomet-shelf-config`).
-- `crates/tomet-shelf-headless-render`: Document processing, routing, and template rendering (`tomet-shelf-render`).
+- `crates/tomet-shelf-headless-render`: Document processing, AST transforms, and renderer traits (`tomet-shelf-render`).
+- `crates/tomet-shelf-headless-route`: Route resolution, slug generation, and URL sanitization (`tomet-shelf-route`).
 - `crates/tomet-shelf-headless-search`: Search indexing (`tomet-shelf-search`).
 - `crates/tomet-shelf-headless-serve`: Axum dev server and live reload (`tomet-shelf-serve`).
 

@@ -28,9 +28,11 @@ pub use state::{RenderContext, VaultState, render_single_document, render_single
 
 use media::copy_vault_media;
 use tomet_shelf_config::{BookConfig, SearchEngine};
-use tomet_shelf_render::ShelfAssets;
 use tomet_shelf_render::document::ProcessedDoc;
-use tomet_shelf_render::renderer::{Backlink, BookRenderer, EntrySummary, SectionSummary};
+use tomet_shelf_render::renderer::{
+    Backlink, EntrySummary, PageRenderer, RendererFactory, SectionSummary,
+};
+use tomet_shelf_render::write_static_assets;
 
 use loader::{ScannedVault, scan_vault};
 use manifest::{BuildManifest, LookupManifest};
@@ -219,7 +221,7 @@ pub fn build_book(
     src_dir: &Path,
     out_dir: &Path,
     config: &BookConfig,
-    assets: &ShelfAssets,
+    renderer_factory: &dyn RendererFactory,
     is_dev: bool,
 ) -> Result<BuildReport> {
     info!(
@@ -236,9 +238,9 @@ pub fn build_book(
         scanned.media_files.len()
     );
 
-    // 2. Write static assets (shelf.css, shelf.js, custom.css)
-    assets
-        .write_static_assets(out_dir, src_dir, config)
+    // 2. Initialize page renderer and write static assets
+    let renderer: Box<dyn PageRenderer> = renderer_factory.create(config, is_dev)?;
+    write_static_assets(out_dir, src_dir, config, renderer.static_assets())
         .context("Failed to write static assets")?;
 
     // 3. Copy/Link media into the asset directory
@@ -261,9 +263,6 @@ pub fn build_book(
             media.copied
         );
     }
-
-    // 4. Initialize MiniJinja renderer
-    let renderer = BookRenderer::new(config, assets, is_dev)?;
 
     // Pages live where the links point, so both come from `url_prefix`.
     let wiki_rel = config.build.wiki_out_rel();

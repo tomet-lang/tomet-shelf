@@ -304,7 +304,13 @@ fn default_exclude() -> Vec<String> {
 }
 
 fn default_kinds() -> Vec<String> {
-    vec!["*".to_string(), "!config".to_string(), "!index".to_string()]
+    vec![
+        "*".to_string(),
+        "!config".to_string(),
+        "!index".to_string(),
+        "!blueprint".to_string(),
+        "!vocabulary".to_string(),
+    ]
 }
 
 fn default_url_prefix() -> String {
