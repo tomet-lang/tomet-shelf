@@ -6,10 +6,14 @@
 
 ==[Structs]
 
+===[struct PageTemplate]
+
+===[struct IndexTemplate]
+
 ===[struct TemplateBundle]
 
 Static HTML templates, CSS/JS assets, and extra static files for a theme.
 
 ===[struct BookRenderer]
 
-Holds compiled MiniJinja templates and static assets for rendering book pages.
+Holds Askama templates configuration and static assets for rendering book pages.

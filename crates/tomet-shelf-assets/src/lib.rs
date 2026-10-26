@@ -81,11 +81,11 @@ pub const COMPONENT_VERSIONS: &[(&str, &str)] = &[
     ("tmt_switch_css_version", TMT_SWITCH_CSS),
 ];
 
-// Templates
-pub const BASE_HTML: &str = include_str!("../frontend/templates/base.html");
-pub const PAGE_HTML: &str = include_str!("../frontend/templates/page.html");
-pub const INDEX_HTML: &str = include_str!("../frontend/templates/index.html");
-pub const MACROS_HTML: &str = include_str!("../frontend/templates/macros.html");
+// Templates (Single source of truth in tomet-shelf-template)
+pub const BASE_HTML: &str = include_str!("../../tomet-shelf-template/templates/base.html");
+pub const PAGE_HTML: &str = include_str!("../../tomet-shelf-template/templates/page.html");
+pub const INDEX_HTML: &str = include_str!("../../tomet-shelf-template/templates/index.html");
+pub const MACROS_HTML: &str = include_str!("../../tomet-shelf-template/templates/macros.html");
 
 /// Official `tomet-shelf` UI template and asset bundle.
 pub const ASSETS: TemplateBundle = TemplateBundle {

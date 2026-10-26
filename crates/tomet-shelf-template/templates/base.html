@@ -1,10 +1,10 @@
 {% import "macros.html" as ui %}
 <!DOCTYPE html>
-<html class="no-js" lang="{{ lang | default('ja') }}" data-view="{{ default_view | default('book') }}">
+<html class="no-js" lang="{{ lang }}" data-view="{{ default_view }}">
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>{% if page_title %}{{ page_title }} | {% endif %}{{ site_title }}</title>
+    <title>{% if !page_title.is_empty() %}{{ page_title }} | {% endif %}{{ site_title }}</title>
     <script>
       document.documentElement.classList.replace('no-js', 'js');
       try {
@@ -23,7 +23,7 @@
         }
       } catch {}
     </script>
-    <link rel="stylesheet" href="{{ base_path | safe }}/shelf.css?v={{ css_version }}" />
+    <link rel="stylesheet" href="{{ base_path }}/shelf.css?v={{ css_version }}" />
     {% for css in custom_css %}
     <link rel="stylesheet" href="{{ css }}" />
     {% endfor %}
@@ -46,7 +46,7 @@
       <div class="preview-footer flex items-center justify-end mt-2 pt-1.5 border-t border-border-subtle">
         <span class="preview-peek-hint text-[0.7rem] text-text-muted inline-flex items-center gap-1">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" width="12" height="12"><polyline points="15 3 21 3 21 9"></polyline><polyline points="9 21 3 21 3 15"></polyline><line x1="21" y1="3" x2="14" y2="10"></line><line x1="3" y1="21" x2="10" y2="14"></line></svg>
-          {{ t["preview.open_peek"] | default('詳細を開く') }}
+          {{ self.t("preview.open_peek", "詳細を開く") }}
         </span>
       </div>
     </div>
@@ -57,8 +57,8 @@
         <header class="peek-header h-12 flex items-center justify-between px-4 bg-canvas border-b border-border shrink-0 select-none">
           <div class="peek-header-crumbs flex items-center gap-2 text-[0.825rem] text-text-muted overflow-hidden text-ellipsis whitespace-nowrap" id="peek-crumbs"></div>
           <div class="peek-header-actions flex items-center gap-2 shrink-0">
-            <tmt-btn variant="outline" size="sm" shape="square" class="peek-action-btn peek-btn-fullscreen" id="peek-btn-fullscreen" title="{{ t["peek.fullscreen"] | default('全画面') }}" aria-label="{{ t["peek.fullscreen"] | default('全画面') }}">
-              {{ ui.dsd_btn_shadow() }}
+            <tmt-btn variant="outline" size="sm" shape="square" class="peek-action-btn peek-btn-fullscreen" id="peek-btn-fullscreen" title="{{ self.t("peek.fullscreen", "全画面") }}" aria-label="{{ self.t("peek.fullscreen", "全画面") }}">
+              {{ ui::dsd_btn_shadow() }}
               <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
                 <polyline points="15 3 21 3 21 9"></polyline>
                 <polyline points="9 21 3 21 3 15"></polyline>
@@ -66,8 +66,8 @@
                 <line x1="3" y1="21" x2="10" y2="14"></line>
               </svg>
             </tmt-btn>
-            <tmt-btn variant="outline" size="sm" shape="square" class="peek-action-btn peek-btn-close" id="peek-btn-close" title="{{ t["peek.close"] | default('閉じる') }}" aria-label="{{ t["peek.close"] | default('閉じる') }}">
-              {{ ui.dsd_btn_shadow() }}
+            <tmt-btn variant="outline" size="sm" shape="square" class="peek-action-btn peek-btn-close" id="peek-btn-close" title="{{ self.t("peek.close", "閉じる") }}" aria-label="{{ self.t("peek.close", "閉じる") }}">
+              {{ ui::dsd_btn_shadow() }}
               ✕
             </tmt-btn>
           </div>
@@ -79,8 +79,8 @@
     <!-- Image Lightbox Modal -->
     <div id="wiki-image-lightbox" class="lightbox-overlay fixed inset-0 bg-[rgba(0,0,0,0.85)] z-[100000] flex items-center justify-center p-5" hidden data-pagefind-ignore>
       <div class="lightbox-dialog relative max-w-[92vw] max-h-[92vh] flex flex-col items-center bg-canvas border border-border rounded-2xl shadow-[0_16px_48px_rgba(0,0,0,0.5)] p-3">
-        <tmt-btn variant="outline" size="sm" shape="square" class="lightbox-close absolute top-3 right-3" aria-label="{{ t["lightbox.close"] | default('閉じる') }}">
-          {{ ui.dsd_btn_shadow() }}
+        <tmt-btn variant="outline" size="sm" shape="square" class="lightbox-close absolute top-3 right-3" aria-label="{{ self.t("lightbox.close", "閉じる") }}">
+          {{ ui::dsd_btn_shadow() }}
           ✕
         </tmt-btn>
         <div class="lightbox-img-wrapper max-w-full max-h-[calc(92vh-64px)] flex items-center justify-center overflow-hidden">
@@ -91,12 +91,12 @@
     </div>
 
     <script>
-      window.tmtBasePath = {{ base_path | tojson }};
-      window.tmtUrlPrefix = {{ clean_url_prefix | tojson }};
-      window.tmtFullUrlPrefix = {{ full_url_prefix | tojson }};
-      window.tmtHomeUrl = {{ home_url | tojson }};
-      window.tmtStrings = {{ t | tojson | safe }};
+      window.tmtBasePath = {{ self.base_path_json()|safe }};
+      window.tmtUrlPrefix = {{ self.clean_url_prefix_json()|safe }};
+      window.tmtFullUrlPrefix = {{ self.full_url_prefix_json()|safe }};
+      window.tmtHomeUrl = {{ self.home_url_json()|safe }};
+      window.tmtStrings = {{ self.strings_json()|safe }};
     </script>
-    <script src="{{ base_path | safe }}/shelf.js?v={{ js_version }}"></script>
+    <script src="{{ base_path }}/shelf.js?v={{ js_version }}"></script>
   </body>
 </html>

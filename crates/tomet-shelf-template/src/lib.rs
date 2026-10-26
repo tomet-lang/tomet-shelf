@@ -1,12 +1,249 @@
-//| MiniJinja page template renderer for `tomet-shelf`.
+//| Askama page template renderer for `tomet-shelf`.
 
-use anyhow::{Context, Result};
-use minijinja::{Environment, Value, context};
+use anyhow::Result;
+use askama::Template;
+use std::collections::HashMap;
 use tomet_shelf_config::BookConfig;
 use tomet_shelf_render::{
-    Backlink, EntrySummary, PageRenderer, ProcessedDoc, RendererFactory, SectionSummary,
-    StaticAsset, content_version,
+    Backlink, EntrySummary, HeroChipItem, InfoboxRowItem, PageRenderer, ProcessedDoc,
+    RendererFactory, SectionSummary, SectionTab, StaticAsset, TocItem, content_version,
 };
+
+//==============================================================================
+// HTML Helper Functions
+//==============================================================================
+
+fn html_escape(s: &str) -> String {
+    let mut out = String::with_capacity(s.len());
+    for c in s.chars() {
+        match c {
+            '&' => out.push_str("&amp;"),
+            '<' => out.push_str("&lt;"),
+            '>' => out.push_str("&gt;"),
+            '"' => out.push_str("&quot;"),
+            '\'' => out.push_str("&#x27;"),
+            _ => out.push(c),
+        }
+    }
+    out
+}
+
+fn render_book_index_items(buf: &mut String, items: &[EntrySummary], here: &str) {
+    buf.push_str("<ul class=\"book-index-items list-none m-0 p-0 flex flex-col gap-0.5\">");
+    for entry in items {
+        buf.push_str("<li class=\"book-index-item\">");
+        let is_here = entry.url == here;
+        let here_classes = if is_here {
+            " is-here font-semibold text-accent-primary bg-subtle"
+        } else {
+            ""
+        };
+        let aria_current = if is_here {
+            " aria-current=\"page\""
+        } else {
+            ""
+        };
+        buf.push_str(&format!(
+            "<a href=\"{}\" class=\"book-index-link flex items-center justify-between py-1.5 px-2.5 text-[0.825rem] text-text-secondary hover:text-text hover:bg-subtle rounded-md transition-colors no-underline{}\"{}>\n      <span class=\"book-index-title overflow-hidden text-ellipsis whitespace-nowrap\">{}</span>\n    </a>",
+            html_escape(&entry.url),
+            here_classes,
+            aria_current,
+            html_escape(&entry.title)
+        ));
+        if !entry.children.is_empty() {
+            buf.push_str("<div class=\"book-index-children ml-3 pl-2 border-l border-border-subtle my-0.5 flex flex-col gap-0.5\">");
+            render_book_index_items(buf, &entry.children, here);
+            buf.push_str("</div>");
+        }
+        buf.push_str("</li>");
+    }
+    buf.push_str("</ul>");
+}
+
+fn render_catalog_entries(buf: &mut String, items: &[EntrySummary], top: bool) {
+    if top {
+        buf.push_str("<ul class=\"book-index-items list-none m-0 p-0 grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-2\">");
+    } else {
+        buf.push_str("<ul class=\"book-index-items list-none m-0 p-0 flex flex-col gap-1 ml-3 mt-1 pl-2 border-l border-border-subtle\">");
+    }
+    for entry in items {
+        buf.push_str("<li class=\"book-index-item\">");
+        buf.push_str(&format!(
+            "<a href=\"{}\" class=\"book-index-link block p-2.5 rounded-lg border border-border bg-canvas hover:bg-subtle hover:border-accent-primary transition-all no-underline text-text\">\n      <span class=\"book-index-title font-semibold text-sm block overflow-hidden text-ellipsis whitespace-nowrap\">{}</span>",
+            html_escape(&entry.url),
+            html_escape(&entry.title)
+        ));
+        if let Some(ref section) = entry.section {
+            buf.push_str(&format!(
+                "\n      <span class=\"book-index-meta text-xs text-text-muted block mt-0.5\">{}</span>",
+                html_escape(section)
+            ));
+        }
+        buf.push_str("\n    </a>");
+        if !entry.children.is_empty() {
+            render_catalog_entries(buf, &entry.children, false);
+        }
+        buf.push_str("</li>");
+    }
+    buf.push_str("</ul>");
+}
+
+//==============================================================================
+// Askama Templates
+//==============================================================================
+
+#[derive(Template)]
+#[template(path = "page.html")]
+pub struct PageTemplate<'a> {
+    pub site_title: &'a str,
+    pub description: Option<&'a str>,
+    pub lang: &'a str,
+    pub default_view: &'a str,
+    pub custom_css: &'a [String],
+    pub css_version: &'a str,
+    pub js_version: &'a str,
+    pub base_path: &'a str,
+    pub clean_url_prefix: &'a str,
+    pub full_url_prefix: &'a str,
+    pub home_url: &'a str,
+    pub strings: &'a HashMap<String, String>,
+
+    pub tmt_btn_css_version: &'a str,
+    pub tmt_badge_css_version: &'a str,
+    pub tmt_icon_css_version: &'a str,
+    pub tmt_swatch_css_version: &'a str,
+    pub tmt_switch_css_version: &'a str,
+
+    pub source_path: &'a str,
+    pub rel_path: &'a str,
+    pub slug: &'a str,
+    pub page_title: &'a str,
+    pub section: Option<&'a str>,
+    pub kind: Option<&'a str>,
+    pub primary_color: Option<&'a str>,
+    pub icon: Option<&'a str>,
+    pub icon_image_url: Option<&'a str>,
+    pub banner_url: Option<&'a str>,
+    pub banner_original_url: Option<&'a str>,
+    pub banner_y: Option<f64>,
+    pub images: &'a [String],
+    pub original_images: &'a [String],
+    pub hero_chips: &'a [HeroChipItem],
+    pub infobox_rows: &'a [InfoboxRowItem],
+    pub has_data: bool,
+    pub toc: &'a [TocItem],
+    pub section_tabs: &'a [SectionTab],
+    pub body_html: &'a str,
+    pub backlinks: &'a [Backlink],
+    pub book_index: &'a [EntrySummary],
+    pub page_url: &'a str,
+    pub rail_letters: &'a [String],
+    pub is_dev: bool,
+}
+
+impl<'a> PageTemplate<'a> {
+    pub fn t(&self, key: &str, default: &'a str) -> &'a str {
+        if let Some(val) = self.strings.get(key) {
+            val.as_str()
+        } else {
+            default
+        }
+    }
+
+    pub fn base_path_json(&self) -> String {
+        serde_json::to_string(&self.base_path).unwrap_or_else(|_| "\"\"".to_string())
+    }
+
+    pub fn clean_url_prefix_json(&self) -> String {
+        serde_json::to_string(&self.clean_url_prefix).unwrap_or_else(|_| "\"\"".to_string())
+    }
+
+    pub fn full_url_prefix_json(&self) -> String {
+        serde_json::to_string(&self.full_url_prefix).unwrap_or_else(|_| "\"\"".to_string())
+    }
+
+    pub fn home_url_json(&self) -> String {
+        serde_json::to_string(&self.home_url).unwrap_or_else(|_| "\"\"".to_string())
+    }
+
+    pub fn strings_json(&self) -> String {
+        serde_json::to_string(&self.strings).unwrap_or_else(|_| "{}".to_string())
+    }
+
+    pub fn page_url_json(&self) -> String {
+        serde_json::to_string(&self.page_url).unwrap_or_else(|_| "\"\"".to_string())
+    }
+
+    pub fn book_index_html(&self) -> String {
+        let mut buf = String::new();
+        render_book_index_items(&mut buf, self.book_index, self.page_url);
+        buf
+    }
+}
+
+#[derive(Template)]
+#[template(path = "index.html")]
+pub struct IndexTemplate<'a> {
+    pub site_title: &'a str,
+    pub description: Option<&'a str>,
+    pub lang: &'a str,
+    pub default_view: &'a str,
+    pub custom_css: &'a [String],
+    pub css_version: &'a str,
+    pub js_version: &'a str,
+    pub base_path: &'a str,
+    pub clean_url_prefix: &'a str,
+    pub full_url_prefix: &'a str,
+    pub home_url: &'a str,
+    pub strings: &'a HashMap<String, String>,
+
+    pub tmt_btn_css_version: &'a str,
+    pub tmt_badge_css_version: &'a str,
+    pub tmt_icon_css_version: &'a str,
+    pub tmt_swatch_css_version: &'a str,
+    pub tmt_switch_css_version: &'a str,
+
+    pub page_title: &'a str,
+
+    pub sections: &'a [SectionSummary],
+    pub entries: &'a [EntrySummary],
+}
+
+impl<'a> IndexTemplate<'a> {
+    pub fn t(&self, key: &str, default: &'a str) -> &'a str {
+        if let Some(val) = self.strings.get(key) {
+            val.as_str()
+        } else {
+            default
+        }
+    }
+
+    pub fn base_path_json(&self) -> String {
+        serde_json::to_string(&self.base_path).unwrap_or_else(|_| "\"\"".to_string())
+    }
+
+    pub fn clean_url_prefix_json(&self) -> String {
+        serde_json::to_string(&self.clean_url_prefix).unwrap_or_else(|_| "\"\"".to_string())
+    }
+
+    pub fn full_url_prefix_json(&self) -> String {
+        serde_json::to_string(&self.full_url_prefix).unwrap_or_else(|_| "\"\"".to_string())
+    }
+
+    pub fn home_url_json(&self) -> String {
+        serde_json::to_string(&self.home_url).unwrap_or_else(|_| "\"\"".to_string())
+    }
+
+    pub fn strings_json(&self) -> String {
+        serde_json::to_string(&self.strings).unwrap_or_else(|_| "{}".to_string())
+    }
+
+    pub fn entries_html(&self) -> String {
+        let mut buf = String::new();
+        render_catalog_entries(&mut buf, self.entries, true);
+        buf
+    }
+}
 
 //==============================================================================
 // TemplateBundle
@@ -37,26 +274,27 @@ impl RendererFactory for TemplateBundle {
 // BookRenderer
 //==============================================================================
 
-/// Holds compiled MiniJinja templates and static assets for rendering book pages.
+/// Holds Askama templates configuration and static assets for rendering book pages.
 pub struct BookRenderer {
-    env: Environment<'static>,
+    config: BookConfig,
     clean_url_prefix: String,
+    full_url_prefix: String,
+    home_url: String,
+    base_path: String,
+    css_version: String,
+    js_version: String,
+    tmt_btn_css_version: String,
+    tmt_badge_css_version: String,
+    tmt_icon_css_version: String,
+    tmt_swatch_css_version: String,
+    tmt_switch_css_version: String,
+    rail_letters: Vec<String>,
     static_assets: Vec<StaticAsset>,
+    is_dev: bool,
 }
 
 impl BookRenderer {
     pub fn new(config: &BookConfig, bundle: &TemplateBundle, is_dev: bool) -> Result<Self> {
-        let mut env = Environment::new();
-
-        env.add_template("base.html", bundle.base_html)
-            .context("Failed to add base.html template")?;
-        env.add_template("page.html", bundle.page_html)
-            .context("Failed to add page.html template")?;
-        env.add_template("index.html", bundle.index_html)
-            .context("Failed to add index.html template")?;
-        env.add_template("macros.html", bundle.macros_html)
-            .context("Failed to add macros.html template")?;
-
         let rail_title = config
             .ui
             .rail_title
@@ -65,26 +303,7 @@ impl BookRenderer {
 
         let rail_letters: Vec<String> = rail_title.chars().map(|c| c.to_string()).collect();
 
-        // Vault-wide invariant values registered once as globals rather than
-        // rebuilt per-page in context!().
-        env.add_global("site_title", Value::from(&config.book.title));
-        env.add_global(
-            "description",
-            Value::from_serialize(&config.book.description),
-        );
-        env.add_global("lang", Value::from(&config.book.lang));
-        env.add_global("default_view", Value::from(&config.ui.default_view));
-        env.add_global("custom_css", Value::from_serialize(&config.ui.custom_css));
-        env.add_global("t", Value::from_serialize(&config.ui.strings));
-        env.add_global("css_version", Value::from(content_version(bundle.book_css)));
-        env.add_global("js_version", Value::from(content_version(bundle.book_js)));
-        for &(var_name, asset_content) in bundle.extra_asset_versions {
-            env.add_global(var_name, Value::from(content_version(asset_content)));
-        }
-        env.add_global("is_dev", Value::from(is_dev));
-        env.add_global("rail_letters", Value::from_serialize(&rail_letters));
-
-        let base_path = config.build.clean_base_path();
+        let base_path = config.build.clean_base_path().to_string();
         let full_url_prefix = config.build.full_url_prefix();
         let home_url = if full_url_prefix.is_empty() {
             if base_path.is_empty() {
@@ -96,13 +315,23 @@ impl BookRenderer {
             full_url_prefix.clone()
         };
 
-        env.add_global("base_path", Value::from(base_path));
-        env.add_global(
-            "clean_url_prefix",
-            Value::from(config.build.clean_url_prefix()),
-        );
-        env.add_global("full_url_prefix", Value::from(&full_url_prefix));
-        env.add_global("home_url", Value::from(&home_url));
+        let mut tmt_btn_css_version = String::new();
+        let mut tmt_badge_css_version = String::new();
+        let mut tmt_icon_css_version = String::new();
+        let mut tmt_swatch_css_version = String::new();
+        let mut tmt_switch_css_version = String::new();
+
+        for &(var_name, content) in bundle.extra_asset_versions {
+            let ver = content_version(content);
+            match var_name {
+                "tmt_btn_css_version" => tmt_btn_css_version = ver,
+                "tmt_badge_css_version" => tmt_badge_css_version = ver,
+                "tmt_icon_css_version" => tmt_icon_css_version = ver,
+                "tmt_swatch_css_version" => tmt_swatch_css_version = ver,
+                "tmt_switch_css_version" => tmt_switch_css_version = ver,
+                _ => {}
+            }
+        }
 
         let mut static_assets = Vec::with_capacity(2 + bundle.extra_assets.len());
         static_assets.push(StaticAsset {
@@ -118,9 +347,21 @@ impl BookRenderer {
         static_assets.extend_from_slice(bundle.extra_assets);
 
         Ok(Self {
-            env,
-            clean_url_prefix: full_url_prefix,
+            config: config.clone(),
+            clean_url_prefix: full_url_prefix.clone(),
+            full_url_prefix,
+            home_url,
+            base_path,
+            css_version: content_version(bundle.book_css),
+            js_version: content_version(bundle.book_js),
+            tmt_btn_css_version,
+            tmt_badge_css_version,
+            tmt_icon_css_version,
+            tmt_swatch_css_version,
+            tmt_switch_css_version,
+            rail_letters,
             static_assets,
+            is_dev,
         })
     }
 
@@ -130,37 +371,56 @@ impl BookRenderer {
         backlinks: &[Backlink],
         book_index: &[EntrySummary],
     ) -> Result<String> {
-        let tmpl = self.env.get_template("page.html")?;
+        let page_url = format!("{}/{}", self.clean_url_prefix, doc.slug);
 
-        let ctx = context! {
-            source_path => &doc.source_path,
-            rel_path => &doc.rel_path,
-            slug => &doc.slug,
-            page_title => &doc.title,
-            section => &doc.section,
-            kind => &doc.kind,
-            primary_color => &doc.primary_color,
-            icon => &doc.icon,
-            icon_image_url => &doc.icon_image_url,
-            banner_url => &doc.banner_url,
-            banner_original_url => &doc.banner_original_url,
-            banner_y => doc.banner_y,
-            images => &doc.images,
-            original_images => &doc.original_images,
-            hero_chips => &doc.hero_chips,
-            infobox_rows => &doc.infobox_rows,
-            has_data => doc.has_data,
-            toc => &doc.toc,
-            section_tabs => &doc.section_tabs,
-            body_html => &doc.body_html,
-            backlinks => backlinks,
-            book_index => book_index,
-            // So the index can mark where the reader is standing.
-            page_url => format!("{}/{}", self.clean_url_prefix, doc.slug),
+        let template = PageTemplate {
+            site_title: &self.config.book.title,
+            description: self.config.book.description.as_deref(),
+            lang: &self.config.book.lang,
+            default_view: &self.config.ui.default_view,
+            custom_css: &self.config.ui.custom_css,
+            css_version: &self.css_version,
+            js_version: &self.js_version,
+            base_path: &self.base_path,
+            clean_url_prefix: self.config.build.clean_url_prefix(),
+            full_url_prefix: &self.full_url_prefix,
+            home_url: &self.home_url,
+            strings: &self.config.ui.strings,
+
+            tmt_btn_css_version: &self.tmt_btn_css_version,
+            tmt_badge_css_version: &self.tmt_badge_css_version,
+            tmt_icon_css_version: &self.tmt_icon_css_version,
+            tmt_swatch_css_version: &self.tmt_swatch_css_version,
+            tmt_switch_css_version: &self.tmt_switch_css_version,
+
+            source_path: &doc.source_path,
+            rel_path: &doc.rel_path,
+            slug: &doc.slug,
+            page_title: &doc.title,
+            section: doc.section.as_deref(),
+            kind: doc.kind.as_deref(),
+            primary_color: doc.primary_color.as_deref(),
+            icon: doc.icon.as_deref(),
+            icon_image_url: doc.icon_image_url.as_deref(),
+            banner_url: doc.banner_url.as_deref(),
+            banner_original_url: doc.banner_original_url.as_deref(),
+            banner_y: doc.banner_y,
+            images: &doc.images,
+            original_images: &doc.original_images,
+            hero_chips: &doc.hero_chips,
+            infobox_rows: &doc.infobox_rows,
+            has_data: doc.has_data,
+            toc: &doc.toc,
+            section_tabs: &doc.section_tabs,
+            body_html: &doc.body_html,
+            backlinks,
+            book_index,
+            page_url: &page_url,
+            rail_letters: &self.rail_letters,
+            is_dev: self.is_dev,
         };
 
-        let rendered = tmpl.render(ctx)?;
-        Ok(rendered)
+        template.render().map_err(Into::into)
     }
 
     pub fn render_index(
@@ -168,15 +428,32 @@ impl BookRenderer {
         sections: &[SectionSummary],
         entries: &[EntrySummary],
     ) -> Result<String> {
-        let tmpl = self.env.get_template("index.html")?;
+        let template = IndexTemplate {
+            site_title: &self.config.book.title,
+            description: self.config.book.description.as_deref(),
+            lang: &self.config.book.lang,
+            default_view: &self.config.ui.default_view,
+            custom_css: &self.config.ui.custom_css,
+            css_version: &self.css_version,
+            js_version: &self.js_version,
+            base_path: &self.base_path,
+            clean_url_prefix: self.config.build.clean_url_prefix(),
+            full_url_prefix: &self.full_url_prefix,
+            home_url: &self.home_url,
+            strings: &self.config.ui.strings,
 
-        let ctx = context! {
-            sections => sections,
-            entries => entries,
+            tmt_btn_css_version: &self.tmt_btn_css_version,
+            tmt_badge_css_version: &self.tmt_badge_css_version,
+            tmt_icon_css_version: &self.tmt_icon_css_version,
+            tmt_swatch_css_version: &self.tmt_swatch_css_version,
+            tmt_switch_css_version: &self.tmt_switch_css_version,
+
+            page_title: "",
+            sections,
+            entries,
         };
 
-        let rendered = tmpl.render(ctx)?;
-        Ok(rendered)
+        template.render().map_err(Into::into)
     }
 }
 

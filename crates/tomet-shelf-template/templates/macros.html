@@ -6,121 +6,112 @@
   with and without a banner, so several blocks were sitting in the file four
   times over. Each copy had to be edited in lockstep; these macros are the
   single copy.
-
-  Every macro takes what it needs explicitly, so nothing here depends on the
-  caller's surrounding context.
 #}
 
-{% macro edit_menu(source_path, t) %}
+{% macro edit_menu(source_path) %}
 <div class="edit-dropdown relative inline-block" data-pagefind-ignore>
-  <button type="button" class="hero-action-btn btn-edit-open inline-flex items-center justify-center box-border w-[30px] h-[30px] p-0 rounded-full cursor-pointer leading-none" title="{{ t["edit.editor"] }}" aria-label="{{ t["edit.editor"] }}">
+  <button type="button" class="hero-action-btn btn-edit-open inline-flex items-center justify-center box-border w-[30px] h-[30px] p-0 rounded-full cursor-pointer leading-none" title="{{ self.t("edit.editor", "エディタで開く") }}" aria-label="{{ self.t("edit.editor", "エディタで開く") }}">
     <svg class="icon-edit" viewBox="0 0 24 24" width="14" height="14" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round">
       <path d="M12 20h9"></path>
       <path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"></path>
     </svg>
   </button>
   <div class="edit-dropdown-menu absolute top-[calc(100%+4px)] right-0 min-w-[135px] rounded-none py-1 z-[9999] flex flex-col" hidden>
-    <a href="vscode://file{{ source_path }}" class="edit-dropdown-item flex items-center gap-[7px] box-border w-full px-3 py-1.5 text-[0.73rem] text-shell-text no-underline! whitespace-nowrap cursor-pointer" title="{{ t["edit.vscode"] }}">
+    <a href="vscode://file{{ source_path }}" class="edit-dropdown-item flex items-center gap-[7px] box-border w-full px-3 py-1.5 text-[0.73rem] text-shell-text no-underline! whitespace-nowrap cursor-pointer" title="{{ self.t("edit.vscode", "VS Code") }}">
       <svg class="item-svg" viewBox="0 0 24 24" width="13" height="13" stroke="#007acc" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round">
         <path d="m18 16 4-4-4-4"></path>
         <path d="m6 8-4 4 4 4"></path>
         <path d="m14.5 4-5 16"></path>
       </svg>
-      <span>{{ t["edit.vscode"] }}</span>
+      <span>{{ self.t("edit.vscode", "VS Code") }}</span>
     </a>
-    <a href="cursor://file{{ source_path }}" class="edit-dropdown-item flex items-center gap-[7px] box-border w-full px-3 py-1.5 text-[0.73rem] text-shell-text no-underline! whitespace-nowrap cursor-pointer" title="{{ t["edit.cursor"] }}">
+    <a href="cursor://file{{ source_path }}" class="edit-dropdown-item flex items-center gap-[7px] box-border w-full px-3 py-1.5 text-[0.73rem] text-shell-text no-underline! whitespace-nowrap cursor-pointer" title="{{ self.t("edit.cursor", "Cursor") }}">
       <svg class="item-svg" viewBox="0 0 24 24" width="13" height="13" stroke="#e5a000" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round">
         <path d="m4.037 4.688 15.376 6.15a.994.994 0 0 1 .09 1.834l-5.69 2.53-2.53 5.69a.994.994 0 0 1-1.834-.09l-6.15-15.376a.993.993 0 0 1 .738-.738z"></path>
       </svg>
-      <span>{{ t["edit.cursor"] }}</span>
+      <span>{{ self.t("edit.cursor", "Cursor") }}</span>
     </a>
-    <button type="button" class="edit-dropdown-item btn-copy-path flex items-center gap-[7px] box-border w-full px-3 py-1.5 text-[0.73rem] text-shell-text bg-transparent border-0 text-left whitespace-nowrap cursor-pointer" data-path="{{ source_path }}" title="{{ t["edit.copy_path_title"] }}">
+    <button type="button" class="edit-dropdown-item btn-copy-path flex items-center gap-[7px] box-border w-full px-3 py-1.5 text-[0.73rem] text-shell-text bg-transparent border-0 text-left whitespace-nowrap cursor-pointer" data-path="{{ source_path }}" title="{{ self.t("edit.copy_path_title", "パスをコピー") }}">
       <svg class="item-svg" viewBox="0 0 24 24" width="13" height="13" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round">
         <rect width="14" height="14" x="8" y="8" rx="2" ry="2"></rect>
         <path d="M4 16c-1.1 0-2-.9-2-2V4c0-1.1.9-2 2-2h10c1.1 0 2 .9 2 2"></path>
       </svg>
-      <span>{{ t["edit.copy_path"] }}</span>
+      <span>{{ self.t("edit.copy_path", "パスをコピー") }}</span>
     </button>
-    <button type="button" class="edit-dropdown-item btn-source-view-toggle flex items-center gap-[7px] box-border w-full px-3 py-1.5 text-[0.73rem] text-shell-text bg-transparent border-0 text-left whitespace-nowrap cursor-pointer" data-source-path="{{ source_path }}" title="{{ t["edit.view_source"] }}">
+    <button type="button" class="edit-dropdown-item btn-source-view-toggle flex items-center gap-[7px] box-border w-full px-3 py-1.5 text-[0.73rem] text-shell-text bg-transparent border-0 text-left whitespace-nowrap cursor-pointer" data-source-path="{{ source_path }}" title="{{ self.t("edit.view_source", "ソースを表示") }}">
       <svg class="item-svg" viewBox="0 0 24 24" width="13" height="13" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round">
         <path d="m16 18 6-6-6-6"></path>
         <path d="m8 6-6 6 6 6"></path>
       </svg>
-      <span>{{ t["edit.view_source"] }}</span>
+      <span>{{ self.t("edit.view_source", "ソースを表示") }}</span>
     </button>
   </div>
 </div>
 {% endmacro %}
 
-{% macro hero_banner(banner_url, banner_y, page_title, t, banner_original_url=none) %}
+{% macro hero_banner(banner_url, banner_y, page_title, banner_original_url) %}
 <div class="hero-banner-wrapper relative w-full h-[220px] overflow-hidden bg-surface-subtle">
   <img
     src="{{ banner_url }}"
-    {% if banner_original_url %}data-original="{{ banner_original_url }}"{% endif %}
-    alt="{{ page_title }} {{ t["image.banner_alt"] }}"
+    {% if !banner_original_url.is_empty() %}data-original="{{ banner_original_url }}"{% endif %}
+    alt="{{ page_title }} {{ self.t("image.banner_alt", "バナー画像") }}"
     class="hero-banner-img w-full h-full object-cover block"
-    {% if banner_y %}style="object-position: center {{ banner_y }}%;"{% endif %}
+    {% if let Some(y) = banner_y %}style="object-position: center {{ y }}%;"{% endif %}
     loading="eager"
     decoding="async"
     fetchpriority="high"
   />
-  <tmt-btn variant="outline" size="xs" shape="rect" class="hero-zoom-btn" title="{{ t["image.zoom_banner"] }}" data-pagefind-ignore>
-    {{ dsd_btn_shadow(title=t["image.zoom_banner"]) }}
-    {{ t["image.zoom"] }}
+  <tmt-btn variant="outline" size="xs" shape="rect" class="hero-zoom-btn" title="{{ self.t("image.zoom_banner", "バナーを拡大") }}" data-pagefind-ignore>
+    {{ dsd_btn_shadow(self.t("image.zoom_banner", "バナーを拡大"), "", false, "button") }}
+    {{ self.t("image.zoom", "拡大") }}
   </tmt-btn>
 </div>
 {% endmacro %}
 
-{#
-  `extra_style` is for the hero variants that sit under no banner and need the
-  extra top margin. Two of the four copies also had a stray trailing space
-  inside the label span; the flex gap on .hero-chip already spaces them, so
-  this keeps the book view's version.
-#}
-{% macro hero_chips(hero_chips, extra_style) %}
-<div class="hero-meta-chips flex flex-wrap gap-1.5 mt-2" data-pagefind-weight="6.0"{% if extra_style %} style="{{ extra_style }}"{% endif %}>
-  {% for chip in hero_chips %}
+{% macro hero_chips(chips, extra_style) %}
+<div class="hero-meta-chips flex flex-wrap gap-1.5 mt-2" data-pagefind-weight="6.0"{% if !extra_style.is_empty() %} style="{{ extra_style }}"{% endif %}>
+  {% for chip in chips %}
   <tmt-badge
-    class="hero-chip{% if chip.href %} hero-chip-link{% endif %}"
+    class="hero-chip{% if chip.href.is_some() %} hero-chip-link{% endif %}"
     variant="subtle"
     shape="pill"
     size="sm"
-    {% if chip.href %}href="{{ chip.href }}"{% endif %}
+    {% if let Some(href) = chip.href %}href="{{ href }}"{% endif %}
   >
-    {{ dsd_badge_shadow(href=chip.href) }}
-    {% if chip.label %}<span class="chip-label">{{ chip.label }}:</span>{% endif %}
+    {{ dsd_badge_shadow(chip.href.as_deref().unwrap_or("")) }}
+    {% if let Some(label) = chip.label %}<span class="chip-label">{{ label }}:</span>{% endif %}
     <span class="chip-val">{{ chip.value }}</span>
   </tmt-badge>
   {% endfor %}
 </div>
 {% endmacro %}
 
-{% macro costume_switcher(images, page_title, t, original_images=[]) %}
+{% macro costume_switcher(images, page_title, original_images) %}
 <div class="infobox-image-section">
   <div class="infobox-image-wrapper">
     <img
       src="{{ images[0] }}"
-      {% if original_images and original_images | length > 0 %}data-original="{{ original_images[0] }}"{% endif %}
+      {% if !original_images.is_empty() %}data-original="{{ original_images[0] }}"{% endif %}
       data-pagefind-meta="image[src]"
       alt="{{ page_title }}"
       class="infobox-main-img"
       loading="lazy"
       decoding="async"
     />
-    {% if images | length > 1 %}
-    <tmt-btn class="costume-arrow prev" shape="circle" size="sm" variant="ghost" aria-label="{{ t["costume.prev"] }}" title="{{ t["costume.prev"] }}" data-pagefind-ignore>
-      {{ dsd_btn_shadow(title=t["costume.prev"], aria_label=t["costume.prev"]) }}
-      {{ tmt_icon(name="chevron-left", size="sm") }}
+    {% if images.len() > 1 %}
+    <tmt-btn class="costume-arrow prev" shape="circle" size="sm" variant="ghost" aria-label="{{ self.t("costume.prev", "前へ") }}" title="{{ self.t("costume.prev", "前へ") }}" data-pagefind-ignore>
+      {{ dsd_btn_shadow(self.t("costume.prev", "前へ"), self.t("costume.prev", "前へ"), false, "button") }}
+      {{ tmt_icon("chevron-left", "sm", "lucide", "", "", "") }}
     </tmt-btn>
-    <tmt-btn class="costume-arrow next" shape="circle" size="sm" variant="ghost" aria-label="{{ t["costume.next"] }}" title="{{ t["costume.next"] }}" data-pagefind-ignore>
-      {{ dsd_btn_shadow(title=t["costume.next"], aria_label=t["costume.next"]) }}
-      {{ tmt_icon(name="chevron-right", size="sm") }}
+    <tmt-btn class="costume-arrow next" shape="circle" size="sm" variant="ghost" aria-label="{{ self.t("costume.next", "次へ") }}" title="{{ self.t("costume.next", "次へ") }}" data-pagefind-ignore>
+      {{ dsd_btn_shadow(self.t("costume.next", "次へ"), self.t("costume.next", "次へ"), false, "button") }}
+      {{ tmt_icon("chevron-right", "sm", "lucide", "", "", "") }}
     </tmt-btn>
     {% endif %}
   </div>
-  {% if images | length > 1 %}
+  {% if images.len() > 1 %}
   <div class="infobox-costume-switcher" role="tablist" data-pagefind-ignore>
-    <span class="switcher-label text-xs text-text-muted">{{ t["costume.label"] }}</span>
+    <span class="switcher-label text-xs text-text-muted">{{ self.t("costume.label", "差分") }}</span>
     <div class="switcher-buttons flex flex-wrap gap-1 justify-center">
       {% for img in images %}
       <tmt-btn
@@ -130,10 +121,10 @@
         shape="square"
         {% if loop.first %}active{% endif %}
         data-img-src="{{ img }}"
-        {% if original_images and original_images[loop.index0] %}data-original="{{ original_images[loop.index0] }}"{% endif %}
-        title="{{ t["costume.item"] }} {{ loop.index }}"
+        {% if loop.index0 < original_images.len() %}data-original="{{ original_images[loop.index0] }}"{% endif %}
+        title="{{ self.t("costume.item", "衣装") }} {{ loop.index }}"
       >
-        {{ dsd_btn_shadow(title=t["costume.item"] ~ " " ~ loop.index) }}
+        {{ dsd_btn_shadow("", "", false, "button") }}
         <img class="costume-thumb w-full h-full object-cover rounded-[2px] block" src="{{ img }}" alt="" loading="lazy" />
         <span class="costume-btn-num hidden">{{ loop.index }}</span>
       </tmt-btn>
@@ -154,8 +145,8 @@
       </span>
     </button>
 
-    {% if h1.children and h1.children | length > 0 %}
-    <div class="sticky-children-slot level-2-slot{% if h1.peek_levels | length > 1 %} has-layered-peek{% endif %}" data-parent-id="{{ h1.id }}">
+    {% if !h1.children.is_empty() %}
+    <div class="sticky-children-slot level-2-slot{% if h1.peek_levels.len() > 1 %} has-layered-peek{% endif %}" data-parent-id="{{ h1.id }}">
       {% for peek_level in h1.peek_levels %}
       <span class="sticky-children-peek level-{{ peek_level }}" aria-hidden="true"></span>
       {% endfor %}
@@ -167,8 +158,8 @@
           </span>
         </button>
 
-        {% if h2.children and h2.children | length > 0 %}
-        <div class="sticky-children-slot level-3-slot{% if h2.peek_levels | length > 1 %} has-layered-peek{% endif %}" data-parent-id="{{ h2.id }}">
+        {% if !h2.children.is_empty() %}
+        <div class="sticky-children-slot level-3-slot{% if h2.peek_levels.len() > 1 %} has-layered-peek{% endif %}" data-parent-id="{{ h2.id }}">
           {% for peek_level in h2.peek_levels %}
           <span class="sticky-children-peek level-{{ peek_level }}" aria-hidden="true"></span>
           {% endfor %}
@@ -191,9 +182,10 @@
   {% endfor %}
 </div>
 {% endmacro %}
-{% macro sticky_edge_btn(direction, t, id_attr="") %}
-<tmt-btn variant="outline" shape="square" size="sm" class="sticky-edge-btn sticky-edge-{{ direction }}"{% if id_attr %} id="{{ id_attr }}"{% endif %} data-direction="{{ direction }}" title="{{ t["sticky.to_" ~ direction] }}" aria-label="{{ t["sticky.to_" ~ direction] }}" data-pagefind-ignore>
-  {{ dsd_btn_shadow(title=t["sticky.to_" ~ direction], aria_label=t["sticky.to_" ~ direction]) }}
+
+{% macro sticky_edge_btn(direction, id_attr) %}
+<tmt-btn variant="outline" shape="square" size="sm" class="sticky-edge-btn sticky-edge-{{ direction }}"{% if !id_attr.is_empty() %} id="{{ id_attr }}"{% endif %} data-direction="{{ direction }}" title="{% if direction == "top" %}{{ self.t("sticky.to_top", "最上部へ") }}{% else %}{{ self.t("sticky.to_bottom", "最下部へ") }}{% endif %}" aria-label="{% if direction == "top" %}{{ self.t("sticky.to_top", "最上部へ") }}{% else %}{{ self.t("sticky.to_bottom", "最下部へ") }}{% endif %}" data-pagefind-ignore>
+  {{ dsd_btn_shadow("", "", false, "button") }}
   <svg viewBox="0 0 24 24" width="14" height="14" stroke="currentColor" stroke-width="2.2" fill="none" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
     {% if direction == "top" %}
     <path d="M5 5h14"></path>
@@ -211,47 +203,44 @@
 {#
   Primitive atom: <tmt-btn>
   Encapsulated button component using Web Components & Declarative Shadow DOM.
-  Provides strict style isolation (no scale/translate animations, no double borders,
-  hover state only when clickable) with zero client-JS dependency for rendering.
+  Provides strict style isolation with zero client-JS dependency for rendering.
 #}
-{% macro dsd_btn_shadow(title="", aria_label="", disabled=false, type="button") %}
+{% macro dsd_btn_shadow(title="", aria_label="", disabled=false, btn_type="button") %}
   <template shadowrootmode="open">
-    <link rel="stylesheet" href="{{ base_path | safe }}/components/tmt-btn.css?v={{ tmt_btn_css_version }}">
-    <button type="{{ type }}" class="tmt-btn-inner" part="button"{% if title %} title="{{ title }}"{% endif %}{% if aria_label %} aria-label="{{ aria_label }}"{% endif %}{% if disabled %} disabled{% endif %}>
+    <link rel="stylesheet" href="{{ base_path }}/components/tmt-btn.css?v={{ tmt_btn_css_version }}">
+    <button type="{{ btn_type }}" class="tmt-btn-inner" part="button"{% if !title.is_empty() %} title="{{ title }}"{% endif %}{% if !aria_label.is_empty() %} aria-label="{{ aria_label }}"{% endif %}{% if disabled %} disabled{% endif %}>
       <slot></slot>
     </button>
   </template>
 {% endmacro %}
 
-{% macro tmt_btn(content="", variant="outline", size="md", shape="rect", active=false, disabled=false, id="", class="", title="", aria_label="", type="button", href="", data_attrs="") %}
+{% macro tmt_btn(content="", variant="outline", size="md", shape="rect", active=false, disabled=false, id="", class="", title="", aria_label="", btn_type="button", href="", data_attrs="") %}
 <tmt-btn
-  {% if id %}id="{{ id }}"{% endif %}
-  {% if class %}class="{{ class }}"{% endif %}
+  {% if !id.is_empty() %}id="{{ id }}"{% endif %}
+  {% if !class.is_empty() %}class="{{ class }}"{% endif %}
   variant="{{ variant }}"
   size="{{ size }}"
   shape="{{ shape }}"
   {% if active %}active{% endif %}
   {% if disabled %}disabled{% endif %}
-  {% if title %}title="{{ title }}"{% endif %}
-  {% if aria_label %}aria-label="{{ aria_label }}"{% endif %}
-  {% if href %}href="{{ href }}"{% endif %}
-  {{ data_attrs | safe }}
+  {% if !title.is_empty() %}title="{{ title }}"{% endif %}
+  {% if !aria_label.is_empty() %}aria-label="{{ aria_label }}"{% endif %}
+  {% if !href.is_empty() %}href="{{ href }}"{% endif %}
+  {{ data_attrs|safe }}
 >
-  {{ dsd_btn_shadow(title=title, aria_label=aria_label, disabled=disabled, type=type) }}
-  {{ content | safe }}
+  {{ dsd_btn_shadow(title, aria_label, disabled, btn_type) }}
+  {{ content|safe }}
 </tmt-btn>
 {% endmacro %}
 
 {#
   Primitive atom: <tmt-badge>
   Encapsulated badge/chip component using Web Components & Declarative Shadow DOM.
-  Provides strict style isolation (no scale/translate animations, hover state only when clickable)
-  with zero client-JS dependency for rendering.
 #}
 {% macro dsd_badge_shadow(href="") %}
   <template shadowrootmode="open">
-    <link rel="stylesheet" href="{{ base_path | safe }}/components/tmt-badge.css?v={{ tmt_badge_css_version }}">
-    {% if href %}
+    <link rel="stylesheet" href="{{ base_path }}/components/tmt-badge.css?v={{ tmt_badge_css_version }}">
+    {% if !href.is_empty() %}
     <a href="{{ href }}" class="tmt-badge-inner" part="badge">
       <slot></slot>
     </a>
@@ -265,33 +254,32 @@
 
 {% macro tmt_badge(content="", variant="subtle", size="sm", shape="pill", href="", id="", class="", title="", aria_label="", clickable=false, role="") %}
 <tmt-badge
-  {% if id %}id="{{ id }}"{% endif %}
-  {% if class %}class="{{ class }}"{% endif %}
+  {% if !id.is_empty() %}id="{{ id }}"{% endif %}
+  {% if !class.is_empty() %}class="{{ class }}"{% endif %}
   variant="{{ variant }}"
   size="{{ size }}"
   shape="{{ shape }}"
-  {% if href %}href="{{ href }}"{% endif %}
-  {% if title %}title="{{ title }}"{% endif %}
-  {% if aria_label %}aria-label="{{ aria_label }}"{% endif %}
+  {% if !href.is_empty() %}href="{{ href }}"{% endif %}
+  {% if !title.is_empty() %}title="{{ title }}"{% endif %}
+  {% if !aria_label.is_empty() %}aria-label="{{ aria_label }}"{% endif %}
   {% if clickable %}clickable{% endif %}
-  {% if role %}role="{{ role }}"{% endif %}
+  {% if !role.is_empty() %}role="{{ role }}"{% endif %}
 >
-  {{ dsd_badge_shadow(href=href) }}
-  {{ content | safe }}
+  {{ dsd_badge_shadow(href) }}
+  {{ content|safe }}
 </tmt-badge>
 {% endmacro %}
 
 {#
   Primitive atom: <tmt-icon>
   Encapsulated icon component using Web Components & Declarative Shadow DOM.
-  Guarantees proper alignment, flex-shrink, sizing, and sprite rendering.
 #}
 {% macro dsd_icon_shadow(name="", size="sm", pkg="lucide") %}
   <template shadowrootmode="open">
-    <link rel="stylesheet" href="{{ base_path | safe }}/components/tmt-icon.css?v={{ tmt_icon_css_version }}">
-    {% if name %}
+    <link rel="stylesheet" href="{{ base_path }}/components/tmt-icon.css?v={{ tmt_icon_css_version }}">
+    {% if !name.is_empty() %}
     <svg aria-hidden="true">
-      <use href="{{ base_path | safe }}/icons/{{ pkg }}.svg#{{ name }}"></use>
+      <use href="{{ base_path }}/icons/{{ pkg }}.svg#{{ name }}"></use>
     </svg>
     {% else %}
     <slot></slot>
@@ -301,27 +289,23 @@
 
 {% macro tmt_icon(name="", size="sm", pkg="lucide", class="", title="", aria_label="") %}
 <tmt-icon
-  {% if name %}name="{{ name }}"{% endif %}
+  {% if !name.is_empty() %}name="{{ name }}"{% endif %}
   size="{{ size }}"
   pkg="{{ pkg }}"
-  {% if class %}class="{{ class }}"{% endif %}
-  {% if title %}title="{{ title }}"{% endif %}
-  {% if aria_label %}aria-label="{{ aria_label }}"{% endif %}
+  {% if !class.is_empty() %}class="{{ class }}"{% endif %}
+  {% if !title.is_empty() %}title="{{ title }}"{% endif %}
+  {% if !aria_label.is_empty() %}aria-label="{{ aria_label }}"{% endif %}
 >
-  {{ dsd_icon_shadow(name=name, size=size, pkg=pkg) }}
+  {{ dsd_icon_shadow(name, size, pkg) }}
 </tmt-icon>
 {% endmacro %}
 
 {#
   Primitive atom: <tmt-swatch>
-  A row-shaped, single-select radio item (role="radio", parent marked
-  role="radiogroup") for preview + label controls like the shell color/pattern
-  pickers. Unlike <tmt-btn>'s centered fixed-size chip, this is a full-width
-  left-aligned row -- see the "フルwidth行" design discussion.
 #}
 {% macro dsd_swatch_shadow() %}
   <template shadowrootmode="open">
-    <link rel="stylesheet" href="{{ base_path | safe }}/components/tmt-swatch.css?v={{ tmt_swatch_css_version }}">
+    <link rel="stylesheet" href="{{ base_path }}/components/tmt-swatch.css?v={{ tmt_swatch_css_version }}">
     <slot name="preview"></slot>
     <slot></slot>
   </template>
@@ -329,17 +313,13 @@
 
 {#
   Primitive atom: <tmt-switch>
-  A row-shaped boolean toggle (role="switch"), standalone (not part of a
-  group) -- see the shell high-contrast toggle.
 #}
 {% macro dsd_switch_shadow() %}
   <template shadowrootmode="open">
-    <link rel="stylesheet" href="{{ base_path | safe }}/components/tmt-switch.css?v={{ tmt_switch_css_version }}">
+    <link rel="stylesheet" href="{{ base_path }}/components/tmt-switch.css?v={{ tmt_switch_css_version }}">
     <slot></slot>
     <span class="tmt-switch-track" part="track">
       <span class="tmt-switch-knob" part="knob"></span>
     </span>
   </template>
 {% endmacro %}
-
-

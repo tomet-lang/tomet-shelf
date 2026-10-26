@@ -1,0 +1,48 @@
+{% extends "base.html" %}
+{% import "macros.html" as ui %}
+{% block content %}
+<div class="site-index-container max-w-[960px] mx-auto py-10 px-6 w-full flex-1 overflow-y-auto" data-pagefind-ignore>
+  <header class="site-header-index pb-6 mb-8 flex justify-between items-start border-b border-border">
+    <div>
+      <h1 class="text-3xl font-bold tracking-tight text-text m-0 mb-2">{{ site_title }}</h1>
+      <p class="text-text-muted text-sm m-0">{% if let Some(desc) = description %}{{ desc }}{% else %}Total notes: {{ entries.len() }}{% endif %}</p>
+    </div>
+    <tmt-btn variant="outline" size="sm" shape="square" class="theme-toggle-btn" title="{{ self.t("theme.toggle", "テーマ切り替え") }}" aria-label="{{ self.t("theme.toggle_label", "テーマ切り替え") }}">
+      {{ ui::dsd_btn_shadow() }}
+      <svg class="icon-theme icon-sun" viewBox="0 0 24 24" width="16" height="16" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round">
+        <circle cx="12" cy="12" r="4"></circle>
+        <path d="M12 2v2"></path>
+        <path d="M12 20v2"></path>
+        <path d="m4.93 4.93 1.41 1.41"></path>
+        <path d="m17.66 17.66 1.41 1.41"></path>
+        <path d="M2 12h2"></path>
+        <path d="M20 12h2"></path>
+        <path d="m6.34 17.66-1.41 1.41"></path>
+        <path d="m19.07 4.93-1.41 1.41"></path>
+      </svg>
+      <svg class="icon-theme icon-moon" viewBox="0 0 24 24" width="16" height="16" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M12 3a6 6 0 0 0 9 9 9 9 0 1 1-9-9Z"></path>
+      </svg>
+    </tmt-btn>
+  </header>
+
+  {% if !sections.is_empty() %}
+  <section class="mb-10">
+    <h2 class="text-lg font-bold text-text mb-4 pb-2 border-b border-border-subtle">{{ self.t("index.sections", "セクション") }}</h2>
+    <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3">
+      {% for sec in sections %}
+      <div class="section-card p-4 rounded-xl border border-border bg-canvas shadow-sm">
+        <h3 class="m-0 mb-1 text-base font-semibold text-text">{{ sec.name }}</h3>
+        <p class="text-xs text-text-muted m-0">{{ sec.count }} {{ self.t("index.note_unit", "ノート") }}</p>
+      </div>
+      {% endfor %}
+    </div>
+  </section>
+  {% endif %}
+
+  <section class="mb-10">
+    <h2 class="text-lg font-bold text-text mb-4 pb-2 border-b border-border-subtle">{{ self.t("index.entries", "すべてのノート") }}</h2>
+    {{ self.entries_html()|safe }}
+  </section>
+</div>
+{% endblock %}
