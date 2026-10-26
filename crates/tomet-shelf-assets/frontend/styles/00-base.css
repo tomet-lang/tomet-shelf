@@ -4,24 +4,24 @@
    ================================================================ */
 
 :root {
-  /* Semantic Surface Tiers (Light Theme Default) */
-  --bg-canvas: #fcfcfc;
+  /* Unified Base Background (Clean, consistent canvas) */
+  --bg-canvas: #ffffff;
   --bg-surface: #ffffff;
-  --bg-subtle: #f3f4f6;
+  --bg-subtle: #f8fafc;
 
   /* Aliases for legacy tokens */
   --bg: var(--bg-canvas);
   --surface: var(--bg-surface);
   --surface-subtle: var(--bg-subtle);
 
-  /* Borders: strictly border-less by default */
-  --border: transparent;
-  --border-subtle: transparent;
+  /* Semantic Structural Borders (Header dividers, pane borders, table lines) */
+  --border: #e2e8f0;
+  --border-subtle: #edf2f7;
 
   /* Typography Colors */
-  --text-primary: #111827;
-  --text-secondary: #4b5563;
-  --text-muted: #9ca3af;
+  --text-primary: #0f172a;
+  --text-secondary: #475569;
+  --text-muted: #94a3b8;
   --text: var(--text-primary);
 
   /* Accent & Link Colors */
@@ -31,23 +31,30 @@
   --link-unresolved: #dc2626;
   --unresolved: var(--link-unresolved);
   --mark-rgb: 255, 219, 88;
-  --bullet-color: #111827;
+  --bullet-color: #0f172a;
 
-  /* Elevation & Shadow System (Strictly border-less depth) */
+  /* Elevation & Shadow System */
   --shadow-none: none;
-  --shadow-sm: 0 1px 3px 0 rgba(0, 0, 0, 0.06), 0 1px 2px -1px rgba(0, 0, 0, 0.04);
-  --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.08), 0 2px 4px -2px rgba(0, 0, 0, 0.05);
-  --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.10), 0 4px 6px -4px rgba(0, 0, 0, 0.05);
-  --shadow-xl: 0 20px 25px -5px rgba(0, 0, 0, 0.12), 0 8px 10px -6px rgba(0, 0, 0, 0.06);
+  --shadow-sm: 0 1px 3px 0 rgba(0, 0, 0, 0.08), 0 1px 2px -1px rgba(0, 0, 0, 0.04);
+  --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.10), 0 2px 4px -2px rgba(0, 0, 0, 0.05);
+  --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.12), 0 4px 6px -4px rgba(0, 0, 0, 0.06);
+  --shadow-xl: 0 20px 25px -5px rgba(0, 0, 0, 0.15), 0 8px 10px -6px rgba(0, 0, 0, 0.08);
+
+  /* Button Layer Tokens (Buttons sit on an elevated layer with distinct shadow) */
+  --btn-bg: #ffffff;
+  --btn-color: var(--text-primary);
+  --btn-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.10), 0 1px 2px -1px rgba(0, 0, 0, 0.06);
+  --btn-shadow-hover: 0 4px 6px -1px rgba(0, 0, 0, 0.14), 0 2px 4px -2px rgba(0, 0, 0, 0.08);
+  --btn-shadow-active: 0 1px 2px 0 rgba(0, 0, 0, 0.08);
 
   /* Shell Tokens (Application frame) */
   --shell-bg: var(--bg-canvas);
-  --shell-border: transparent;
+  --shell-border: var(--border);
   --shell-text: var(--text-primary);
   --shell-text-muted: var(--text-secondary);
-  --recent-book-bg: var(--bg-surface);
+  --recent-book-bg: var(--bg-canvas);
 
-  /* Legacy texture fallbacks: clean, neutral canvas without textures */
+  /* No patterns / textures */
   --paper-grain: none;
   --shell-grain: none;
   --shell-blend-mode: normal;
@@ -93,74 +100,100 @@
 /* ==================== DARK THEME ==================== */
 @media (prefers-color-scheme: dark) {
   :root:not([data-theme="light"]) {
-    --bg-canvas: #0d0f14;
-    --bg-surface: #161922;
-    --bg-subtle: #1f2430;
+    --bg-canvas: #0f141c;
+    --bg-surface: #0f141c;
+    --bg-subtle: #171d28;
 
-    --border: transparent;
-    --border-subtle: transparent;
+    --border: #262d3d;
+    --border-subtle: #1d2330;
 
-    --text-primary: #f9fafb;
-    --text-secondary: #9ca3af;
-    --text-muted: #6b7280;
+    --text-primary: #f8fafc;
+    --text-secondary: #94a3b8;
+    --text-muted: #64748b;
 
     --accent-primary: #3b82f6;
     --link: #60a5fa;
     --link-visited: #b388ff;
     --link-unresolved: #ef4444;
     --mark-rgb: 202, 150, 12;
-    --bullet-color: #f9fafb;
+    --bullet-color: #f8fafc;
 
     /* Dark mode elevation shadows */
     --shadow-none: none;
-    --shadow-sm: 0 1px 3px 0 rgba(0, 0, 0, 0.35), 0 1px 2px -1px rgba(0, 0, 0, 0.25);
-    --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.45), 0 2px 4px -2px rgba(0, 0, 0, 0.3);
-    --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.55), 0 4px 6px -4px rgba(0, 0, 0, 0.35);
-    --shadow-xl: 0 20px 25px -5px rgba(0, 0, 0, 0.65), 0 8px 10px -6px rgba(0, 0, 0, 0.4);
+    --shadow-sm: 0 1px 3px 0 rgba(0, 0, 0, 0.4), 0 1px 2px -1px rgba(0, 0, 0, 0.3);
+    --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.5), 0 2px 4px -2px rgba(0, 0, 0, 0.35);
+    --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.6), 0 4px 6px -4px rgba(0, 0, 0, 0.4);
+    --shadow-xl: 0 20px 25px -5px rgba(0, 0, 0, 0.7), 0 8px 10px -6px rgba(0, 0, 0, 0.45);
+
+    /* Button Layer Tokens in Dark Theme */
+    --btn-bg: #1c2433;
+    --btn-color: var(--text-primary);
+    --btn-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.5), 0 1px 2px -1px rgba(0, 0, 0, 0.35);
+    --btn-shadow-hover: 0 4px 8px -1px rgba(0, 0, 0, 0.65), 0 2px 4px -2px rgba(0, 0, 0, 0.45);
+    --btn-shadow-active: 0 1px 2px 0 rgba(0, 0, 0, 0.4);
 
     --shell-bg: var(--bg-canvas);
-    --shell-border: transparent;
+    --shell-border: var(--border);
     --shell-text: var(--text-primary);
     --shell-text-muted: var(--text-secondary);
-    --recent-book-bg: var(--bg-surface);
+    --recent-book-bg: var(--bg-canvas);
   }
 }
 
 :root[data-theme="dark"] {
-  --bg-canvas: #0d0f14;
-  --bg-surface: #161922;
-  --bg-subtle: #1f2430;
+  --bg-canvas: #0f141c;
+  --bg-surface: #0f141c;
+  --bg-subtle: #171d28;
 
-  --border: transparent;
-  --border-subtle: transparent;
+  --border: #262d3d;
+  --border-subtle: #1d2330;
 
-  --text-primary: #f9fafb;
-  --text-secondary: #9ca3af;
-  --text-muted: #6b7280;
+  --text-primary: #f8fafc;
+  --text-secondary: #94a3b8;
+  --text-muted: #64748b;
 
   --accent-primary: #3b82f6;
   --link: #60a5fa;
   --link-visited: #b388ff;
   --link-unresolved: #ef4444;
   --mark-rgb: 202, 150, 12;
-  --bullet-color: #f9fafb;
+  --bullet-color: #f8fafc;
 
   --shadow-none: none;
-  --shadow-sm: 0 1px 3px 0 rgba(0, 0, 0, 0.35), 0 1px 2px -1px rgba(0, 0, 0, 0.25);
-  --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.45), 0 2px 4px -2px rgba(0, 0, 0, 0.3);
-  --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.55), 0 4px 6px -4px rgba(0, 0, 0, 0.35);
-  --shadow-xl: 0 20px 25px -5px rgba(0, 0, 0, 0.65), 0 8px 10px -6px rgba(0, 0, 0, 0.4);
+  --shadow-sm: 0 1px 3px 0 rgba(0, 0, 0, 0.4), 0 1px 2px -1px rgba(0, 0, 0, 0.3);
+  --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.5), 0 2px 4px -2px rgba(0, 0, 0, 0.35);
+  --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.6), 0 4px 6px -4px rgba(0, 0, 0, 0.4);
+  --shadow-xl: 0 20px 25px -5px rgba(0, 0, 0, 0.7), 0 8px 10px -6px rgba(0, 0, 0, 0.45);
+
+  --btn-bg: #1c2433;
+  --btn-color: var(--text-primary);
+  --btn-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.5), 0 1px 2px -1px rgba(0, 0, 0, 0.35);
+  --btn-shadow-hover: 0 4px 8px -1px rgba(0, 0, 0, 0.65), 0 2px 4px -2px rgba(0, 0, 0, 0.45);
+  --btn-shadow-active: 0 1px 2px 0 rgba(0, 0, 0, 0.4);
 
   --shell-bg: var(--bg-canvas);
-  --shell-border: transparent;
+  --shell-border: var(--border);
   --shell-text: var(--text-primary);
   --shell-text-muted: var(--text-secondary);
-  --recent-book-bg: var(--bg-surface);
+  --recent-book-bg: var(--bg-canvas);
 }
 
 :root[data-theme="light"] {
-  --bg-canvas: #fcfcfc;
+  --bg-canvas: #ffffff;
   --bg-surface: #ffffff;
+  --bg-subtle: #f8fafc;
+
+  --border: #e2e8f0;
+  --border-subtle: #edf2f7;
+
+  --btn-bg: #ffffff;
+  --btn-color: var(--text-primary);
+  --btn-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.10), 0 1px 2px -1px rgba(0, 0, 0, 0.06);
+  --btn-shadow-hover: 0 4px 6px -1px rgba(0, 0, 0, 0.14), 0 2px 4px -2px rgba(0, 0, 0, 0.08);
+  --btn-shadow-active: 0 1px 2px 0 rgba(0, 0, 0, 0.08);
+
+  --shell-border: var(--border);
+}
   --bg-subtle: #f3f4f6;
 
   --border: transparent;

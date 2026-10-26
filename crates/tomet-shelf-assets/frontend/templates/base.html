@@ -8,48 +8,11 @@
     <script>
       document.documentElement.classList.replace('no-js', 'js');
       try {
-        const savedView = localStorage.getItem('wiki-view-mode');
-        if (savedView === 'classic' || savedView === 'book') {
-          document.documentElement.setAttribute('data-view', savedView);
-        } else if (window.innerWidth < 768) {
-          document.documentElement.setAttribute('data-view', 'classic');
-        }
-        const savedTabs = localStorage.getItem('wiki-tabs-side');
-        if (savedTabs === 'top' || savedTabs === 'right') {
-          document.documentElement.setAttribute('data-tabs', savedTabs);
-        }
         const savedTheme = localStorage.getItem('shelf-theme');
         if (savedTheme === 'dark' || savedTheme === 'light') {
           document.documentElement.setAttribute('data-theme', savedTheme);
         }
-        // Shell customizations (Color, Pattern, Contrast)
-        let shellColor = localStorage.getItem('shelf-shell-color');
-        let shellPattern = localStorage.getItem('shelf-shell-pattern');
-        let shellContrast = localStorage.getItem('shelf-shell-contrast');
-        const legacyShell = localStorage.getItem('shelf-shell');
-        if (legacyShell && (!shellColor || !shellPattern)) {
-          if (legacyShell === 'violet') { shellColor = 'violet'; shellPattern = 'cloud'; }
-          else if (legacyShell === 'indigo') { shellColor = 'indigo'; shellPattern = 'seigaiha'; }
-          else if (legacyShell === 'olive') { shellColor = 'olive'; shellPattern = 'flourish'; }
-          else if (legacyShell === 'contrast') { shellColor = 'slate'; shellPattern = 'mesh'; shellContrast = 'high'; }
-          else { shellColor = 'slate'; shellPattern = 'marble'; }
-          localStorage.setItem('shelf-shell-color', shellColor);
-          localStorage.setItem('shelf-shell-pattern', shellPattern);
-          if (shellContrast) localStorage.setItem('shelf-shell-contrast', shellContrast);
-          localStorage.removeItem('shelf-shell');
-        }
-        if (shellColor && shellColor !== 'slate') {
-          document.documentElement.setAttribute('data-shell-color', shellColor);
-        }
-        if (shellPattern && shellPattern !== 'marble') {
-          document.documentElement.setAttribute('data-shell-pattern', shellPattern);
-        }
-        if (shellContrast === 'high') {
-          document.documentElement.setAttribute('data-shell-contrast', 'high');
-        }
-        // Decide the panes' collapsed state before the first paint. shelf.js
-        // applies the real classes on DOMContentLoaded and clears these, but
-        // by then the panes would already have been painted open.
+        // Collapsed states for navigation panes
         const narrow = window.innerWidth <= 900;
         const collapsed = (key) => {
           const saved = localStorage.getItem(key);
@@ -58,9 +21,6 @@
         if (collapsed('wiki-pane-nav-collapsed')) {
           document.documentElement.setAttribute('data-nav-collapsed', 'true');
         }
-        if (collapsed('wiki-pane-data-collapsed')) {
-          document.documentElement.setAttribute('data-data-collapsed', 'true');
-        }
       } catch {}
     </script>
     <link rel="stylesheet" href="{{ base_path | safe }}/shelf.css?v={{ css_version }}" />
@@ -68,157 +28,59 @@
     <link rel="stylesheet" href="{{ css }}" />
     {% endfor %}
   </head>
-  <body class="is-fluid">
+  <body class="is-fluid bg-canvas text-text min-h-screen flex flex-col m-0 p-0 overflow-hidden font-sans">
     <div id="page-progress-bar" data-pagefind-ignore></div>
-    <div class="container is-fluid">
-      <div class="floating-controls" id="floating-controls" data-pagefind-ignore>
-        <div class="floating-drag-handle flex items-center justify-center w-[14px] h-6 text-text-muted cursor-grab [touch-action:none] rounded-none shrink-0" id="floating-drag-handle" title="{{ t["drag.handle"] }}" aria-label="{{ t["drag.handle"] }}">
-          <svg width="10" height="14" viewBox="0 0 10 14" fill="currentColor" aria-hidden="true">
-            <circle cx="2.5" cy="2" r="1.5" />
-            <circle cx="7.5" cy="2" r="1.5" />
-            <circle cx="2.5" cy="7" r="1.5" />
-            <circle cx="7.5" cy="7" r="1.5" />
-            <circle cx="2.5" cy="12" r="1.5" />
-            <circle cx="7.5" cy="12" r="1.5" />
-          </svg>
-        </div>
-        <div class="search-container relative inline-block">
-          <div class="search-input-wrapper flex items-center relative">
-            {{ ui.tmt_icon(name="search", size="xs", class="search-input-icon absolute left-2 text-text-muted pointer-events-none block") }}
-            <input
-              type="search"
-              id="wiki-search-input"
-              placeholder="{{ t["search.placeholder"] }}"
-              autocomplete="off"
-              spellcheck="false"
-            />
-            <tmt-badge variant="kbd" size="xs" shape="rect" clickable class="search-shortcut-badge" title="Ctrl+K / /" aria-label="Ctrl+K / /">{{ ui.dsd_badge_shadow() }}⌘K</tmt-badge>
-          </div>
-          <div id="wiki-search-results" class="search-results absolute top-full left-0 mt-1 w-[440px] max-w-[calc(100vw-32px)] max-h-[420px] overflow-y-auto bg-surface rounded-lg z-[1000] shadow-[0_8px_24px_rgba(0,0,0,0.15)]" hidden></div>
 
-          <!-- Template for each result row above. 60-search.js clones this
-               rather than building the row from an HTML string, so the shape
-               lives in exactly one place instead of a parallel copy in JS. -->
-          <template id="search-result-item-template">
-            <a class="search-result-item">
-              <div class="search-result-row">
-                <img class="search-result-thumb" alt="" loading="lazy" hidden />
-                <div class="search-result-main">
-                  <div class="search-result-title">
-                    <span class="result-title-text"></span>
-                    <span class="search-result-kind" hidden></span>
-                    <span class="search-result-section" hidden></span>
-                  </div>
-                  <div class="search-result-path" hidden></div>
-                  <div class="search-result-aliases" hidden><span class="alias-label"></span> <span class="alias-text"></span></div>
-                  <div class="search-result-excerpt" hidden></div>
-                </div>
-              </div>
-            </a>
-          </template>
-        </div>
-        <div class="view-switcher tabs-side-switcher" role="group" aria-label="{{ t["tabs.side"] }}">
-          <tmt-btn variant="ghost" size="sm" shape="square" class="view-btn view-btn-icon" id="btn-tabs-top" title="{{ t["tabs.top_title"] }}" aria-label="{{ t["tabs.top_title"] }}">
-            {{ ui.dsd_btn_shadow(title=t["tabs.top_title"], aria_label=t["tabs.top_title"]) }}
-            <svg viewBox="0 0 16 16" width="13" height="13" fill="currentColor" aria-hidden="true">
-              <rect x="1" y="2" width="14" height="3.5" rx="0.75"></rect>
-              <rect x="1" y="7" width="14" height="7" rx="0.75" opacity="0.35"></rect>
-            </svg>
-          </tmt-btn>
-          <tmt-btn variant="ghost" size="sm" shape="square" class="view-btn view-btn-icon" id="btn-tabs-right" title="{{ t["tabs.right_title"] }}" aria-label="{{ t["tabs.right_title"] }}">
-            {{ ui.dsd_btn_shadow(title=t["tabs.right_title"], aria_label=t["tabs.right_title"]) }}
-            <svg viewBox="0 0 16 16" width="13" height="13" fill="currentColor" aria-hidden="true">
-              <rect x="1" y="2" width="9" height="12" rx="0.75" opacity="0.35"></rect>
-              <rect x="11.5" y="2" width="3.5" height="12" rx="0.75"></rect>
-            </svg>
-          </tmt-btn>
-        </div>
-        <div class="view-switcher view-mode-switcher" role="group" aria-label="{{ t["view.switch"] }}">
-          <tmt-btn variant="ghost" size="sm" shape="square" class="view-btn view-btn-icon view-btn-book" id="btn-view-book" title="{{ t["view.book_title"] }}" aria-label="{{ t["view.book_title"] }}">
-            {{ ui.dsd_btn_shadow(title=t["view.book_title"], aria_label=t["view.book_title"]) }}
-            {{ ui.tmt_icon(name="book", size="xs") }}
-          </tmt-btn>
-          <tmt-btn variant="ghost" size="sm" shape="square" class="view-btn view-btn-icon view-btn-classic" id="btn-view-classic" title="{{ t["view.classic_title"] }}" aria-label="{{ t["view.classic_title"] }}">
-            {{ ui.dsd_btn_shadow(title=t["view.classic_title"], aria_label=t["view.classic_title"]) }}
-            {{ ui.tmt_icon(name="file-text", size="xs") }}
-          </tmt-btn>
-        </div>
-        <tmt-btn variant="ghost" size="sm" shape="square" class="floating-collapse-btn" id="btn-floating-collapse" title="{{ t["floating.collapse"] }}" aria-label="{{ t["floating.collapse"] }}">
-          {{ ui.dsd_btn_shadow(title=t["floating.collapse"], aria_label=t["floating.collapse"]) }}
-          {{ ui.tmt_icon(name="minimize-2", size="xs", class="collapse-icon-minimize") }}
-          {{ ui.tmt_icon(name="maximize-2", size="xs", class="collapse-icon-maximize") }}
-        </tmt-btn>
-      </div>
+    {% block content %}{% endblock %}
 
-      {% block content %}{% endblock %}
-    </div>
-
-    <!-- Hover Page Preview -->
-    <div id="wiki-page-preview" class="wiki-preview-card fixed w-[320px] max-w-[calc(100vw-32px)] bg-surface rounded-xl py-3 px-4 shadow-[0_8px_24px_rgba(0,0,0,0.18)] z-[10000] pointer-events-auto box-border" hidden data-pagefind-ignore>
-      <div class="preview-header flex items-baseline justify-between gap-2 mb-1.5 pb-1">
+    <!-- Hover Page Preview (Obsidian / Wikipedia style) -->
+    <div id="wiki-page-preview" class="wiki-preview-card fixed w-[320px] max-w-[calc(100vw-32px)] bg-canvas rounded-xl py-3 px-4 shadow-[0_10px_25px_rgba(0,0,0,0.18)] border border-border z-[10000] pointer-events-auto box-border" hidden data-pagefind-ignore>
+      <div class="preview-header flex items-baseline justify-between gap-2 mb-1.5 pb-1 border-b border-border-subtle">
         <span class="preview-title text-[0.95rem] font-bold text-link overflow-hidden text-ellipsis whitespace-nowrap"></span>
         <span class="preview-section text-xs text-text-muted whitespace-nowrap"></span>
       </div>
       <div class="preview-content flex gap-3 items-start">
         <div class="preview-body flex-1 min-w-0 text-[0.85rem] text-text leading-relaxed max-h-24 line-clamp-4 break-words"></div>
-        <img class="preview-thumb w-16 h-16 object-cover shrink-0 rounded-md shadow-sm bg-surface-subtle block" src="" alt="" hidden />
+        <img class="preview-thumb w-16 h-16 object-cover shrink-0 rounded-md shadow-sm bg-subtle block" src="" alt="" hidden />
       </div>
-      <div class="preview-footer flex items-center justify-end mt-2 pt-1.5">
+      <div class="preview-footer flex items-center justify-end mt-2 pt-1.5 border-t border-border-subtle">
         <span class="preview-peek-hint text-[0.7rem] text-text-muted inline-flex items-center gap-1">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="15 3 21 3 21 9"></polyline><polyline points="9 21 3 21 3 15"></polyline><line x1="21" y1="3" x2="14" y2="10"></line><line x1="3" y1="21" x2="10" y2="14"></line></svg>
-          {{ t["preview.open_peek"] }}
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" width="12" height="12"><polyline points="15 3 21 3 21 9"></polyline><polyline points="9 21 3 21 3 15"></polyline><line x1="21" y1="3" x2="14" y2="10"></line><line x1="3" y1="21" x2="10" y2="14"></line></svg>
+          {{ t["preview.open_peek"] | default('詳細を開く') }}
         </span>
       </div>
     </div>
 
-    <!-- Center Peek Modal (Notion-style page peek) -->
-    <div id="wiki-center-peek" class="peek-overlay fixed inset-0 bg-[rgba(0,0,0,0.65)] z-[95000] flex items-center justify-center box-border" hidden data-pagefind-ignore>
-      <div class="peek-dialog relative shadow-[0_20px_50px_rgba(0,0,0,0.35)] rounded-2xl flex flex-col overflow-hidden" role="dialog" aria-modal="true">
-        <header class="peek-header h-11 flex items-center justify-between px-3.5 bg-surface shrink-0 select-none">
+    <!-- Center Peek Modal (Notion / Obsidian style) -->
+    <div id="wiki-center-peek" class="peek-overlay fixed inset-0 bg-[rgba(0,0,0,0.6)] z-[95000] flex items-center justify-center box-border p-4" hidden data-pagefind-ignore>
+      <div class="peek-dialog relative w-[800px] max-w-full max-h-[90vh] bg-canvas border border-border shadow-[0_20px_50px_rgba(0,0,0,0.25)] rounded-2xl flex flex-col overflow-hidden" role="dialog" aria-modal="true">
+        <header class="peek-header h-12 flex items-center justify-between px-4 bg-canvas border-b border-border shrink-0 select-none">
           <div class="peek-header-crumbs flex items-center gap-2 text-[0.825rem] text-text-muted overflow-hidden text-ellipsis whitespace-nowrap" id="peek-crumbs"></div>
-          <div class="peek-header-actions flex items-center gap-1.5 shrink-0">
-            <tmt-btn variant="ghost" size="sm" shape="square" class="peek-action-btn peek-btn-fullscreen" id="peek-btn-fullscreen" title="{{ t["peek.fullscreen"] }}" aria-label="{{ t["peek.fullscreen"] }}">
-              {{ ui.dsd_btn_shadow(title=t["peek.fullscreen"], aria_label=t["peek.fullscreen"]) }}
-              <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+          <div class="peek-header-actions flex items-center gap-2 shrink-0">
+            <tmt-btn variant="outline" size="sm" shape="square" class="peek-action-btn peek-btn-fullscreen" id="peek-btn-fullscreen" title="{{ t["peek.fullscreen"] | default('全画面') }}" aria-label="{{ t["peek.fullscreen"] | default('全画面') }}">
+              {{ ui.dsd_btn_shadow() }}
+              <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
                 <polyline points="15 3 21 3 21 9"></polyline>
                 <polyline points="9 21 3 21 3 15"></polyline>
                 <line x1="21" y1="3" x2="14" y2="10"></line>
                 <line x1="3" y1="21" x2="10" y2="14"></line>
               </svg>
             </tmt-btn>
-            <tmt-btn variant="ghost" size="sm" shape="square" class="peek-action-btn peek-btn-close" id="peek-btn-close" title="{{ t["peek.close"] }}" aria-label="{{ t["peek.close"] }}">
-              {{ ui.dsd_btn_shadow(title=t["peek.close"], aria_label=t["peek.close"]) }}
+            <tmt-btn variant="outline" size="sm" shape="square" class="peek-action-btn peek-btn-close" id="peek-btn-close" title="{{ t["peek.close"] | default('閉じる') }}" aria-label="{{ t["peek.close"] | default('閉じる') }}">
+              {{ ui.dsd_btn_shadow() }}
               ✕
             </tmt-btn>
           </div>
         </header>
-        <div class="peek-scroll-body flex-1 overflow-y-auto box-border" id="peek-body"></div>
+        <div class="peek-scroll-body flex-1 overflow-y-auto p-6 box-border" id="peek-body"></div>
       </div>
     </div>
 
-    <!-- Sticky Tabs Subheadings Hover Popover -->
-    <div id="sticky-hover-popover" class="sticky-hover-popover" hidden data-pagefind-ignore>
-      <div class="sticky-popover-tab sticky-tab-btn" role="button"></div>
-      <div class="sticky-hover-popover-list"></div>
-    </div>
-
-    <!-- Template for each child-heading row in the popover above. 40-book-view.js
-         clones this rather than building the row from an HTML string, so the
-         shape lives in exactly one place (here) instead of being duplicated
-         as a parallel copy in JS -- see the 09-18 session notes on JS/Jinja
-         markup drift. -->
-    <template id="sticky-hover-item-template">
-      <a class="sticky-hover-item">
-        <span class="sticky-level-badge"></span>
-        <span class="item-text"></span>
-      </a>
-    </template>
-
     <!-- Image Lightbox Modal -->
-    <div id="wiki-image-lightbox" class="lightbox-overlay fixed inset-0 bg-[rgba(0,0,0,0.8)] z-[100000] flex items-center justify-center p-5" hidden data-pagefind-ignore>
-      <div class="lightbox-dialog relative max-w-[92vw] max-h-[92vh] flex flex-col items-center bg-surface rounded-2xl shadow-[0_16px_48px_rgba(0,0,0,0.5)] p-3">
-        <tmt-btn variant="outline" size="sm" shape="square" class="lightbox-close" aria-label="{{ t["lightbox.close"] }}">
-          {{ ui.dsd_btn_shadow(aria_label=t["lightbox.close"]) }}
+    <div id="wiki-image-lightbox" class="lightbox-overlay fixed inset-0 bg-[rgba(0,0,0,0.85)] z-[100000] flex items-center justify-center p-5" hidden data-pagefind-ignore>
+      <div class="lightbox-dialog relative max-w-[92vw] max-h-[92vh] flex flex-col items-center bg-canvas border border-border rounded-2xl shadow-[0_16px_48px_rgba(0,0,0,0.5)] p-3">
+        <tmt-btn variant="outline" size="sm" shape="square" class="lightbox-close absolute top-3 right-3" aria-label="{{ t["lightbox.close"] | default('閉じる') }}">
+          {{ ui.dsd_btn_shadow() }}
           ✕
         </tmt-btn>
         <div class="lightbox-img-wrapper max-w-full max-h-[calc(92vh-64px)] flex items-center justify-center overflow-hidden">

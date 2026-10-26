@@ -1,175 +1,117 @@
-/* ==================== PANE 1: NAV PANE ====================
+/* ==================== 3-PANE ARCHITECTURE ====================
    tomet-shelf: Standard viewer ("Obsidian × Wikipedia")
-   Border-less architecture: structural separation achieved via surface tone difference.
+   Unified background, meaningful structural border lines, elevated buttons.
    ================================================================ */
 
+/* Left Navigation Pane */
 .pane-nav {
   width: 260px;
   min-width: 260px;
+  max-width: 280px;
   display: flex;
   flex-direction: column;
   height: 100%;
   background-color: var(--bg-canvas);
-  border: none;
-  box-shadow: none;
+  border-right: 1px solid var(--border);
   color: var(--text-primary);
-  --text: var(--text-primary);
-  --text-muted: var(--text-secondary);
   flex-shrink: 0;
   overflow: hidden;
   box-sizing: border-box;
-}
-
-.book-view.is-ready .pane-nav {
-  transition: width 0.22s cubic-bezier(0.2, 0, 0, 1),
-              min-width 0.22s cubic-bezier(0.2, 0, 0, 1),
-              max-width 0.22s cubic-bezier(0.2, 0, 0, 1),
-              opacity 0.18s ease;
 }
 
 [data-nav-collapsed] .pane-nav,
 .pane-nav.is-collapsed {
-  width: 0 !important;
-  min-width: 0 !important;
-  max-width: 0 !important;
-  border: none !important;
-  opacity: 0;
-  pointer-events: none;
-  visibility: hidden;
-}
-
-.pane-nav > .pane-scroll,
-.pane-nav > .pane-header {
-  width: 260px;
-  flex-shrink: 0;
-}
-
-.pane-nav > .pane-header,
-.pane-data > .pane-header {
-  background-color: var(--bg-canvas);
-  border: none;
-  box-shadow: var(--shadow-sm);
-  color: var(--text-secondary);
-}
-
-.pane-data > .pane-header:hover {
-  background-color: var(--bg-subtle);
-  color: var(--text-primary);
-}
-
-.pane-data > .pane-header .pane-collapse-arrow {
-  color: var(--text-secondary);
-}
-
-.pane-data > .pane-header:hover .pane-collapse-arrow {
-  color: var(--text-primary);
-}
-
-.pane-panel-view[hidden] {
   display: none !important;
 }
 
-/* ==================== PANE 2: DATA / CONTEXT PANE ==================== */
-.pane-collapsed-bar {
-  position: absolute;
-  top: 0;
-  left: 0;
-  width: 36px;
-  height: 100%;
+/* Center Article Canvas Pane */
+.pane-content {
+  flex: 1 1 auto;
+  min-width: 0;
   display: flex;
   flex-direction: column;
-  align-items: center;
-  justify-content: flex-start;
-  padding: 14px 0;
-  gap: 8px;
-  user-select: none;
+  height: 100%;
   background-color: var(--bg-canvas);
-  border: none;
-  color: var(--text-secondary);
+  overflow-y: auto;
   box-sizing: border-box;
-  opacity: 0;
-  pointer-events: none;
-  cursor: pointer;
-  z-index: 5;
-  transition: background-color 0.15s ease, color 0.15s ease;
 }
 
-.book-view.is-ready .pane-collapsed-bar {
-  transition: opacity 0.15s ease, background-color 0.15s ease, color 0.15s ease;
-}
-
-.pane-data {
-  width: 340px;
-  min-width: 340px;
-  max-width: 420px;
+/* Right Context Pane (TOC & Backlinks) */
+.pane-context {
+  width: 250px;
+  min-width: 250px;
+  max-width: 260px;
   display: flex;
   flex-direction: column;
   height: 100%;
   background-color: var(--bg-canvas);
-  border: none;
-  box-shadow: none;
+  border-left: 1px solid var(--border);
   flex-shrink: 0;
-  overflow: hidden;
+  overflow-y: auto;
   box-sizing: border-box;
 }
 
-[data-data-collapsed] .pane-data,
-.pane-data.is-collapsed {
-  width: 36px !important;
-  min-width: 36px !important;
-  max-width: 36px !important;
-  flex: 0 0 36px !important;
-  cursor: pointer;
-}
-
-[data-data-collapsed] .pane-data .pane-collapsed-bar,
-.pane-data.is-collapsed .pane-collapsed-bar {
-  opacity: 1;
-  pointer-events: auto;
-}
-
-[data-data-collapsed] .pane-data:hover .pane-collapsed-bar,
-.pane-data.is-collapsed:hover .pane-collapsed-bar {
-  background-color: var(--bg-subtle);
-  color: var(--text-primary);
-}
-
-[data-data-collapsed] .pane-data .pane-scroll-data,
-[data-data-collapsed] .pane-data .pane-header,
-.pane-data.is-collapsed .pane-scroll-data,
-.pane-data.is-collapsed .pane-header {
-  opacity: 0;
-  pointer-events: none;
-  visibility: hidden;
-}
-
-.pane-scroll::-webkit-scrollbar {
+/* Scrollbars */
+.pane-scroll::-webkit-scrollbar,
+.pane-content::-webkit-scrollbar {
   width: 6px;
 }
-.pane-scroll::-webkit-scrollbar-track {
+.pane-scroll::-webkit-scrollbar-track,
+.pane-content::-webkit-scrollbar-track {
   background: transparent;
 }
-.pane-scroll::-webkit-scrollbar-thumb {
+.pane-scroll::-webkit-scrollbar-thumb,
+.pane-content::-webkit-scrollbar-thumb {
   background: var(--text-muted);
   border-radius: 3px;
-  opacity: 0.5;
+  opacity: 0.4;
 }
-.pane-scroll::-webkit-scrollbar-thumb:hover {
+.pane-scroll::-webkit-scrollbar-thumb:hover,
+.pane-content::-webkit-scrollbar-thumb:hover {
   background: var(--text-secondary);
 }
 
-/* ==================== PANE 3: ARTICLE CANVAS PANE ==================== */
-.pane-content {
-  flex: 1 1 720px;
-  min-width: 580px;
-  max-width: none;
-  display: flex;
-  flex-direction: column;
-  height: 100%;
-  background-color: var(--bg-surface);
-  border: none;
-  box-shadow: var(--shadow-md);
-  z-index: 10;
-  overflow: hidden;
-  box-sizing: border-box;
+/* TOC Items Active State */
+.book-toc-link {
+  transition: color 0.15s ease, background-color 0.15s ease;
+}
+.book-toc-link.is-active {
+  color: var(--accent-primary) !important;
+  font-weight: 600;
+  background-color: var(--bg-subtle);
+}
+
+/* Book Index Active State */
+.book-index-link.is-here {
+  color: var(--accent-primary) !important;
+  font-weight: 600;
+  background-color: var(--bg-subtle);
+}
+
+/* Responsive Hide/Show */
+@media (max-width: 1024px) {
+  .pane-context {
+    display: none !important;
+  }
+}
+
+@media (max-width: 768px) {
+  .pane-nav {
+    position: fixed;
+    top: 52px;
+    left: 0;
+    bottom: 0;
+    z-index: 50;
+    box-shadow: var(--shadow-xl);
+    transform: translateX(-100%);
+    transition: transform 0.2s ease-in-out;
+  }
+
+  .pane-nav.is-open {
+    transform: translateX(0);
+  }
+
+  .pane-backdrop.is-open {
+    display: block !important;
+  }
 }
