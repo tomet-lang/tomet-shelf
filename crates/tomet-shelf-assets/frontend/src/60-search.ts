@@ -9,7 +9,7 @@
   async function getPagefind() {
     if (!pagefindInstance) {
       try {
-        const base = (window as any).tmtBasePath || '';
+        const base = (window as any).tmtBasePath || "";
         const pagefindUrl = `${base}/pagefind/pagefind.js`;
         const pf = await import(/* @vite-ignore */ pagefindUrl);
         await pf.options({
@@ -20,7 +20,7 @@
         await pf.init();
         pagefindInstance = pf;
       } catch (e) {
-        console.warn('Pagefind index not found or error loading:', e);
+        console.warn("Pagefind index not found or error loading:", e);
       }
     }
     return pagefindInstance;
@@ -48,11 +48,11 @@
 
   async function getNativeIndex(): Promise<NativeSearchIndex | null> {
     if (!nativeIndexPromise) {
-      const base = (window as any).tmtBasePath || '';
+      const base = (window as any).tmtBasePath || "";
       nativeIndexPromise = fetch(`${base}/search-index.json`)
         .then((res) => (res.ok ? res.json() : null))
         .catch((e) => {
-          console.warn('Native search index not found or error loading:', e);
+          console.warn("Native search index not found or error loading:", e);
           return null;
         });
     }
@@ -66,8 +66,13 @@
     const q = query.trim();
     if (!q) return [];
 
-    if (typeof Intl !== 'undefined' && typeof (Intl as any).Segmenter === 'function') {
-      const segmenter = new (Intl as any).Segmenter(undefined, { granularity: 'word' });
+    if (
+      typeof Intl !== "undefined" &&
+      typeof (Intl as any).Segmenter === "function"
+    ) {
+      const segmenter = new (Intl as any).Segmenter(undefined, {
+        granularity: "word",
+      });
       const tokens: string[] = [];
       for (const { segment, isWordLike } of segmenter.segment(q)) {
         if (isWordLike) tokens.push(segment.toLowerCase());
@@ -82,14 +87,14 @@
   }
 
   function normalizeStrict(s: string): string {
-    return (s || '').toLowerCase().trim();
+    return (s || "").toLowerCase().trim();
   }
 
   function normalizeFuzzy(s: string): string {
-    return (s || '')
+    return (s || "")
       .toLowerCase()
-      .replace(/[@#\-_/\\.()[\]{}:;,+*~]/g, ' ')
-      .replace(/\s+/g, ' ')
+      .replace(/[@#\-_/\\.()[\]{}:;,+*~]/g, " ")
+      .replace(/\s+/g, " ")
       .trim();
   }
 
@@ -124,7 +129,7 @@
     const qFuzzy = normalizeFuzzy(query);
     let wordPattern: RegExp | null = null;
     if (qFuzzy) {
-      const escaped = qFuzzy.replace(/[-/\\^$*+?.()|[\]{}]/g, '\\$&');
+      const escaped = qFuzzy.replace(/[-/\\^$*+?.()|[\]{}]/g, "\\$&");
       wordPattern = new RegExp(`(^|\\s)${escaped}($|\\s)`);
     }
     return { qStrict, qFuzzy, wordPattern };
@@ -134,65 +139,80 @@
   // surfaces rank native-index results the same way Pagefind's tuned ranking
   // approximated: exact/prefix/word-boundary/substring hits on title, alias,
   // filename, URL stem and path, in that priority order.
-  function calculateSearchBoost(query: string, item: SearchCandidate, compiled?: CompiledQuery): number {
-      const q = compiled || compileQuery(query);
-      if (!q.qStrict) return 0;
+  function calculateSearchBoost(
+    query: string,
+    item: SearchCandidate,
+    compiled?: CompiledQuery,
+  ): number {
+    const q = compiled || compileQuery(query);
+    if (!q.qStrict) return 0;
 
-      const title = item.meta?.title || '';
-      const path = item.meta?.path || '';
-      const filename = path ? path.split('/').pop()?.replace(/\.tmt$/, '') || '' : '';
-      const urlStem = (item.url || '').replace(/\/+$/, '').split('/').pop() || '';
+    const title = item.meta?.title || "";
+    const path = item.meta?.path || "";
+    const filename = path
+      ? path
+          .split("/")
+          .pop()
+          ?.replace(/\.tmt$/, "") || ""
+      : "";
+    const urlStem = (item.url || "").replace(/\/+$/, "").split("/").pop() || "";
 
-      const rawAliases = item.meta?.aliases
-        ? item.meta.aliases
-            .split(/[,、]/)
-            .map((s) => s.trim())
-            .filter(Boolean)
-        : [];
+    const rawAliases = item.meta?.aliases
+      ? item.meta.aliases
+          .split(/[,、]/)
+          .map((s) => s.trim())
+          .filter(Boolean)
+      : [];
 
-      const targets = [
-        { text: title, weight: 1.0 },
-        { text: filename, weight: 1.0 },
-        { text: urlStem, weight: 0.9 },
-        { text: path, weight: 0.8 },
-        ...rawAliases.map((a) => ({ text: a, weight: 0.98 })),
-      ];
+    const targets = [
+      { text: title, weight: 1.0 },
+      { text: filename, weight: 1.0 },
+      { text: urlStem, weight: 0.9 },
+      { text: path, weight: 0.8 },
+      ...rawAliases.map((a) => ({ text: a, weight: 0.98 })),
+    ];
 
-      let maxBoost = 0;
+    let maxBoost = 0;
 
-      for (const { text, weight } of targets) {
-        if (!text) continue;
-        const tStrict = normalizeStrict(text);
-        const tFuzzy = normalizeFuzzy(text);
+    for (const { text, weight } of targets) {
+      if (!text) continue;
+      const tStrict = normalizeStrict(text);
+      const tFuzzy = normalizeFuzzy(text);
 
-        // Tier 1: Exact match (either strict or fuzzy)
-        // e.g. "@Raora-Panthera" === "@Raora-Panthera" or "Raora Panthera" === "Raora Panthera"
-        if (tStrict === q.qStrict || (q.qFuzzy && tFuzzy === q.qFuzzy)) {
-          maxBoost = Math.max(maxBoost, 100000 * weight);
-          continue;
-        }
-
-        // Tier 2: Prefix match (text starts with query)
-        // e.g. "Raora Panthera" starts with "Raora"
-        if (tStrict.startsWith(q.qStrict) || (q.qFuzzy && tFuzzy.startsWith(q.qFuzzy))) {
-          maxBoost = Math.max(maxBoost, 50000 * weight);
-          continue;
-        }
-
-        // Tier 3: Word-boundary match
-        if (q.wordPattern && q.wordPattern.test(tFuzzy)) {
-          maxBoost = Math.max(maxBoost, 20000 * weight);
-          continue;
-        }
-
-        // Tier 4: Substring match anywhere in title/filename/alias
-        if (tStrict.includes(q.qStrict) || (q.qFuzzy && tFuzzy.includes(q.qFuzzy))) {
-          maxBoost = Math.max(maxBoost, 10000 * weight);
-          continue;
-        }
+      // Tier 1: Exact match (either strict or fuzzy)
+      // e.g. "@Raora-Panthera" === "@Raora-Panthera" or "Raora Panthera" === "Raora Panthera"
+      if (tStrict === q.qStrict || (q.qFuzzy && tFuzzy === q.qFuzzy)) {
+        maxBoost = Math.max(maxBoost, 100000 * weight);
+        continue;
       }
 
-      return maxBoost;
+      // Tier 2: Prefix match (text starts with query)
+      // e.g. "Raora Panthera" starts with "Raora"
+      if (
+        tStrict.startsWith(q.qStrict) ||
+        (q.qFuzzy && tFuzzy.startsWith(q.qFuzzy))
+      ) {
+        maxBoost = Math.max(maxBoost, 50000 * weight);
+        continue;
+      }
+
+      // Tier 3: Word-boundary match
+      if (q.wordPattern && q.wordPattern.test(tFuzzy)) {
+        maxBoost = Math.max(maxBoost, 20000 * weight);
+        continue;
+      }
+
+      // Tier 4: Substring match anywhere in title/filename/alias
+      if (
+        tStrict.includes(q.qStrict) ||
+        (q.qFuzzy && tFuzzy.includes(q.qFuzzy))
+      ) {
+        maxBoost = Math.max(maxBoost, 10000 * weight);
+        continue;
+      }
+    }
+
+    return maxBoost;
   }
 
   interface CachedDocTarget {
@@ -211,10 +231,15 @@
   function getDocTargets(doc: CachedSearchDocument): CachedDocTarget[] {
     if (doc._targets) return doc._targets;
 
-    const title = doc.title || '';
-    const path = doc.path || '';
-    const filename = path ? path.split('/').pop()?.replace(/\.tmt$/, '') || '' : '';
-    const urlStem = (doc.url || '').replace(/\/+$/, '').split('/').pop() || '';
+    const title = doc.title || "";
+    const path = doc.path || "";
+    const filename = path
+      ? path
+          .split("/")
+          .pop()
+          ?.replace(/\.tmt$/, "") || ""
+      : "";
+    const urlStem = (doc.url || "").replace(/\/+$/, "").split("/").pop() || "";
     const rawAliases = doc.aliases || [];
 
     const rawTargets: Array<{ text: string; weight: number }> = [
@@ -236,7 +261,10 @@
     return doc._targets;
   }
 
-  function calculateDocBoost(compiled: CompiledQuery, doc: CachedSearchDocument): number {
+  function calculateDocBoost(
+    compiled: CompiledQuery,
+    doc: CachedSearchDocument,
+  ): number {
     if (!compiled.qStrict) return 0;
     const targets = getDocTargets(doc);
     let maxBoost = 0;
@@ -245,13 +273,19 @@
       const { tStrict, tFuzzy, weight } = targets[i];
 
       // Tier 1: Exact match
-      if (tStrict === compiled.qStrict || (compiled.qFuzzy && tFuzzy === compiled.qFuzzy)) {
+      if (
+        tStrict === compiled.qStrict ||
+        (compiled.qFuzzy && tFuzzy === compiled.qFuzzy)
+      ) {
         maxBoost = Math.max(maxBoost, 100000 * weight);
         continue;
       }
 
       // Tier 2: Prefix match
-      if (tStrict.startsWith(compiled.qStrict) || (compiled.qFuzzy && tFuzzy.startsWith(compiled.qFuzzy))) {
+      if (
+        tStrict.startsWith(compiled.qStrict) ||
+        (compiled.qFuzzy && tFuzzy.startsWith(compiled.qFuzzy))
+      ) {
         maxBoost = Math.max(maxBoost, 50000 * weight);
         continue;
       }
@@ -263,7 +297,10 @@
       }
 
       // Tier 4: Substring match
-      if (tStrict.includes(compiled.qStrict) || (compiled.qFuzzy && tFuzzy.includes(compiled.qFuzzy))) {
+      if (
+        tStrict.includes(compiled.qStrict) ||
+        (compiled.qFuzzy && tFuzzy.includes(compiled.qFuzzy))
+      ) {
         maxBoost = Math.max(maxBoost, 10000 * weight);
         continue;
       }
@@ -272,10 +309,18 @@
     return maxBoost;
   }
 
-  function getDocHaystack(doc: CachedSearchDocument, includeFullText: boolean): string {
+  function getDocHaystack(
+    doc: CachedSearchDocument,
+    includeFullText: boolean,
+  ): string {
     if (doc._metaHaystack === undefined) {
-      doc._metaHaystack = [doc.title, ...(doc.aliases || []), ...(doc.headings || []), doc.path]
-        .join(' ')
+      doc._metaHaystack = [
+        doc.title,
+        ...(doc.aliases || []),
+        ...(doc.headings || []),
+        doc.path,
+      ]
+        .join(" ")
         .toLowerCase();
     }
     if (!includeFullText) {
@@ -283,33 +328,38 @@
     }
     if (doc._fullHaystack === undefined) {
       if (doc._textLower === undefined) {
-        doc._textLower = (doc.text || '').toLowerCase();
+        doc._textLower = (doc.text || "").toLowerCase();
       }
-      doc._fullHaystack = doc._metaHaystack + ' ' + doc._textLower;
+      doc._fullHaystack = doc._metaHaystack + " " + doc._textLower;
     }
     return doc._fullHaystack;
   }
 
   function escapeHtml(s: string): string {
     return s
-      .replace(/&/g, '&amp;')
-      .replace(/</g, '&lt;')
-      .replace(/>/g, '&gt;')
-      .replace(/"/g, '&quot;')
-      .replace(/'/g, '&#39;');
+      .replace(/&/g, "&amp;")
+      .replace(/</g, "&lt;")
+      .replace(/>/g, "&gt;")
+      .replace(/"/g, "&quot;")
+      .replace(/'/g, "&#39;");
   }
 
   // Builds an HTML excerpt around the first token match in `text`,
   // wrapping every token occurrence in <mark>. Output is safe to assign
   // to innerHTML: the source text is escaped before highlighting.
-  function buildHighlightedExcerpt(text: string, tokens: string[], maxLen = 160): string {
-    if (!text) return '';
+  function buildHighlightedExcerpt(
+    text: string,
+    tokens: string[],
+    maxLen = 160,
+  ): string {
+    if (!text) return "";
     const lowerText = text.toLowerCase();
 
     let matchIndex = -1;
     for (const tok of tokens) {
       const idx = lowerText.indexOf(tok);
-      if (idx !== -1 && (matchIndex === -1 || idx < matchIndex)) matchIndex = idx;
+      if (idx !== -1 && (matchIndex === -1 || idx < matchIndex))
+        matchIndex = idx;
     }
 
     const anchor = matchIndex === -1 ? 0 : matchIndex;
@@ -317,18 +367,26 @@
     const end = Math.min(text.length, start + maxLen);
     const slice = text.slice(start, end);
 
-    const uniqueTokens = Array.from(new Set(tokens.filter(Boolean))).sort((a, b) => b.length - a.length);
+    const uniqueTokens = Array.from(new Set(tokens.filter(Boolean))).sort(
+      (a, b) => b.length - a.length,
+    );
     let highlighted = escapeHtml(slice);
     if (uniqueTokens.length > 0) {
-      const pattern = uniqueTokens.map((tok) => tok.replace(/[-/\\^$*+?.()|[\]{}]/g, '\\$&')).join('|');
-      const re = new RegExp(`(${pattern})`, 'gi');
-      highlighted = highlighted.replace(re, '<mark>$1</mark>');
+      const pattern = uniqueTokens
+        .map((tok) => tok.replace(/[-/\\^$*+?.()|[\]{}]/g, "\\$&"))
+        .join("|");
+      const re = new RegExp(`(${pattern})`, "gi");
+      highlighted = highlighted.replace(re, "<mark>$1</mark>");
     }
 
-    return `${start > 0 ? '…' : ''}${highlighted}${end < text.length ? '…' : ''}`;
+    return `${start > 0 ? "…" : ""}${highlighted}${end < text.length ? "…" : ""}`;
   }
 
-  function toSearchCandidate(doc: NativeSearchDocument, rawScore: number, excerpt?: string): SearchCandidate {
+  function toSearchCandidate(
+    doc: NativeSearchDocument,
+    rawScore: number,
+    excerpt?: string,
+  ): SearchCandidate {
     return {
       url: doc.url,
       rawScore,
@@ -336,7 +394,7 @@
       meta: {
         title: doc.title,
         path: doc.path,
-        aliases: (doc.aliases || []).join(', '),
+        aliases: (doc.aliases || []).join(", "),
         image: doc.image,
       },
       filters: {
@@ -352,7 +410,7 @@
     doc: CachedSearchDocument,
     boost: number,
     rawScore: number,
-    tokens: string[]
+    tokens: string[],
   ): SearchCandidate {
     let cachedExcerpt: string | undefined = undefined;
     let excerptComputed = false;
@@ -364,7 +422,7 @@
       meta: {
         title: doc.title,
         path: doc.path,
-        aliases: (doc.aliases || []).join(', '),
+        aliases: (doc.aliases || []).join(", "),
         image: doc.image,
       },
       filters: {
@@ -374,7 +432,9 @@
       get excerpt(): string | undefined {
         if (!excerptComputed) {
           excerptComputed = true;
-          cachedExcerpt = doc.text ? buildHighlightedExcerpt(doc.text, tokens) : '';
+          cachedExcerpt = doc.text
+            ? buildHighlightedExcerpt(doc.text, tokens)
+            : "";
         }
         return cachedExcerpt;
       },
@@ -397,10 +457,13 @@
   function nativeSearchDocuments(
     query: string,
     index: NativeSearchIndex,
-    opts: { sections?: Set<string> | null } = {}
+    opts: { sections?: Set<string> | null } = {},
   ): SearchCandidate[] {
     const sections = opts.sections;
-    const docs = sections && sections.size > 0 ? index.docs.filter((d) => d.section && sections.has(d.section)) : index.docs;
+    const docs =
+      sections && sections.size > 0
+        ? index.docs.filter((d) => d.section && sections.has(d.section))
+        : index.docs;
 
     const trimmedQuery = query.trim();
     const tokens = tokenizeQuery(trimmedQuery);
@@ -465,11 +528,11 @@
   }
 
   function setupSearch() {
-    const input = document.getElementById('wiki-search-input');
-    const resultsContainer = document.getElementById('wiki-search-results');
+    const input = document.getElementById("wiki-search-input");
+    const resultsContainer = document.getElementById("wiki-search-results");
     if (!input || !resultsContainer) return;
-    if (input.dataset.searchInitialized === 'true') return;
-    input.dataset.searchInitialized = 'true';
+    if (input.dataset.searchInitialized === "true") return;
+    input.dataset.searchInitialized = "true";
 
     function showResults() {
       resultsContainer.hidden = false;
@@ -478,10 +541,10 @@
 
     function adjustPosition() {
       if (window.innerWidth <= 768) {
-        resultsContainer.style.left = '';
+        resultsContainer.style.left = "";
         return;
       }
-      resultsContainer.style.left = '0';
+      resultsContainer.style.left = "0";
       const rect = resultsContainer.getBoundingClientRect();
       const maxRight = window.innerWidth - 10;
       if (rect.right > maxRight) {
@@ -490,39 +553,45 @@
       }
     }
 
-    window.addEventListener('resize', () => {
+    window.addEventListener("resize", () => {
       if (!resultsContainer.hidden) adjustPosition();
     });
 
     function showStatus(message) {
-      const status = document.createElement('div');
-      status.className = 'search-status';
+      const status = document.createElement("div");
+      status.className = "search-status";
       status.textContent = message;
       resultsContainer.replaceChildren(status);
     }
 
     function renderResults(results: SearchCandidate[]) {
-      const itemTemplate = document.getElementById('search-result-item-template') as HTMLTemplateElement | null;
+      const itemTemplate = document.getElementById(
+        "search-result-item-template",
+      ) as HTMLTemplateElement | null;
       if (!itemTemplate) return;
 
       const items = results.map((res, idx) => {
-        const item = itemTemplate.content.firstElementChild?.cloneNode(true) as HTMLAnchorElement;
+        const item = itemTemplate.content.firstElementChild?.cloneNode(
+          true,
+        ) as HTMLAnchorElement;
         item.href = res.url;
         item.dataset.index = String(idx);
 
-        const thumb = item.querySelector<HTMLImageElement>('.search-result-thumb');
+        const thumb = item.querySelector<HTMLImageElement>(
+          ".search-result-thumb",
+        );
         if (res.meta?.image && thumb) {
           thumb.src = res.meta.image;
           thumb.hidden = false;
-          thumb.addEventListener('error', () => thumb.remove(), { once: true });
+          thumb.addEventListener("error", () => thumb.remove(), { once: true });
         } else {
           thumb?.remove();
         }
 
-        const titleText = item.querySelector('.result-title-text');
-        if (titleText) titleText.textContent = res.meta?.title || 'No title';
+        const titleText = item.querySelector(".result-title-text");
+        if (titleText) titleText.textContent = res.meta?.title || "No title";
 
-        const kind = item.querySelector<HTMLElement>('.search-result-kind');
+        const kind = item.querySelector<HTMLElement>(".search-result-kind");
         if (res.filters?.kind && kind) {
           kind.textContent = res.filters.kind;
           kind.hidden = false;
@@ -530,7 +599,9 @@
           kind?.remove();
         }
 
-        const section = item.querySelector<HTMLElement>('.search-result-section');
+        const section = item.querySelector<HTMLElement>(
+          ".search-result-section",
+        );
         if (res.filters?.section && section) {
           section.textContent = res.filters.section;
           section.hidden = false;
@@ -538,11 +609,19 @@
           section?.remove();
         }
 
-        const pathEl = item.querySelector<HTMLElement>('.search-result-path');
-        const prefix = (window as any).tmtFullUrlPrefix || (window as any).tmtUrlPrefix || '/wiki';
-        const cleanPrefixRegex = new RegExp(`^${prefix.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}/?`);
+        const pathEl = item.querySelector<HTMLElement>(".search-result-path");
+        const prefix =
+          (window as any).tmtFullUrlPrefix ||
+          (window as any).tmtUrlPrefix ||
+          "/wiki";
+        const cleanPrefixRegex = new RegExp(
+          `^${prefix.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")}/?`,
+        );
         const displayPath =
-          res.meta?.path || (res.url ? res.url.replace(cleanPrefixRegex, '').replace(/\/+$/, '') : '');
+          res.meta?.path ||
+          (res.url
+            ? res.url.replace(cleanPrefixRegex, "").replace(/\/+$/, "")
+            : "");
         if (displayPath && pathEl) {
           pathEl.textContent = displayPath;
           pathEl.hidden = false;
@@ -550,26 +629,31 @@
           pathEl?.remove();
         }
 
-        const aliases = item.querySelector<HTMLElement>('.search-result-aliases');
+        const aliases = item.querySelector<HTMLElement>(
+          ".search-result-aliases",
+        );
         if (res.meta?.aliases && aliases) {
-          const label = aliases.querySelector('.alias-label');
-          const text = aliases.querySelector('.alias-text');
-          if (label) label.textContent = t('search.aliases', '別名:');
+          const label = aliases.querySelector(".alias-label");
+          const text = aliases.querySelector(".alias-text");
+          if (label) label.textContent = t("search.aliases", "別名:");
           if (text) text.textContent = res.meta.aliases;
           aliases.hidden = false;
         } else {
           aliases?.remove();
         }
 
-        const excerpt = item.querySelector<HTMLElement>('.search-result-excerpt');
+        const excerpt = item.querySelector<HTMLElement>(
+          ".search-result-excerpt",
+        );
         if (res.excerpt && excerpt) {
           // If the excerpt is essentially just repeating the path, hide it to keep results clean
-          const cleanExcerptText = res.excerpt.replace(/<[^>]+>/g, '').trim();
-          const cleanPath = (displayPath || '').trim();
+          const cleanExcerptText = res.excerpt.replace(/<[^>]+>/g, "").trim();
+          const cleanPath = (displayPath || "").trim();
           if (
             cleanExcerptText &&
             cleanPath &&
-            (cleanExcerptText === cleanPath || cleanExcerptText.startsWith(cleanPath))
+            (cleanExcerptText === cleanPath ||
+              cleanExcerptText.startsWith(cleanPath))
           ) {
             excerpt.remove();
           } else {
@@ -588,7 +672,7 @@
       resultsContainer.replaceChildren(...items);
     }
 
-    input.addEventListener('focus', () => {
+    input.addEventListener("focus", () => {
       getNativeIndex();
       if (input.value.trim().length > 0) {
         showResults();
@@ -597,7 +681,7 @@
 
     let selectedIndex = -1;
 
-    input.addEventListener('input', () => {
+    input.addEventListener("input", () => {
       clearTimeout(searchDebounceTimer);
       const query = input.value.trim();
       if (!query) {
@@ -611,11 +695,14 @@
         const nativeIndex = await getNativeIndex();
 
         if (nativeIndex) {
-          const topResults = nativeSearchDocuments(query, nativeIndex).slice(0, 10);
+          const topResults = nativeSearchDocuments(query, nativeIndex).slice(
+            0,
+            10,
+          );
           selectedIndex = -1;
 
           if (topResults.length === 0) {
-            showStatus(t('search.empty'));
+            showStatus(t("search.empty"));
             showResults();
             return;
           }
@@ -630,14 +717,14 @@
         // fall back to Pagefind.
         const pf = await getPagefind();
         if (!pf) {
-          showStatus(t('search.loading'));
+          showStatus(t("search.loading"));
           showResults();
           return;
         }
 
         const search = await pf.search(query);
         if (!search || search.results.length === 0) {
-          showStatus(t('search.empty'));
+          showStatus(t("search.empty"));
           showResults();
           selectedIndex = -1;
           return;
@@ -652,12 +739,16 @@
               ...data,
               rawScore: r.score,
             };
-          })
+          }),
         );
 
         const compiled = compileQuery(query);
         for (let i = 0; i < candidates.length; i++) {
-          candidates[i].boost = calculateSearchBoost(query, candidates[i], compiled);
+          candidates[i].boost = calculateSearchBoost(
+            query,
+            candidates[i],
+            compiled,
+          );
         }
 
         candidates.sort((a, b) => {
@@ -674,21 +765,21 @@
       }, 200);
     });
 
-    input.addEventListener('keydown', (e) => {
-      const items = resultsContainer.querySelectorAll('.search-result-item');
-      if (e.key === 'ArrowDown') {
+    input.addEventListener("keydown", (e) => {
+      const items = resultsContainer.querySelectorAll(".search-result-item");
+      if (e.key === "ArrowDown") {
         e.preventDefault();
         if (items.length > 0) {
           selectedIndex = (selectedIndex + 1) % items.length;
           updateSelected(items);
         }
-      } else if (e.key === 'ArrowUp') {
+      } else if (e.key === "ArrowUp") {
         e.preventDefault();
         if (items.length > 0) {
           selectedIndex = (selectedIndex - 1 + items.length) % items.length;
           updateSelected(items);
         }
-      } else if (e.key === 'Enter') {
+      } else if (e.key === "Enter") {
         if (selectedIndex >= 0 && items[selectedIndex]) {
           e.preventDefault();
           items[selectedIndex].click();
@@ -696,7 +787,7 @@
           e.preventDefault();
           items[0].click();
         }
-      } else if (e.key === 'Escape') {
+      } else if (e.key === "Escape") {
         resultsContainer.hidden = true;
         input.blur();
       }
@@ -705,44 +796,51 @@
     function updateSelected(items) {
       items.forEach((item, idx) => {
         if (idx === selectedIndex) {
-          item.classList.add('selected');
-          item.scrollIntoView({ block: 'nearest' });
+          item.classList.add("selected");
+          item.scrollIntoView({ block: "nearest" });
         } else {
-          item.classList.remove('selected');
+          item.classList.remove("selected");
         }
       });
     }
 
-    resultsContainer.addEventListener('click', (e) => {
-      if (e.target.closest('a')) {
+    resultsContainer.addEventListener("click", (e) => {
+      if (e.target.closest("a")) {
         resultsContainer.hidden = true;
         input.blur();
       }
     });
 
-    document.addEventListener('click', (e) => {
+    document.addEventListener("click", (e) => {
       const targetNode = e.target as Node | null;
-      if (!input.contains(targetNode) && !resultsContainer.contains(targetNode)) {
+      if (
+        !input.contains(targetNode) &&
+        !resultsContainer.contains(targetNode)
+      ) {
         resultsContainer.hidden = true;
       }
     });
   }
 
   // Global shortcut (Ctrl+K or /)
-  window.addEventListener('keydown', (e) => {
+  window.addEventListener("keydown", (e) => {
     const target = e.target;
-    const isEditing = target && (target.tagName === 'INPUT' || target.tagName === 'TEXTAREA' || target.isContentEditable);
+    const isEditing =
+      target &&
+      (target.tagName === "INPUT" ||
+        target.tagName === "TEXTAREA" ||
+        target.isContentEditable);
 
-    if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'k') {
+    if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === "k") {
       e.preventDefault();
-      const input = document.getElementById('wiki-search-input');
+      const input = document.getElementById("wiki-search-input");
       if (input) {
         input.focus();
         input.select();
       }
-    } else if (e.key === '/' && !isEditing) {
+    } else if (e.key === "/" && !isEditing) {
       e.preventDefault();
-      const input = document.getElementById('wiki-search-input');
+      const input = document.getElementById("wiki-search-input");
       if (input) {
         input.focus();
         input.select();
@@ -750,5 +848,10 @@
     }
   });
 
-  Object.assign(T, { setupSearch, getPagefind, getNativeIndex, nativeSearchDocuments });
+  Object.assign(T, {
+    setupSearch,
+    getPagefind,
+    getNativeIndex,
+    nativeSearchDocuments,
+  });
 })();

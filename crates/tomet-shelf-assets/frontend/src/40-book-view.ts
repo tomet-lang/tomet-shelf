@@ -11,23 +11,23 @@
   }
 
   function setupBookViewInteraction() {
-    const tocLinks = document.querySelectorAll('.book-toc-link');
-    const scrollContainer = document.getElementById('book-content-scroll');
+    const tocLinks = document.querySelectorAll(".book-toc-link");
+    const scrollContainer = document.getElementById("book-content-scroll");
 
     // Mobile navigation drawer toggle
-    const toggleNavBtn = document.getElementById('btn-toggle-nav');
-    const paneNav = document.getElementById('pane-nav');
-    const navBackdrop = document.getElementById('pane-nav-backdrop');
+    const toggleNavBtn = document.getElementById("btn-toggle-nav");
+    const paneNav = document.getElementById("pane-nav");
+    const navBackdrop = document.getElementById("pane-nav-backdrop");
 
     if (toggleNavBtn && paneNav) {
       toggleNavBtn.onclick = () => {
-        paneNav.classList.toggle('is-open');
-        navBackdrop?.classList.toggle('is-open');
+        paneNav.classList.toggle("is-open");
+        navBackdrop?.classList.toggle("is-open");
       };
       if (navBackdrop) {
         navBackdrop.onclick = () => {
-          paneNav.classList.remove('is-open');
-          navBackdrop.classList.remove('is-open');
+          paneNav.classList.remove("is-open");
+          navBackdrop.classList.remove("is-open");
         };
       }
     }
@@ -35,14 +35,16 @@
     if (scrollContainer && tocLinks.length > 0) {
       let headingTargets: any[] = Array.from(tocLinks)
         .map((link) => {
-          const id = link.getAttribute('data-target');
+          const id = link.getAttribute("data-target");
           const el = id ? document.getElementById(id) : null;
           return el ? { id, el, link } : null;
         })
         .filter(Boolean);
 
       if (headingTargets.length === 0) {
-        const headingEls = scrollContainer.querySelectorAll('h1[id], h2[id], h3[id], h4[id]');
+        const headingEls = scrollContainer.querySelectorAll(
+          "h1[id], h2[id], h3[id], h4[id]",
+        );
         headingTargets = Array.from(headingEls).map((el) => ({
           id: el.id,
           el,
@@ -68,17 +70,17 @@
       (window as any).__tmtBookSpy = spy;
 
       tocLinks.forEach((link) => {
-        link.addEventListener('click', (e) => {
+        link.addEventListener("click", (e) => {
           e.preventDefault();
-          const targetId = link.getAttribute('data-target');
+          const targetId = link.getAttribute("data-target");
           if (!targetId) return;
           const targetEl = document.getElementById(targetId);
           if (targetEl && scrollContainer) {
             spy.markClickScrolling(800);
             const top = targetEl.offsetTop - scrollContainer.offsetTop - 16;
-            scrollContainer.scrollTo({ top, behavior: 'smooth' });
-            tocLinks.forEach((l) => l.classList.remove('is-active'));
-            link.classList.add('is-active');
+            scrollContainer.scrollTo({ top, behavior: "smooth" });
+            tocLinks.forEach((l) => l.classList.remove("is-active"));
+            link.classList.add("is-active");
             T.syncHeadingHash(targetId);
           }
         });
@@ -92,7 +94,7 @@
           if (target) {
             scrollContainer.scrollTo({
               top: target.offsetTop - scrollContainer.offsetTop - 16,
-              behavior: 'auto',
+              behavior: "auto",
             });
           }
         }

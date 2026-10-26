@@ -4,11 +4,11 @@
 
   // ==================== VIEW MODE SWITCHER ====================
   function syncViewMode(doc = document) {
-    const savedView = T.storage.get('wiki-view-mode');
-    if (savedView === 'classic' || savedView === 'book') {
-      doc.documentElement.setAttribute('data-view', savedView);
+    const savedView = T.storage.get("wiki-view-mode");
+    if (savedView === "classic" || savedView === "book") {
+      doc.documentElement.setAttribute("data-view", savedView);
     } else if (window.innerWidth < 768) {
-      doc.documentElement.setAttribute('data-view', 'classic');
+      doc.documentElement.setAttribute("data-view", "classic");
     }
   }
 

@@ -12,9 +12,12 @@
  *  and otherwise finishes the job by hand from the same inert template. */
 export function ensureShadowRoot(el: HTMLElement): void {
   if (el.shadowRoot) return;
-  const tpl = el.querySelector(':scope > template[shadowrootmode]') as HTMLTemplateElement | null;
+  const tpl = el.querySelector(
+    ":scope > template[shadowrootmode]",
+  ) as HTMLTemplateElement | null;
   if (!tpl) return;
-  const mode = tpl.getAttribute('shadowrootmode') === 'closed' ? 'closed' : 'open';
+  const mode =
+    tpl.getAttribute("shadowrootmode") === "closed" ? "closed" : "open";
   const shadow = el.attachShadow({ mode });
   shadow.appendChild(tpl.content.cloneNode(true));
   tpl.remove();
@@ -23,7 +26,9 @@ export function ensureShadowRoot(el: HTMLElement): void {
 /** Coalesce repeated calls into at most one `fn()` invocation per animation
  *  frame. The returned function also exposes `.cancel()`, for a caller that
  *  needs to drop a still-pending call (e.g. a drag that just ended). */
-export function rafThrottle<T extends (...args: any[]) => void>(fn: T): { (...args: Parameters<T>): void; cancel(): void } {
+export function rafThrottle<T extends (...args: any[]) => void>(
+  fn: T,
+): { (...args: Parameters<T>): void; cancel(): void } {
   let frame: number | null = null;
   const throttled = (...args: Parameters<T>) => {
     if (frame !== null) return;
@@ -87,8 +92,8 @@ export const session: TmtStorage = {
 
 /** Heading ID indicated by the current URL hash. Safely handles malformed strings. */
 export function readHash(): string {
-  const raw = (window.location.hash || '').slice(1);
-  if (!raw) return '';
+  const raw = (window.location.hash || "").slice(1);
+  if (!raw) return "";
   try {
     return decodeURIComponent(raw);
   } catch {
@@ -101,23 +106,25 @@ export function syncHeadingHash(id: string): void {
   if (!id) return;
   if (readHash() === id) return;
   try {
-    history.replaceState(null, '', `#${encodeURIComponent(id)}`);
+    history.replaceState(null, "", `#${encodeURIComponent(id)}`);
   } catch {}
 }
 
 /** Shared document cache and fetcher across hover preview and center peek. */
 const docCache = new Map<string, Document>();
 
-export async function fetchDocument(url: string | null | undefined): Promise<Document | null> {
+export async function fetchDocument(
+  url: string | null | undefined,
+): Promise<Document | null> {
   if (!url) return null;
-  const cleanUrl = url.split('#')[0];
+  const cleanUrl = url.split("#")[0];
   let cached = docCache.get(cleanUrl);
   if (!cached) {
     try {
       const res = await fetch(cleanUrl);
       if (!res.ok) return null;
       const html = await res.text();
-      const doc = new DOMParser().parseFromString(html, 'text/html');
+      const doc = new DOMParser().parseFromString(html, "text/html");
       docCache.set(cleanUrl, doc);
       cached = doc;
     } catch {
@@ -146,7 +153,8 @@ export function createScrollSpy({
   let isClickScrolling = false;
   let clickTimer: any = null;
 
-  const scrollTarget: any = container && container !== window ? container : window;
+  const scrollTarget: any =
+    container && container !== window ? container : window;
 
   const markClickScrolling = (duration = 800) => {
     isClickScrolling = true;
@@ -194,10 +202,12 @@ export function createScrollSpy({
     if (!currentId) return;
 
     const active = headingTargets.find((item) => item.id === currentId);
-    if (active?.link && !active.link.classList.contains('is-active')) {
-      (tocLinks as any).forEach((l: Element) => l.classList.remove('is-active'));
-      active.link.classList.add('is-active');
-      active.link.scrollIntoView({ block: 'nearest', behavior: 'smooth' });
+    if (active?.link && !active.link.classList.contains("is-active")) {
+      (tocLinks as any).forEach((l: Element) =>
+        l.classList.remove("is-active"),
+      );
+      active.link.classList.add("is-active");
+      active.link.scrollIntoView({ block: "nearest", behavior: "smooth" });
     }
 
     if (onActiveChange) {
@@ -212,10 +222,10 @@ export function createScrollSpy({
   });
 
   if (scrollTarget.__tmtScrollHandler) {
-    scrollTarget.removeEventListener('scroll', scrollTarget.__tmtScrollHandler);
+    scrollTarget.removeEventListener("scroll", scrollTarget.__tmtScrollHandler);
   }
   scrollTarget.__tmtScrollHandler = throttledUpdate;
-  scrollTarget.addEventListener('scroll', throttledUpdate, { passive: true });
+  scrollTarget.addEventListener("scroll", throttledUpdate, { passive: true });
 
   return {
     update,
@@ -223,7 +233,7 @@ export function createScrollSpy({
     markClickScrolling,
     destroy: () => {
       if (scrollTarget.__tmtScrollHandler === throttledUpdate) {
-        scrollTarget.removeEventListener('scroll', throttledUpdate);
+        scrollTarget.removeEventListener("scroll", throttledUpdate);
         scrollTarget.__tmtScrollHandler = null;
       }
       if (clickTimer) clearTimeout(clickTimer);

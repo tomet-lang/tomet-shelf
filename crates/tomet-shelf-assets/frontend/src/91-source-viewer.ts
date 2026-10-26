@@ -16,9 +16,12 @@
 
   async function fetchSource(path: string): Promise<string | null> {
     try {
-      const res = await fetch(`/__shelf/source?path=${encodeURIComponent(path)}`, {
-        cache: "no-store",
-      });
+      const res = await fetch(
+        `/__shelf/source?path=${encodeURIComponent(path)}`,
+        {
+          cache: "no-store",
+        },
+      );
       if (!res.ok) return null;
       return await res.text();
     } catch {
@@ -78,7 +81,9 @@
   }
 
   function setupSourceViewer() {
-    const toggle = document.querySelector<HTMLButtonElement>(".btn-source-view-toggle");
+    const toggle = document.querySelector<HTMLButtonElement>(
+      ".btn-source-view-toggle",
+    );
     if (!toggle) return;
 
     toggle.onclick = async (e) => {

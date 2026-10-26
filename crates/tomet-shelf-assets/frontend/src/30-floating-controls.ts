@@ -4,10 +4,12 @@
 
   // ==================== DRAGGABLE FLOATING CONTROLS ====================
   function setupDraggableFloatingControls() {
-    const floating = document.getElementById('floating-controls') || document.querySelector('.floating-controls');
+    const floating =
+      document.getElementById("floating-controls") ||
+      document.querySelector(".floating-controls");
     if (!floating) return;
 
-    const handle = floating.querySelector('.floating-drag-handle');
+    const handle = floating.querySelector(".floating-drag-handle");
     if (!handle) return;
 
     // Matches 90-responsive.css's breakpoint, where .floating-controls
@@ -21,7 +23,7 @@
     function restorePosition() {
       if (isNarrowViewport()) return;
       try {
-        const saved = T.storage.get('wiki-floating-controls-pos');
+        const saved = T.storage.get("wiki-floating-controls-pos");
         if (saved) {
           const { x, y } = JSON.parse(saved);
           const width = floating.offsetWidth || 280;
@@ -32,7 +34,7 @@
           const clampedY = Math.max(8, Math.min(maxY, y));
           floating.style.left = `${clampedX}px`;
           floating.style.top = `${clampedY}px`;
-          floating.style.right = 'auto';
+          floating.style.right = "auto";
         }
       } catch (e) {}
     }
@@ -78,9 +80,9 @@
 
       floating.style.left = `${startLeft}px`;
       floating.style.top = `${startTop}px`;
-      floating.style.right = 'auto';
+      floating.style.right = "auto";
 
-      floating.classList.add('is-dragging');
+      floating.classList.add("is-dragging");
       try {
         handle.setPointerCapture(e.pointerId);
       } catch (err) {}
@@ -94,7 +96,10 @@
       // Bound using only window dimensions and cached element size; avoid reading from the DOM.
       const maxX = Math.max(8, window.innerWidth - dragWidth - 8);
       const maxY = Math.max(8, window.innerHeight - dragHeight - 8);
-      const left = Math.max(8, Math.min(maxX, startLeft + (e.clientX - startX)));
+      const left = Math.max(
+        8,
+        Math.min(maxX, startLeft + (e.clientX - startX)),
+      );
       const top = Math.max(8, Math.min(maxY, startTop + (e.clientY - startY)));
       offsetLeft = left - startLeft;
       offsetTop = top - startTop;
@@ -104,7 +109,7 @@
     const onPointerUp = (e) => {
       if (!isDragging) return;
       isDragging = false;
-      floating.classList.remove('is-dragging');
+      floating.classList.remove("is-dragging");
       try {
         handle.releasePointerCapture(e.pointerId);
       } catch (err) {}
@@ -114,23 +119,29 @@
       // Commit the drag transform into definitive left/top positions.
       const finalLeft = Math.round(startLeft + offsetLeft);
       const finalTop = Math.round(startTop + offsetTop);
-      floating.style.transform = '';
+      floating.style.transform = "";
       floating.style.left = `${finalLeft}px`;
       floating.style.top = `${finalTop}px`;
 
-      T.storage.set('wiki-floating-controls-pos', JSON.stringify({ x: finalLeft, y: finalTop }));
+      T.storage.set(
+        "wiki-floating-controls-pos",
+        JSON.stringify({ x: finalLeft, y: finalTop }),
+      );
     };
 
-    handle.addEventListener('pointerdown', onPointerDown);
-    handle.addEventListener('pointermove', onPointerMove);
-    handle.addEventListener('pointerup', onPointerUp);
-    handle.addEventListener('pointercancel', onPointerUp);
+    handle.addEventListener("pointerdown", onPointerDown);
+    handle.addEventListener("pointermove", onPointerMove);
+    handle.addEventListener("pointerup", onPointerUp);
+    handle.addEventListener("pointercancel", onPointerUp);
 
-    window.addEventListener('resize', () => {
-      if (floating.style.left && floating.style.left !== 'auto') {
+    window.addEventListener("resize", () => {
+      if (floating.style.left && floating.style.left !== "auto") {
         const rect = floating.getBoundingClientRect();
         const maxX = Math.max(8, window.innerWidth - floating.offsetWidth - 8);
-        const maxY = Math.max(8, window.innerHeight - floating.offsetHeight - 8);
+        const maxY = Math.max(
+          8,
+          window.innerHeight - floating.offsetHeight - 8,
+        );
         const clampedX = Math.max(8, Math.min(maxX, rect.left));
         const clampedY = Math.max(8, Math.min(maxY, rect.top));
         floating.style.left = `${clampedX}px`;
@@ -140,26 +151,39 @@
   }
 
   function setupViewSwitcher() {
-    const btnBook = document.getElementById('btn-view-book');
-    const btnClassic = document.getElementById('btn-view-classic');
+    const btnBook = document.getElementById("btn-view-book");
+    const btnClassic = document.getElementById("btn-view-classic");
     if (!btnBook || !btnClassic) return;
 
     function setView(mode) {
-      document.documentElement.setAttribute('data-view', mode);
-      T.storage.set('wiki-view-mode', mode);
-      document.dispatchEvent(new CustomEvent('tmt:view-mode-changed', { detail: { view: mode } }));
+      document.documentElement.setAttribute("data-view", mode);
+      T.storage.set("wiki-view-mode", mode);
+      document.dispatchEvent(
+        new CustomEvent("tmt:view-mode-changed", { detail: { view: mode } }),
+      );
     }
 
-    btnBook.onclick = () => setView('book');
-    btnClassic.onclick = () => setView('classic');
+    btnBook.onclick = () => setView("book");
+    btnClassic.onclick = () => setView("classic");
 
     if (!window.__viewSwitcherKeyBound) {
       window.__viewSwitcherKeyBound = true;
-      window.addEventListener('keydown', (e) => {
-        if (e.target && (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA' || e.target.isContentEditable)) return;
-        if (e.key.toLowerCase() === 'v' && !e.ctrlKey && !e.metaKey && !e.altKey) {
-          const current = document.documentElement.getAttribute('data-view');
-          setView(current === 'book' ? 'classic' : 'book');
+      window.addEventListener("keydown", (e) => {
+        if (
+          e.target &&
+          (e.target.tagName === "INPUT" ||
+            e.target.tagName === "TEXTAREA" ||
+            e.target.isContentEditable)
+        )
+          return;
+        if (
+          e.key.toLowerCase() === "v" &&
+          !e.ctrlKey &&
+          !e.metaKey &&
+          !e.altKey
+        ) {
+          const current = document.documentElement.getAttribute("data-view");
+          setView(current === "book" ? "classic" : "book");
         }
       });
     }
@@ -169,83 +193,109 @@
   // base.html sets data-tabs before first paint; this switcher simply updates
   // and persists the attribute when clicked.
   function setupTabsSideSwitcher() {
-    const btnTop = document.getElementById('btn-tabs-top');
-    const btnRight = document.getElementById('btn-tabs-right');
+    const btnTop = document.getElementById("btn-tabs-top");
+    const btnRight = document.getElementById("btn-tabs-right");
     if (!btnTop || !btnRight) return;
 
     const sync = () => {
-      const side = document.documentElement.getAttribute('data-tabs') === 'right' ? 'right' : 'top';
-      btnTop.classList.toggle('is-active', side === 'top');
-      btnRight.classList.toggle('is-active', side === 'right');
+      const side =
+        document.documentElement.getAttribute("data-tabs") === "right"
+          ? "right"
+          : "top";
+      btnTop.classList.toggle("is-active", side === "top");
+      btnRight.classList.toggle("is-active", side === "right");
     };
 
     const setSide = (side) => {
-      document.documentElement.setAttribute('data-tabs', side);
-      T.storage.set('wiki-tabs-side', side);
+      document.documentElement.setAttribute("data-tabs", side);
+      T.storage.set("wiki-tabs-side", side);
       sync();
     };
 
-    btnTop.onclick = () => setSide('top');
-    btnRight.onclick = () => setSide('right');
+    btnTop.onclick = () => setSide("top");
+    btnRight.onclick = () => setSide("right");
     sync();
   }
 
   // ==================== FLOATING COLLAPSE / MINIMIZE ====================
   function setupFloatingCollapse() {
-    const floating = document.getElementById('floating-controls');
-    const collapseBtn = document.getElementById('btn-floating-collapse');
+    const floating = document.getElementById("floating-controls");
+    const collapseBtn = document.getElementById("btn-floating-collapse");
     if (!floating || !collapseBtn) return;
 
     const syncCollapsed = (collapsed) => {
-      floating.classList.toggle('is-collapsed', collapsed);
+      floating.classList.toggle("is-collapsed", collapsed);
       collapseBtn.setAttribute(
-        'title',
-        collapsed ? t('floating.expand', 'バーを展開') : t('floating.collapse', 'バーを最小化')
+        "title",
+        collapsed
+          ? t("floating.expand", "バーを展開")
+          : t("floating.collapse", "バーを最小化"),
       );
       collapseBtn.setAttribute(
-        'aria-label',
-        collapsed ? t('floating.expand', 'バーを展開') : t('floating.collapse', 'バーを最小化')
+        "aria-label",
+        collapsed
+          ? t("floating.expand", "バーを展開")
+          : t("floating.collapse", "バーを最小化"),
       );
-      T.storage.set('wiki-floating-controls-collapsed', collapsed ? 'true' : 'false');
+      T.storage.set(
+        "wiki-floating-controls-collapsed",
+        collapsed ? "true" : "false",
+      );
     };
 
-    const isInitiallyCollapsed = T.storage.get('wiki-floating-controls-collapsed') === 'true';
+    const isInitiallyCollapsed =
+      T.storage.get("wiki-floating-controls-collapsed") === "true";
     if (isInitiallyCollapsed) {
       syncCollapsed(true);
     }
 
     if (!collapseBtn.__collapseBound) {
       collapseBtn.__collapseBound = true;
-      collapseBtn.addEventListener('click', (e) => {
+      collapseBtn.addEventListener("click", (e) => {
         e.stopPropagation();
-        const isNowCollapsed = !floating.classList.contains('is-collapsed');
+        const isNowCollapsed = !floating.classList.contains("is-collapsed");
         syncCollapsed(isNowCollapsed);
       });
 
-      floating.addEventListener('click', (e) => {
-        if (floating.classList.contains('is-collapsed') && !e.target.closest('.floating-drag-handle')) {
+      floating.addEventListener("click", (e) => {
+        if (
+          floating.classList.contains("is-collapsed") &&
+          !e.target.closest(".floating-drag-handle")
+        ) {
           syncCollapsed(false);
-          const input = document.getElementById('wiki-search-input');
+          const input = document.getElementById("wiki-search-input");
           input?.focus();
         }
       });
 
-      window.addEventListener('keydown', (e) => {
-        const isEditing = e.target && (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA' || e.target.isContentEditable);
-        if (((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'k') || (e.key === '/' && !isEditing)) {
-          if (floating.classList.contains('is-collapsed')) {
+      window.addEventListener("keydown", (e) => {
+        const isEditing =
+          e.target &&
+          (e.target.tagName === "INPUT" ||
+            e.target.tagName === "TEXTAREA" ||
+            e.target.isContentEditable);
+        if (
+          ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === "k") ||
+          (e.key === "/" && !isEditing)
+        ) {
+          if (floating.classList.contains("is-collapsed")) {
             syncCollapsed(false);
           }
         }
       });
 
-      const badge = floating.querySelector('.search-shortcut-badge');
-      badge?.addEventListener('click', () => {
-        const input = document.getElementById('wiki-search-input');
+      const badge = floating.querySelector(".search-shortcut-badge");
+      badge?.addEventListener("click", () => {
+        const input = document.getElementById("wiki-search-input");
         input?.focus();
       });
     }
   }
 
-  Object.assign(T, { setupDraggableFloatingControls, setupViewSwitcher, setupTabsSideSwitcher, setupFloatingCollapse });
+  Object.assign(T, {
+    setupDraggableFloatingControls,
+    setupViewSwitcher,
+    setupTabsSideSwitcher,
+    setupFloatingCollapse,
+  });
 })();

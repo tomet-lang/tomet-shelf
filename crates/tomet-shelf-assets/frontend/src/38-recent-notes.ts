@@ -11,18 +11,28 @@
    *  spine color for what is the same note. */
   function normalizePath(path) {
     if (!path) return path;
-    return path.replace(/\/index\.html$/i, '').replace(/(.)\/+$/, '$1');
+    return path.replace(/\/index\.html$/i, "").replace(/(.)\/+$/, "$1");
   }
 
   function markVisited(path) {
     const p = normalizePath(path);
-    const homeUrl = (window as any).tmtHomeUrl || '/wiki';
-    const basePath = (window as any).tmtBasePath || '';
-    if (!p || p === '/wiki' || p === '/' || p === homeUrl || p === basePath || p === `${basePath}/`) return;
+    const homeUrl = (window as any).tmtHomeUrl || "/wiki";
+    const basePath = (window as any).tmtBasePath || "";
+    if (
+      !p ||
+      p === "/wiki" ||
+      p === "/" ||
+      p === homeUrl ||
+      p === basePath ||
+      p === `${basePath}/`
+    )
+      return;
     try {
-      const set = new Set(JSON.parse(T.storage.get('wiki-visited-notes') || '[]'));
+      const set = new Set(
+        JSON.parse(T.storage.get("wiki-visited-notes") || "[]"),
+      );
       set.add(p);
-      T.storage.set('wiki-visited-notes', JSON.stringify([...set]));
+      T.storage.set("wiki-visited-notes", JSON.stringify([...set]));
     } catch {}
   }
 
@@ -30,7 +40,7 @@
     const p = normalizePath(path);
     if (!p) return false;
     try {
-      const list = JSON.parse(T.storage.get('wiki-visited-notes') || '[]');
+      const list = JSON.parse(T.storage.get("wiki-visited-notes") || "[]");
       return list.includes(p);
     } catch {
       return false;
@@ -39,37 +49,42 @@
 
   function syncVisitedClasses() {
     try {
-      const list = JSON.parse(T.storage.get('wiki-visited-notes') || '[]');
+      const list = JSON.parse(T.storage.get("wiki-visited-notes") || "[]");
       if (!list.length) return;
       const set = new Set(list);
-      document.querySelectorAll('.book-index-link, .search-result-item').forEach((a) => {
-        const href = normalizePath(a.getAttribute('href'));
-        if (href && set.has(href)) {
-          a.classList.add('is-visited');
-        }
-      });
+      document
+        .querySelectorAll(".book-index-link, .search-result-item")
+        .forEach((a) => {
+          const href = normalizePath(a.getAttribute("href"));
+          if (href && set.has(href)) {
+            a.classList.add("is-visited");
+          }
+        });
     } catch {}
   }
 
-  document.addEventListener('click', (e) => {
-    const a = e.target.closest('a');
-    const href = a?.getAttribute('href');
-    const prefix = (window as any).tmtFullUrlPrefix || (window as any).tmtUrlPrefix || '/wiki';
-    const cleanPrefix = prefix.replace(/^\/+/, '');
+  document.addEventListener("click", (e) => {
+    const a = e.target.closest("a");
+    const href = a?.getAttribute("href");
+    const prefix =
+      (window as any).tmtFullUrlPrefix ||
+      (window as any).tmtUrlPrefix ||
+      "/wiki";
+    const cleanPrefix = prefix.replace(/^\/+/, "");
     const isWikiLink =
       href &&
       (href.startsWith(`${prefix}/`) ||
         (cleanPrefix && href.startsWith(`${cleanPrefix}/`)) ||
-        href.startsWith('/wiki/') ||
-        href.startsWith('wiki/'));
+        href.startsWith("/wiki/") ||
+        href.startsWith("wiki/"));
     if (isWikiLink) {
       markVisited(href);
-      a.classList.add('is-visited');
+      a.classList.add("is-visited");
     }
   });
 
-  if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', syncVisitedClasses);
+  if (document.readyState === "loading") {
+    document.addEventListener("DOMContentLoaded", syncVisitedClasses);
   } else {
     syncVisitedClasses();
   }
@@ -88,22 +103,28 @@
     const VARIANCE = 5; // +/- px
     const MIN_LEN = 4; // titles at/under this length bottom out
     const MAX_LEN = 18; // titles at/over this length top out
-    const t = Math.min(1, Math.max(0, (title.length - MIN_LEN) / (MAX_LEN - MIN_LEN)));
+    const t = Math.min(
+      1,
+      Math.max(0, (title.length - MIN_LEN) / (MAX_LEN - MIN_LEN)),
+    );
     return Math.round(BASE_HEIGHT - VARIANCE + t * VARIANCE * 2);
   }
 
   function updateRecentNotes() {
     const currentPath = normalizePath(window.location.pathname);
-    const titleEl = document.querySelector('.content-title') || document.querySelector('.article-header h1');
-    const currentTitle = titleEl?.textContent?.trim() || document.title.replace(/\s*\|.*$/, '');
-    const homeUrl = (window as any).tmtHomeUrl || '/wiki';
-    const basePath = (window as any).tmtBasePath || '';
+    const titleEl =
+      document.querySelector(".content-title") ||
+      document.querySelector(".article-header h1");
+    const currentTitle =
+      titleEl?.textContent?.trim() || document.title.replace(/\s*\|.*$/, "");
+    const homeUrl = (window as any).tmtHomeUrl || "/wiki";
+    const basePath = (window as any).tmtBasePath || "";
 
     if (
       !currentPath ||
       !currentTitle ||
-      currentPath === '/wiki' ||
-      currentPath === '/' ||
+      currentPath === "/wiki" ||
+      currentPath === "/" ||
       currentPath === homeUrl ||
       currentPath === basePath ||
       currentPath === `${basePath}/`
@@ -114,7 +135,7 @@
 
     let recents = [];
     try {
-      recents = JSON.parse(T.storage.get('wiki-recent-notes') || '[]');
+      recents = JSON.parse(T.storage.get("wiki-recent-notes") || "[]");
     } catch {}
 
     // Re-normalize on read too, so an entry saved before this fix (or from a
@@ -126,11 +147,13 @@
     recents.unshift({ path: currentPath, title: currentTitle });
     if (recents.length > 8) recents = recents.slice(0, 8);
 
-    T.storage.set('wiki-recent-notes', JSON.stringify(recents));
+    T.storage.set("wiki-recent-notes", JSON.stringify(recents));
 
-    const recentSection = document.getElementById('pane-recent-section');
-    const recentList = document.getElementById('pane-recent-list');
-    const itemTemplate = document.getElementById('recent-note-item-template') as HTMLTemplateElement | null;
+    const recentSection = document.getElementById("pane-recent-section");
+    const recentList = document.getElementById("pane-recent-list");
+    const itemTemplate = document.getElementById(
+      "recent-note-item-template",
+    ) as HTMLTemplateElement | null;
     if (recentSection && recentList && itemTemplate && recents.length > 0) {
       const items = recents.map((r) => {
         const isCurrent = r.path === currentPath;
@@ -139,18 +162,21 @@
         // on a real shelf, the book you're actually reading is the one
         // you'd spot first, not just a differently-colored spine.
         const CURRENT_HEIGHT_BONUS = 20;
-        const height = spineHeightFor(r.title) + (isCurrent ? CURRENT_HEIGHT_BONUS : 0);
+        const height =
+          spineHeightFor(r.title) + (isCurrent ? CURRENT_HEIGHT_BONUS : 0);
 
-        const li = itemTemplate.content.firstElementChild?.cloneNode(true) as HTMLElement;
-        const link = li.querySelector<HTMLAnchorElement>('.recent-link');
+        const li = itemTemplate.content.firstElementChild?.cloneNode(
+          true,
+        ) as HTMLElement;
+        const link = li.querySelector<HTMLAnchorElement>(".recent-link");
         // `.href`/`.style`/`.textContent` are DOM property assignments, not
         // markup parsing, so r.path/r.title never need escaping here the
         // way the old innerHTML-string version did.
         if (link) {
           link.href = r.path;
-          link.classList.toggle('is-current', isCurrent);
+          link.classList.toggle("is-current", isCurrent);
           link.style.height = `${height}px`;
-          const title = link.querySelector('.recent-title');
+          const title = link.querySelector(".recent-title");
           if (title) title.textContent = r.title;
         }
         return li;
@@ -160,5 +186,11 @@
     }
   }
 
-  Object.assign(T, { updateRecentNotes, normalizePath, markVisited, isVisited, syncVisitedClasses });
+  Object.assign(T, {
+    updateRecentNotes,
+    normalizePath,
+    markVisited,
+    isVisited,
+    syncVisitedClasses,
+  });
 })();

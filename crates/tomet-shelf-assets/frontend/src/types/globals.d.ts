@@ -62,7 +62,10 @@ interface ScrollSpyOptions {
   tocLinks?: NodeListOf<Element> | Element[];
   headingLine?: number;
   isActiveView?: () => boolean;
-  onActiveChange?: (currentId: string, active?: { id: string; el: Element; link?: Element }) => void;
+  onActiveChange?: (
+    currentId: string,
+    active?: { id: string; el: Element; link?: Element },
+  ) => void;
   onScroll?: () => void;
 }
 
@@ -76,7 +79,9 @@ interface TmtRuntime {
 
   // Utils
   escapeHtml?(str: unknown): string;
-  rafThrottle?<T extends (...args: any[]) => void>(fn: T): { (...args: Parameters<T>): void; cancel(): void };
+  rafThrottle?<T extends (...args: any[]) => void>(
+    fn: T,
+  ): { (...args: Parameters<T>): void; cancel(): void };
   markVisited?(url: string): void;
   isVisited?(url: string): boolean;
   readHash?(): string;
@@ -85,7 +90,11 @@ interface TmtRuntime {
   fetchDocument?(url: string | null | undefined): Promise<Document | null>;
   getPagefind?(): Promise<any>;
   getNativeIndex?(): Promise<{ docs: any[] } | null>;
-  nativeSearchDocuments?(query: string, index: { docs: any[] }, opts?: { sections?: Set<string> | null }): any[];
+  nativeSearchDocuments?(
+    query: string,
+    index: { docs: any[] },
+    opts?: { sections?: Set<string> | null },
+  ): any[];
 
   // Panes & Views
   collapseDataPane?(): void;
@@ -119,7 +128,7 @@ interface TmtRuntime {
 }
 
 // Module declaration for tailwindcss to satisfy tailwind.config.ts
-declare module 'tailwindcss' {
+declare module "tailwindcss" {
   export interface Config {
     content: string[];
     darkMode?: string | [string, string];

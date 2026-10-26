@@ -2,12 +2,14 @@
   const T = (window.TMT ??= {} as any);
   const syncViewMode = (...a) => T.syncViewMode(...a);
   const setupThemeToggle = (...a) => T.setupThemeToggle(...a);
-  const setupDraggableFloatingControls = (...a) => T.setupDraggableFloatingControls(...a);
+  const setupDraggableFloatingControls = (...a) =>
+    T.setupDraggableFloatingControls(...a);
   const setupViewSwitcher = (...a) => T.setupViewSwitcher(...a);
   const setupTabsSideSwitcher = (...a) => T.setupTabsSideSwitcher(...a);
   const setupFloatingCollapse = (...a) => T.setupFloatingCollapse?.(...a);
   const setupBookViewInteraction = (...a) => T.setupBookViewInteraction(...a);
-  const setupClassicViewInteraction = (...a) => T.setupClassicViewInteraction(...a);
+  const setupClassicViewInteraction = (...a) =>
+    T.setupClassicViewInteraction(...a);
   const initKeyboardNavigation = (...a) => T.initKeyboardNavigation(...a);
   const setupSearch = (...a) => T.setupSearch(...a);
   const initPagePreview = (...a) => T.initPagePreview(...a);

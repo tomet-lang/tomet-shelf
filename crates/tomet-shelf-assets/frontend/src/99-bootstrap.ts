@@ -4,8 +4,8 @@
   const setupDevServerLiveReload = (...a) => T.setupDevServerLiveReload(...a);
   const t = (key: string, fallback = "") => T.t(key, fallback);
 
-  if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', () => {
+  if (document.readyState === "loading") {
+    document.addEventListener("DOMContentLoaded", () => {
       initPage();
       setupDevServerLiveReload();
     });

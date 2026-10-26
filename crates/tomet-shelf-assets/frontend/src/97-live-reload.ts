@@ -5,7 +5,11 @@
 
   // ==================== SMART HOT RELOAD (DEV SERVER) ====================
   function setupDevServerLiveReload() {
-    if (window.location.protocol !== 'http:' && window.location.protocol !== 'https:') return;
+    if (
+      window.location.protocol !== "http:" &&
+      window.location.protocol !== "https:"
+    )
+      return;
 
     function reloadCss() {
       const links = document.querySelectorAll('link[rel="stylesheet"]');
@@ -13,48 +17,53 @@
       links.forEach((el) => {
         const link = el as HTMLLinkElement;
         const url = new URL(link.href, window.location.href);
-        url.searchParams.set('_tmt_ts', String(timestamp));
+        url.searchParams.set("_tmt_ts", String(timestamp));
         link.href = url.toString();
       });
-      console.log('[shelf] 🎨 CSS hot reloaded');
+      console.log("[shelf] 🎨 CSS hot reloaded");
     }
 
     async function hotSwapDocument() {
       try {
-        const scrollBox = document.getElementById('book-content-scroll');
+        const scrollBox = document.getElementById("book-content-scroll");
         const prevScrollTop = scrollBox ? scrollBox.scrollTop : 0;
         const prevWindowScrollY = window.scrollY;
 
-        const res = await fetch(window.location.href, { cache: 'no-store' });
+        const res = await fetch(window.location.href, { cache: "no-store" });
         if (!res.ok) {
           window.location.reload();
           return;
         }
         const htmlText = await res.text();
         const parser = new DOMParser();
-        const newDoc = parser.parseFromString(htmlText, 'text/html');
+        const newDoc = parser.parseFromString(htmlText, "text/html");
 
         document.title = newDoc.title;
 
         // 1. Swap nav pane (TOC)
-        const currentNav = document.getElementById('pane-nav');
-        const newNav = newDoc.getElementById('pane-nav');
+        const currentNav = document.getElementById("pane-nav");
+        const newNav = newDoc.getElementById("pane-nav");
         if (currentNav && newNav) {
-          const prevActivePanel = currentNav.dataset.activePanel || 'toc';
+          const prevActivePanel = currentNav.dataset.activePanel || "toc";
           currentNav.innerHTML = newNav.innerHTML;
           currentNav.dataset.activePanel = prevActivePanel;
         }
 
         // 2. Swap data pane (infobox) if present
-        const currentData = document.getElementById('pane-data');
-        const newData = newDoc.getElementById('pane-data');
+        const currentData = document.getElementById("pane-data");
+        const newData = newDoc.getElementById("pane-data");
         if (newData) {
           if (currentData) {
             currentData.innerHTML = newData.innerHTML;
           } else {
-            const contentPane = document.querySelector('#wiki-book-view .pane-content');
+            const contentPane = document.querySelector(
+              "#wiki-book-view .pane-content",
+            );
             if (contentPane) {
-              contentPane.parentElement.insertBefore(newData.cloneNode(true), contentPane);
+              contentPane.parentElement.insertBefore(
+                newData.cloneNode(true),
+                contentPane,
+              );
             }
           }
         } else if (currentData) {
@@ -62,22 +71,26 @@
         }
 
         // 2b. Swap content header (sticky tabs)
-        const currentContentHeader = document.querySelector('.pane-content-header');
-        const newContentHeader = newDoc.querySelector('.pane-content-header');
+        const currentContentHeader = document.querySelector(
+          ".pane-content-header",
+        );
+        const newContentHeader = newDoc.querySelector(".pane-content-header");
         if (currentContentHeader && newContentHeader) {
           currentContentHeader.innerHTML = newContentHeader.innerHTML;
         }
 
         // 3. Swap article container (hero + content)
-        const currentContainer = document.querySelector('.pane-article-container');
-        const newContainer = newDoc.querySelector('.pane-article-container');
+        const currentContainer = document.querySelector(
+          ".pane-article-container",
+        );
+        const newContainer = newDoc.querySelector(".pane-article-container");
         if (currentContainer && newContainer) {
           currentContainer.innerHTML = newContainer.innerHTML;
         }
 
         // 4. Swap classic view if present
-        const currentClassic = document.querySelector('.classic-view');
-        const newClassic = newDoc.querySelector('.classic-view');
+        const currentClassic = document.querySelector(".classic-view");
+        const newClassic = newDoc.querySelector(".classic-view");
         if (currentClassic && newClassic) {
           currentClassic.innerHTML = newClassic.innerHTML;
         }
@@ -89,18 +102,20 @@
         // 6. Rebind events & interactive components
         initPage();
 
-        console.log('[shelf] ⚡ Document hot-reloaded (DOM swapped, scroll preserved)');
+        console.log(
+          "[shelf] ⚡ Document hot-reloaded (DOM swapped, scroll preserved)",
+        );
       } catch (e) {
-        console.error('[shelf] Hot swap failed, reloading page:', e);
+        console.error("[shelf] Hot swap failed, reloading page:", e);
         window.location.reload();
       }
     }
 
     function normalizePath(p) {
-      if (!p) return '';
+      if (!p) return "";
       return decodeURIComponent(p)
-        .replace(/\/index\.html$/i, '')
-        .replace(/\/+$/, '')
+        .replace(/\/index\.html$/i, "")
+        .replace(/\/+$/, "")
         .toLowerCase();
     }
 
@@ -111,29 +126,31 @@
     }
 
     try {
-      const wsProtocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
-      const ws = new WebSocket(`${wsProtocol}//${window.location.host}/live-reload`);
+      const wsProtocol = window.location.protocol === "https:" ? "wss:" : "ws:";
+      const ws = new WebSocket(
+        `${wsProtocol}//${window.location.host}/live-reload`,
+      );
 
       ws.onmessage = (event) => {
         let data;
         try {
           data = JSON.parse(event.data);
         } catch {
-          if (event.data === 'reload') data = { type: 'full' };
+          if (event.data === "reload") data = { type: "full" };
         }
 
         if (!data) return;
 
-        if (data.type === 'css') {
+        if (data.type === "css") {
           reloadCss();
-        } else if (data.type === 'doc') {
+        } else if (data.type === "doc") {
           if (isViewingUrl(data.url)) {
             hotSwapDocument();
           } else {
             console.log(`[shelf] ℹ️ Background doc updated: ${data.url}`);
           }
         } else {
-          console.log('[shelf] 🔄 Full reload triggered');
+          console.log("[shelf] 🔄 Full reload triggered");
           window.location.reload();
         }
       };

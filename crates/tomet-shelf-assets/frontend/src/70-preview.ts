@@ -9,7 +9,7 @@
   let isPreviewGlobalInitialized = false;
 
   function hidePreviewCard() {
-    const card = document.getElementById('wiki-page-preview');
+    const card = document.getElementById("wiki-page-preview");
     if (card) card.hidden = true;
   }
 
@@ -18,46 +18,58 @@
     isPreviewGlobalInitialized = true;
 
     // Close preview card on scroll and outside click.
-    window.addEventListener('scroll', hidePreviewCard, { capture: true, passive: true });
-    document.addEventListener('click', (e) => {
-      const card = document.getElementById('wiki-page-preview');
+    window.addEventListener("scroll", hidePreviewCard, {
+      capture: true,
+      passive: true,
+    });
+    document.addEventListener("click", (e) => {
+      const card = document.getElementById("wiki-page-preview");
       if (card && !card.contains(e.target as Node | null)) {
         hidePreviewCard();
       }
     });
 
-    const previewCardEl = document.getElementById('wiki-page-preview');
+    const previewCardEl = document.getElementById("wiki-page-preview");
     if (previewCardEl && !previewCardEl.__peekBound) {
       previewCardEl.__peekBound = true;
-      previewCardEl.addEventListener('click', () => {
+      previewCardEl.addEventListener("click", () => {
         const href = previewCardEl.dataset.href;
         if (href) {
           hidePreviewCard();
           T.openCenterPeek?.(href);
         }
       });
-      previewCardEl.addEventListener('mouseleave', () => {
+      previewCardEl.addEventListener("mouseleave", () => {
         clearTimeout(hoverTimer);
         hoverTimer = setTimeout(() => {
-          if (!previewCardEl.matches(':hover')) {
+          if (!previewCardEl.matches(":hover")) {
             hidePreviewCard();
           }
         }, 150);
       });
     }
 
-    document.addEventListener('mouseover', (e) => {
-      const card = document.getElementById('wiki-page-preview');
+    document.addEventListener("mouseover", (e) => {
+      const card = document.getElementById("wiki-page-preview");
       if (!card) return;
 
-      const target = e.target.closest('a');
+      const target = e.target.closest("a");
       if (!target) return;
 
-      const validContainer = target.closest('article, #pane-panel-lookup, #wiki-search-results, #pane-recent, .book-backlinks');
+      const validContainer = target.closest(
+        "article, #pane-panel-lookup, #wiki-search-results, #pane-recent, .book-backlinks",
+      );
       if (!validContainer) return;
 
-      const href = target.getAttribute('href');
-      if (!href || href.startsWith('#') || href.startsWith('http://') || href.startsWith('https://') || href.startsWith('mailto:') || href.startsWith('javascript:')) {
+      const href = target.getAttribute("href");
+      if (
+        !href ||
+        href.startsWith("#") ||
+        href.startsWith("http://") ||
+        href.startsWith("https://") ||
+        href.startsWith("mailto:") ||
+        href.startsWith("javascript:")
+      ) {
         return;
       }
 
@@ -72,11 +84,22 @@
           const doc = await T.fetchDocument(href);
           if (!doc) return;
 
-          const title = doc.querySelector('.content-title')?.textContent?.trim() || doc.querySelector('h1')?.textContent?.trim() || '';
-          const section = doc.querySelector('.crumb-val')?.textContent?.trim() || doc.querySelector('.breadcrumb-section')?.textContent?.trim() || '';
-          const excerpt = doc.querySelector('article p, article li, article blockquote')?.textContent?.trim() || '';
-          const imgEl = doc.querySelector('.hero-banner-img, .infobox-main-img, .hero-avatar img, article img');
-          const image = imgEl?.getAttribute('src') || '';
+          const title =
+            doc.querySelector(".content-title")?.textContent?.trim() ||
+            doc.querySelector("h1")?.textContent?.trim() ||
+            "";
+          const section =
+            doc.querySelector(".crumb-val")?.textContent?.trim() ||
+            doc.querySelector(".breadcrumb-section")?.textContent?.trim() ||
+            "";
+          const excerpt =
+            doc
+              .querySelector("article p, article li, article blockquote")
+              ?.textContent?.trim() || "";
+          const imgEl = doc.querySelector(
+            ".hero-banner-img, .infobox-main-img, .hero-avatar img, article img",
+          );
+          const image = imgEl?.getAttribute("src") || "";
 
           data = { title, section, excerpt, image };
           previewCache.set(href, data);
@@ -85,13 +108,14 @@
         if (activeLink !== target) return;
         if (!data.excerpt && !data.title) return;
 
-        const titleEl = card.querySelector('.preview-title');
-        const sectionEl = card.querySelector('.preview-section');
-        const bodyEl = card.querySelector('.preview-body');
-        const thumbEl = card.querySelector('.preview-thumb');
+        const titleEl = card.querySelector(".preview-title");
+        const sectionEl = card.querySelector(".preview-section");
+        const bodyEl = card.querySelector(".preview-body");
+        const thumbEl = card.querySelector(".preview-thumb");
 
         if (titleEl) titleEl.textContent = data.title;
-        if (sectionEl) sectionEl.textContent = data.section ? `(${data.section})` : '';
+        if (sectionEl)
+          sectionEl.textContent = data.section ? `(${data.section})` : "";
         if (bodyEl) bodyEl.textContent = data.excerpt;
 
         if (thumbEl) {
@@ -99,7 +123,7 @@
             thumbEl.src = data.image;
             thumbEl.hidden = false;
           } else {
-            thumbEl.src = '';
+            thumbEl.src = "";
             thumbEl.hidden = true;
           }
         }
@@ -109,7 +133,7 @@
         let left = rect.left;
         let top = rect.bottom + 8;
 
-        const isSidebar = target.closest('#pane-panel-lookup, #pane-recent');
+        const isSidebar = target.closest("#pane-panel-lookup, #pane-recent");
         if (isSidebar && rect.right + cardWidth + 24 <= window.innerWidth) {
           left = rect.right + 12;
           top = Math.max(16, Math.min(rect.top, window.innerHeight - 180));
@@ -131,16 +155,16 @@
       }, 250);
     });
 
-    document.addEventListener('mouseout', (e) => {
-      const card = document.getElementById('wiki-page-preview');
+    document.addEventListener("mouseout", (e) => {
+      const card = document.getElementById("wiki-page-preview");
       if (!card) return;
 
-      const target = e.target.closest('a');
+      const target = e.target.closest("a");
       if (target && target === activeLink) {
         activeLink = null;
         clearTimeout(hoverTimer);
         hoverTimer = setTimeout(() => {
-          if (!card.matches(':hover')) {
+          if (!card.matches(":hover")) {
             hidePreviewCard();
           }
         }, 150);
