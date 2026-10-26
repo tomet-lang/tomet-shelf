@@ -177,54 +177,29 @@ a.tm-ref-unresolved:hover {
   position: relative;
 }
 
-/* Same tint as the application shell (--shell-*, defined in 00-base.css),
-   plus a shadow so it reads as a raised control rather than sitting flush
-   with the page -- box-model is Tailwind utilities in the markup now, this
-   is only the grain texture / shadow skin that isn't a good utility fit. */
 .hero-action-btn {
-  color: var(--shell-text-muted);
-  background-color: var(--shell-bg);
-  background-image: var(--shell-grain);
-  background-blend-mode: var(--shell-blend-mode, soft-light);
-  background-size: var(--shell-grain-size, auto);
-  background-position: var(--shell-grain-position, 0 0);
-  background-repeat: var(--shell-grain-repeat, repeat);
-  background-attachment: var(--shell-grain-attachment, scroll);
-  border: 1px solid var(--shell-border);
-  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.25), inset 0 1px 0 rgba(255, 255, 255, 0.15);
-  transition: background 0.15s ease, border-color 0.15s ease, color 0.15s ease, box-shadow 0.15s ease;
-}
-
-[data-theme="dark"] .hero-action-btn {
-  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.5), inset 0 1px 0 rgba(255, 255, 255, 0.1);
+  color: var(--text-secondary);
+  background-color: var(--bg-surface);
+  border: none;
+  border-radius: 6px;
+  box-shadow: var(--shadow-sm);
+  transition: background 0.15s ease, color 0.15s ease, box-shadow 0.15s ease;
 }
 
 .hero-action-btn:hover {
-  color: var(--shell-text);
-  border-color: var(--link);
-  background-color: var(--shell-border);
-  box-shadow: 0 3px 8px rgba(0, 0, 0, 0.35), inset 0 1px 0 rgba(255, 255, 255, 0.25);
+  color: var(--text-primary);
+  background-color: var(--bg-subtle);
+  box-shadow: var(--shadow-md);
 }
 
-/* Same grain skin as .hero-action-btn above -- box-model is Tailwind
-   utilities in the markup now. */
 .edit-dropdown-menu {
-  background-color: var(--shell-bg);
-  background-image: var(--shell-grain);
-  background-blend-mode: var(--shell-blend-mode, soft-light);
-  background-size: var(--shell-grain-size, auto);
-  background-position: var(--shell-grain-position, 0 0);
-  background-repeat: var(--shell-grain-repeat, repeat);
-  background-attachment: var(--shell-grain-attachment, scroll);
-  border: 1px solid var(--shell-border);
-  box-shadow: 0 6px 22px rgba(0, 0, 0, 0.35),
-              inset 0 1px 0 rgba(255, 255, 255, 0.15);
+  background-color: var(--bg-surface);
+  border: none;
+  border-radius: 8px;
+  box-shadow: var(--shadow-lg);
 }
 
-/* Author-level reinforcement: without this, the unconditional `display:
-   flex` a plain class rule would carry beats the UA stylesheet's `[hidden]
-   { display: none }` (author origin always wins over UA origin, regardless
-   of specificity), so the menu would render open before JS ever runs. */
+/* Author-level reinforcement */
 .edit-dropdown-menu[hidden] {
   display: none !important;
 }
@@ -234,7 +209,7 @@ a.tm-ref-unresolved:hover {
 }
 
 .edit-dropdown-item:hover {
-  background-color: color-mix(in srgb, var(--shell-border), transparent 30%);
+  background-color: var(--bg-subtle);
 }
 
 .edit-dropdown-item .item-svg {

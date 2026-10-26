@@ -26,11 +26,10 @@
   max-width: 94vw;
   height: 88vh;
   max-height: 900px;
-  background-color: var(--bg);
-  background-image: var(--paper-grain);
-  background-repeat: repeat;
-  border: 1px solid var(--border);
-  border-radius: 6px;
+  background-color: var(--bg-surface);
+  border: none;
+  border-radius: 12px;
+  box-shadow: var(--shadow-xl);
   animation: peek-appear 0.15s ease-out;
 }
 
@@ -49,7 +48,7 @@
 }
 
 .peek-header-crumbs .crumb-title {
-  color: var(--text);
+  color: var(--text-primary);
   font-weight: 600;
 }
 
@@ -78,12 +77,15 @@
 /* ==================== PREVIEW CARD ENHANCEMENT ==================== */
 .wiki-preview-card {
   cursor: pointer;
-  transition: border-color 0.15s ease, box-shadow 0.15s ease;
+  border: none !important;
+  border-radius: 8px;
+  box-shadow: var(--shadow-md);
+  transition: transform 0.15s ease, box-shadow 0.15s ease;
 }
 
 .wiki-preview-card:hover {
-  border-color: var(--link);
-  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.22);
+  box-shadow: var(--shadow-lg);
+  transform: translateY(-2px);
 }
 
 .preview-peek-hint svg {

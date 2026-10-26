@@ -8,7 +8,7 @@
    height/padding also can't move without breaking .pane-header's cascade
    position (10-shell.css) -- see that file's .book-pane comment. */
 .pane-content-header {
-  background: #dfe3e8; /* Darker header background to distinctly separate from tabs */
+  background: var(--bg-canvas);
   padding: 0 8px;
   overflow: visible;
   /* 41px tab area + 6px scrollbar. Preserves the dimensions of the tabs themselves
@@ -22,7 +22,7 @@
 }
 
 [data-theme="dark"] .pane-content-header {
-  background: #16191d;
+  background: var(--bg-canvas);
 }
 
 /* Edge navigation buttons: not tabs, so they carry no tab color and align to the bottom edge.

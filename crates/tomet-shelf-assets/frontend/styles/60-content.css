@@ -20,7 +20,7 @@
    its wrapper/img need a scoped override rather than their own utilities. */
 .hero-section .hero-banner-wrapper {
   height: 240px;
-  border-bottom: 1px solid var(--border);
+  border: none;
   cursor: zoom-in;
 }
 .hero-section .hero-banner-img {
@@ -39,7 +39,7 @@
 .article-header {
   margin: 0 0 16px 0;
   padding-bottom: 6px;
-  border-bottom: 1px solid var(--border-subtle);
+  border: none;
 }
 .title-row {
   display: flex;
@@ -49,7 +49,7 @@
 }
 .title-row h1 {
   font-size: 1.875rem;
-  font-weight: 500;
+  font-weight: 600;
   margin: 0;
   padding: 0;
   border-bottom: none;
@@ -75,7 +75,11 @@
   width: 280px;
   max-width: 100%;
   margin: 0 0 16px 24px;
-  border-top: 3px solid var(--link);
+  border: none;
+  border-radius: 8px;
+  background: var(--bg-surface);
+  box-shadow: var(--shadow-sm);
+  padding: 12px;
 }
 @media (max-width: 768px) {
   .classic-view .infobox {
@@ -88,8 +92,10 @@
 /* Classic View TOC */
 .toc {
   display: table;
-  background: var(--surface);
-  border: 1px solid var(--border);
+  background: var(--bg-surface);
+  border: none;
+  border-radius: 8px;
+  box-shadow: var(--shadow-sm);
   padding: 12px 16px;
   margin: 16px 0 24px 0;
 }
@@ -98,7 +104,7 @@
   font-weight: bold;
   margin: 0 0 8px 0;
   padding-bottom: 4px;
-  border-bottom: 1px solid var(--border-subtle);
+  border: none;
   text-align: center;
   letter-spacing: 0.05em;
 }
@@ -141,8 +147,8 @@ article h1, article h2, article h3, article h4, article h5, article h6 {
   line-height: 1.3;
 }
 
-article h1 { font-size: 1.6rem; border-bottom: 1px solid var(--border-subtle); padding-bottom: 6px; }
-article h2 { font-size: 1.35rem; border-bottom: 1px solid var(--border-subtle); padding-bottom: 4px; }
+article h1 { font-size: 1.6rem; border: none; padding-bottom: 4px; }
+article h2 { font-size: 1.35rem; border: none; padding-bottom: 4px; }
 article h3 { font-size: 1.15rem; }
 article h4 { font-size: 1.0rem; }
 
@@ -388,26 +394,24 @@ article li.tm-strikethrough > .tm-list-marker {
   line-height: 1.2;
   padding: 1.5px 7px;
   border-radius: 9999px;
-  background: var(--surface-sunken, rgba(125, 125, 125, 0.12));
-  color: var(--text-muted);
-  border: 1px solid var(--border-subtle);
+  background: var(--bg-subtle);
+  color: var(--text-secondary);
+  border: none;
   margin-right: 0.45em;
   vertical-align: 0.12em;
   letter-spacing: 0.02em;
 }
 
-/* max-height caps a portrait image at 80% of the viewport instead of
-   letting it grow as tall as its aspect ratio and the (unconstrained)
-   article column width would take it -- max-width alone only bounds the
-   horizontal axis. */
+/* max-height caps a portrait image at 80% of the viewport */
 article img:not(.tm-link-icon):not(.tm-doc-icon-img) { max-width: 100%; max-height: 80vh; height: auto; display: block; margin: 16px auto; cursor: zoom-in; }
 
 /* Code blocks: wrapped with header bar containing language and copy button */
 .code-block-wrapper {
   margin: 16px 0;
-  background: var(--surface);
-  border: 1px solid var(--border-subtle);
-  border-radius: 6px;
+  background: var(--bg-subtle);
+  border: none;
+  border-radius: 8px;
+  box-shadow: var(--shadow-sm);
   overflow: hidden;
 }
 
@@ -416,8 +420,8 @@ article img:not(.tm-link-icon):not(.tm-doc-icon-img) { max-width: 100%; max-heig
   align-items: center;
   justify-content: space-between;
   padding: 4px 8px 4px 14px;
-  background: var(--surface-subtle);
-  border-bottom: 1px solid var(--border-subtle);
+  background: transparent;
+  border: none;
   min-height: 32px;
   box-sizing: border-box;
 }
@@ -427,7 +431,7 @@ article img:not(.tm-link-icon):not(.tm-doc-icon-img) { max-width: 100%; max-heig
   font-size: 0.72rem;
   font-weight: 600;
   text-transform: uppercase;
-  color: var(--text-muted);
+  color: var(--text-secondary);
   letter-spacing: 0.06em;
   user-select: none;
 }
@@ -441,15 +445,15 @@ article img:not(.tm-link-icon):not(.tm-doc-icon-img) { max-width: 100%; max-heig
   background: transparent;
   border: none;
   border-radius: 4px;
-  color: var(--text-muted);
+  color: var(--text-secondary);
   cursor: pointer;
   line-height: 1;
   transition: color 0.15s ease, background-color 0.15s ease;
 }
 
 .code-block-header .code-copy-btn:hover {
-  color: var(--text);
-  background-color: var(--surface);
+  color: var(--text-primary);
+  background-color: var(--bg-surface);
 }
 
 .code-block-header .code-copy-btn .tm-doc-icon {
@@ -476,16 +480,19 @@ article .code-block-wrapper pre,
 }
 
 article pre {
-  background: var(--surface);
-  border: 1px solid var(--border-subtle);
+  background: var(--bg-subtle);
+  border: none;
+  border-radius: 8px;
+  box-shadow: var(--shadow-sm);
   padding: 12px 16px;
   margin: 16px 0;
   overflow-x: auto;
 }
 article code {
-  background: var(--surface);
-  padding: 2px 4px;
-  border: 1px solid var(--border-subtle);
+  background: var(--bg-subtle);
+  padding: 2px 6px;
+  border: none;
+  border-radius: 4px;
   font-size: 0.9em;
 }
 article pre code {
@@ -494,19 +501,7 @@ article pre code {
   background: transparent;
 }
 
-/* Inline text highlight: ==xxx== -- deathau's "realistic-highlight.css"
-   Obsidian community snippet (https://github.com/deathau/obsidian-snippets),
-   the CSS underneath the raw-file link in
-   https://forum.obsidian.md/t/css-snippets-for-realistic-highlight-not-rendering-in-live-preview-editing-view/66363.
-   An 8-stop gradient tapers the stroke's density in from each end instead of
-   a flat fill, and the asymmetric border-radius keeps the block from reading
-   as a mechanical pill. `text-shadow` (using the page background color) halos
-   the glyphs so text stays legible over the uneven density. Painted straight
-   on `mark` (no pseudo-element) so box-decoration-break: clone keeps working
-   when a highlighted phrase wraps across lines. Dropped from the original:
-   the Obsidian-editor-only selectors (.markdown-preview-view, .cm-s-obsidian)
-   and the mark.yellow/.purple/etc. color-variant classes, neither of which
-   apply here -- tomet-html only ever emits a single, classless `<mark>`. */
+/* Inline text highlight: ==xxx== */
 article mark {
   color: inherit;
   margin-inline: -0.4em;
@@ -526,20 +521,24 @@ article mark {
   );
   box-decoration-break: clone;
   -webkit-box-decoration-break: clone;
-  text-shadow: 0 0 0.75em var(--bg);
+  text-shadow: 0 0 0.75em var(--bg-surface);
 }
 article blockquote {
   margin: 16px 0;
-  padding: 8px 16px;
-  border-left: 3px solid var(--border);
-  color: var(--text-muted);
-  background: transparent;
+  padding: 10px 16px;
+  border: none;
+  border-left: 3px solid var(--accent-primary);
+  border-radius: 0 6px 6px 0;
+  color: var(--text-secondary);
+  background: var(--bg-subtle);
 }
 article table {
   border-collapse: collapse;
   margin: 16px 0;
-  border: 1px solid var(--border);
-  background-color: var(--surface);
+  border: none;
+  border-radius: 8px;
+  box-shadow: var(--shadow-sm);
+  background-color: var(--bg-surface);
   width: 100%;
   display: block;
   max-width: 100%;
@@ -547,16 +546,18 @@ article table {
   -webkit-overflow-scrolling: touch;
 }
 article th {
-  background-color: var(--surface-subtle);
-  border: 1px solid var(--border);
-  padding: 6px 12px;
-  font-weight: bold;
+  background-color: var(--bg-subtle);
+  border: none;
+  border-bottom: 1px solid var(--bg-subtle);
+  padding: 8px 14px;
+  font-weight: 600;
   text-align: left;
 }
 article td {
-  border: 1px solid var(--border);
-  padding: 6px 12px;
-  background-color: var(--bg);
+  border: none;
+  border-bottom: 1px solid var(--bg-subtle);
+  padding: 8px 14px;
+  background-color: var(--bg-surface);
 }
 
 /* `@ruby[漢字](rt:"かんじ")` -- native <ruby>/<rt>, styled only enough to
@@ -655,7 +656,7 @@ article sup.footnote-ref a::after {
 }
 
 article sup.footnote-ref a:hover {
-  background-color: var(--surface-subtle);
+  background-color: var(--bg-subtle);
   text-decoration: none;
 }
 
@@ -663,10 +664,12 @@ article sup.footnote-ref a:hover {
 article section.footnotes,
 article .footnotes {
   margin-top: 40px;
-  padding-top: 16px;
-  border-top: 1px solid var(--border-subtle);
+  padding: 16px 20px;
+  border: none;
+  border-radius: 8px;
+  background-color: var(--bg-subtle);
   font-size: 0.88rem;
-  color: var(--text-muted);
+  color: var(--text-secondary);
 }
 
 article section.footnotes hr,
@@ -696,10 +699,10 @@ article .footnotes li p {
 /* Smooth anchor target highlight */
 article section.footnotes li:target,
 article .footnotes li:target {
-  background-color: var(--surface-subtle);
+  background-color: var(--bg-surface);
   border-radius: 4px;
-  outline: 2px solid var(--border-subtle);
-  outline-offset: 2px;
+  box-shadow: var(--shadow-sm);
+  outline: none;
   transition: background-color 0.3s ease;
 }
 
@@ -743,16 +746,18 @@ article .tmt-tag {
   line-height: 1.25;
   padding: 1.5px 7px;
   border-radius: 9999px;
-  background: var(--surface-sunken, rgba(125, 125, 125, 0.12));
-  color: var(--text-muted);
-  border: 1px solid var(--border-subtle);
+  background: var(--bg-subtle);
+  color: var(--text-secondary);
+  border: none;
+  box-shadow: var(--shadow-sm);
   letter-spacing: 0.02em;
-  transition: background-color 0.15s ease, color 0.15s ease;
+  transition: background-color 0.15s ease, color 0.15s ease, box-shadow 0.15s ease;
 }
 
 .tmt-tag:hover,
 article .tmt-tag:hover {
-  background: var(--surface-subtle);
-  color: var(--text);
+  background: var(--bg-surface);
+  color: var(--link);
+  box-shadow: var(--shadow-md);
 }
 

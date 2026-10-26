@@ -109,7 +109,6 @@ html[data-view="classic"] .classic-view {
 }
 
 /* ==================== FLOATING CONTROLS ==================== */
-/* Same tint as the application shell (--shell-*, defined in 00-base.css) */
 .floating-controls {
   position: fixed;
   top: 10px;
@@ -119,47 +118,32 @@ html[data-view="classic"] .classic-view {
   display: flex;
   align-items: center;
   gap: 6px;
-  background-color: var(--shell-bg);
-  background-image: var(--shell-grain);
-  background-blend-mode: var(--shell-blend-mode, soft-light);
-  background-size: var(--shell-grain-size, auto);
-  background-position: var(--shell-grain-position, 0 0);
-  background-repeat: var(--shell-grain-repeat, repeat);
-  background-attachment: var(--shell-grain-attachment, scroll);
-  color: var(--shell-text);
-  --text: var(--shell-text);
-  --text-muted: var(--shell-text-muted);
-  --tmt-btn-radius: 0;
-  --tmt-btn-color: var(--shell-text-muted);
-  --tmt-btn-hover-color: var(--shell-text);
-  --tmt-btn-hover-bg: var(--shell-border);
-  --tmt-btn-active-color: var(--shell-text);
-  --tmt-btn-active-bg: var(--shell-border);
-  --tmt-btn-active-border: var(--shell-border);
-  border: 1px solid var(--shell-border);
-  border-radius: 0;
+  background-color: var(--bg-surface);
+  color: var(--text-primary);
+  --text: var(--text-primary);
+  --text-muted: var(--text-secondary);
+  --tmt-btn-radius: 6px;
+  --tmt-btn-color: var(--text-secondary);
+  --tmt-btn-hover-color: var(--text-primary);
+  --tmt-btn-hover-bg: var(--bg-subtle);
+  --tmt-btn-active-color: var(--text-primary);
+  --tmt-btn-active-bg: var(--bg-subtle);
+  --tmt-btn-active-border: transparent;
+  border: none;
+  border-radius: 8px;
   padding: 4px 6px;
-  box-shadow: 0 4px 18px rgba(0, 0, 0, 0.22),
-              inset 0 1px 0 rgba(255, 255, 255, 0.16),
-              inset 0 -1px 0 rgba(0, 0, 0, 0.12);
+  box-shadow: var(--shadow-md);
   user-select: none;
 }
 
-/* view-btn/tmt-btn dropped from this selector: .floating-controls already
-   sets --tmt-btn-radius: 0 above, which is the var the shadow stylesheet
-   actually reads -- a plain border-radius set here on a <tmt-btn> host
-   paints nothing (no visible box of its own). .floating-drag-handle is a
-   real <div>, kept. */
 .floating-controls input,
 .floating-controls .view-switcher {
-  border-radius: 0 !important;
+  border-radius: 6px !important;
 }
 
-/* Box model is Tailwind utilities in the markup now; hover stays here
-   (2 properties, not worth threading through the markup). */
 .floating-drag-handle:hover {
-  color: var(--text);
-  background: var(--shell-border);
+  color: var(--text-primary);
+  background: var(--bg-subtle);
 }
 
 .floating-controls.is-dragging,
@@ -232,8 +216,8 @@ html[data-view="classic"] .classic-view {
   display: flex;
   flex-direction: column;
   height: 100%;
-  background: var(--surface);
-  border-right: 1px solid var(--border);
+  background: var(--bg-surface);
+  border: none;
   flex-shrink: 0;
   box-sizing: border-box;
   scroll-snap-align: start;
@@ -250,18 +234,16 @@ html[data-view="classic"] .classic-view {
 
 .pane-header {
   height: 41px;
-  background: #dfe3e8; /* Darker header background to distinctly separate from sticky tabs */
-  border-bottom: 1px solid var(--border);
-  /* Shelf-edge ledge: a hairline plus a soft shadow falling onto the panel
-     below reads as a physical shelf lip, without a wood texture. */
-  box-shadow: 0 2px 3px -2px rgba(0, 0, 0, 0.18);
+  background: var(--bg-canvas);
+  border: none;
+  box-shadow: var(--shadow-sm);
   padding: 0 10px;
   display: flex;
   align-items: center;
   justify-content: space-between;
   font-size: 0.75rem;
-  font-weight: bold;
-  color: var(--text-muted);
+  font-weight: 600;
+  color: var(--text-secondary);
   letter-spacing: 0.05em;
   user-select: none;
   flex-shrink: 0;
@@ -271,18 +253,18 @@ html[data-view="classic"] .classic-view {
 }
 
 [data-theme="dark"] .pane-header {
-  background: #16191d; /* Darker header background for dark theme */
+  background: var(--bg-canvas);
 }
 
 .pane-header-collapsible {
   cursor: pointer;
 }
 .pane-header-collapsible:hover {
-  background: var(--shell-border);
-  color: var(--shell-text);
+  background: var(--bg-subtle);
+  color: var(--text-primary);
 }
 .pane-header-collapsible:hover .pane-collapse-arrow {
-  color: var(--shell-text);
+  color: var(--text-primary);
 }
 .pane-collapse-arrow {
   font-size: 0.7rem;
@@ -292,56 +274,32 @@ html[data-view="classic"] .classic-view {
 }
 
 /* ==================== PERMANENT LEFT RAIL ==================== */
-/* Box model is Tailwind utility classes in the markup now; the grain
-   texture/border/shadow and the --text/--text-muted rail-scoping (read by
-   every tmt-btn inside it, see the rail-tab-nav comment further down) stay
-   here. */
 .book-rail-nav {
-  background-color: var(--shell-bg);
-  background-image: var(--shell-grain);
-  background-blend-mode: var(--shell-blend-mode, soft-light);
-  background-size: var(--shell-grain-size, auto);
-  background-position: var(--shell-grain-position, 0 0);
-  background-repeat: var(--shell-grain-repeat, repeat);
-  background-attachment: var(--shell-grain-attachment, scroll);
-  border-right: 1px solid var(--shell-border);
-  box-shadow: inset -1px 0 0 rgba(255, 255, 255, 0.12),
-              inset 1px 0 0 rgba(255, 255, 255, 0.08);
-  color: var(--shell-text);
-  --text: var(--shell-text);
-  --text-muted: var(--shell-text-muted);
+  background-color: var(--bg-canvas);
+  border: none;
+  box-shadow: var(--shadow-sm);
+  color: var(--text-primary);
+  --text: var(--text-primary);
+  --text-muted: var(--text-secondary);
+  z-index: 20;
 }
 
-/* 1. Brand Section (Top: Logo / Home Link) and
-   2. Tools Section (Navigation / Action Buttons): Tailwind utility classes
-   in the markup now. */
-
-/* Rail Navigation Tabs. rail-tab-nav/-theme/-palette are <tmt-btn
-   variant="ghost" shape="column"> now (see page.html) -- their own skin
-   comes from tmt-btn.css; --text/--text-muted are already rail-scoped above,
-   so only hover/active need retinting to the rail's own tokens instead of
-   the page's --surface-subtle/--link defaults. rail-tab-title stays a plain
-   <a> (it's a real navigation link, not a button), so it keeps its own
-   rules. */
+/* Rail Navigation Tabs */
 .rail-tab-nav,
 .rail-tab-theme,
 .rail-tab-palette {
-  --tmt-btn-hover-bg: var(--shell-border);
-  --tmt-btn-hover-color: var(--shell-text);
-  --tmt-btn-active-bg: var(--shell-border);
-  --tmt-btn-active-color: var(--shell-text);
-  --tmt-btn-active-border: var(--shell-border);
+  --tmt-btn-hover-bg: var(--bg-subtle);
+  --tmt-btn-hover-color: var(--text-primary);
+  --tmt-btn-active-bg: var(--bg-subtle);
+  --tmt-btn-active-color: var(--text-primary);
+  --tmt-btn-active-border: transparent;
 }
 .rail-tab-palette {
   --tmt-btn-column-padding: 12px 0;
 }
 
-/* rail-tab-title/rail-letters(-brand) are Tailwind utility classes in the
-   markup now (page.html) -- rail-tab-title is a real <a> (a navigation
-   link, not a button), so it never went through the tmt-btn migration.
-   rail-letters-toc was dead: no template ever applied it. */
 .rail-tab-title:hover {
-  background: var(--shell-border);
+  background: var(--bg-subtle);
 }
 
 /* 3. Rail Footer (Theme Switcher at the bottom of the Left Rail): Tailwind
@@ -369,25 +327,13 @@ html[data-view="classic"] .classic-view {
    shell-palette-popover keeps its grain texture/border/box-shadow here --
    same reasoning as .hero-action-btn in 40-hero.css. */
 .shell-palette-popover {
-  background-color: var(--shell-bg);
-  background-image: var(--shell-grain);
-  background-blend-mode: var(--shell-blend-mode, soft-light);
-  background-size: var(--shell-grain-size, auto);
-  background-position: var(--shell-grain-position, 0 0);
-  background-repeat: var(--shell-grain-repeat, repeat);
-  background-attachment: var(--shell-grain-attachment, scroll);
-  border: 1px solid var(--shell-border);
-  box-shadow: 0 6px 22px rgba(0, 0, 0, 0.3),
-              inset 0 1px 0 rgba(255, 255, 255, 0.15);
-  /* tmt-swatch's checked/hover states fall back to --surface-subtle/--link
-     (the main content palette) when these aren't set -- unlike tmt-btn,
-     nothing bridged them to the shell's own tokens, so the checked swatch's
-     full-width background/border stood out as an off-theme white-ish box
-     against this popover's dark grain instead of blending in like the
-     rail's own tmt-btn instances do. */
-  --tmt-swatch-hover-bg: var(--shell-border);
-  --tmt-swatch-active-bg: var(--shell-border);
-  --tmt-swatch-active-border: var(--shell-border);
+  background-color: var(--bg-surface);
+  border: none;
+  border-radius: 8px;
+  box-shadow: var(--shadow-lg);
+  --tmt-swatch-hover-bg: var(--bg-subtle);
+  --tmt-swatch-active-bg: var(--bg-subtle);
+  --tmt-swatch-active-border: transparent;
 }
 
 /* Author-level reinforcement -- see edit-dropdown-menu[hidden] in
@@ -396,12 +342,10 @@ html[data-view="classic"] .classic-view {
   display: none !important;
 }
 
-/* Adjacent-sibling border: not expressible as a utility class on one
-   element (there's no "unless first-child" Tailwind variant that fits
-   cleanly here without templating the condition), so this one stays. */
 .palette-section + .palette-section {
-  border-top: 1px solid var(--border-subtle);
-  padding-top: 5px;
+  border-top: none;
+  margin-top: 6px;
+  padding-top: 6px;
 }
 
 [data-theme="dark"] .swatch-dot {

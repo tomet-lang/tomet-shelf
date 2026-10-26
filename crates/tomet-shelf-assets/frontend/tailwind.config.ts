@@ -2,43 +2,41 @@ import type { Config } from 'tailwindcss';
 
 export default {
   content: ['./frontend/templates/**/*.html', './frontend/src/**/*.ts'],
-  // The app already switches look via `[data-theme="dark"]` on <html> (see
-  // 10-theme.js); match that instead of Tailwind's default `.dark` class or
-  // `prefers-color-scheme` strategy.
   darkMode: ['selector', '[data-theme="dark"]'],
   theme: {
-    // Replaced, not extended: every color utility should resolve through
-    // the app's existing CSS custom properties (00-base.css) so shell
-    // color/pattern/contrast switching keeps working, rather than
-    // introducing a second, hardcoded palette that can drift from them.
     colors: {
       transparent: 'transparent',
       current: 'currentColor',
+      canvas: 'var(--bg-canvas)',
       bg: 'var(--bg)',
-      surface: 'var(--surface)',
+      surface: 'var(--bg-surface)',
+      subtle: 'var(--bg-subtle)',
       'surface-subtle': 'var(--surface-subtle)',
       border: 'var(--border)',
       'border-subtle': 'var(--border-subtle)',
       text: 'var(--text)',
+      'text-primary': 'var(--text-primary)',
+      'text-secondary': 'var(--text-secondary)',
       'text-muted': 'var(--text-muted)',
       link: 'var(--link)',
       'link-visited': 'var(--link-visited)',
       unresolved: 'var(--unresolved)',
+      'accent-primary': 'var(--accent-primary)',
       'shell-bg': 'var(--shell-bg)',
       'shell-border': 'var(--shell-border)',
       'shell-text': 'var(--shell-text)',
       'shell-text-muted': 'var(--shell-text-muted)',
     },
+    boxShadow: {
+      none: 'var(--shadow-none)',
+      sm: 'var(--shadow-sm)',
+      md: 'var(--shadow-md)',
+      lg: 'var(--shadow-lg)',
+      xl: 'var(--shadow-xl)',
+    },
   },
   corePlugins: {
-    // 00-base.css already carries a hand-tuned reset; Tailwind's own
-    // Preflight would fight it (button/heading defaults, etc.) rather than
-    // layer cleanly on top.
     preflight: false,
-    // `.container` is already the app's own fluid page-shell class
-    // (00-base.css, paired with `.is-fluid`) -- Tailwind's own `.container`
-    // utility has the same name but a totally different meaning (fixed
-    // max-width per breakpoint) and would silently win the cascade over it.
     container: false,
   },
   plugins: [],
