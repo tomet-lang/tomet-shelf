@@ -3,11 +3,12 @@ use std::path::Path;
 use std::sync::LazyLock;
 
 pub use tomet_shelf_config::{BookConfig, i18n};
-pub use tomet_shelf_icons::{LUCIDE_SPRITE, SIMPLE_SPRITE, StandardIconRenderer};
 pub use tomet_shelf_headless::assets::{
     StaticAsset, content_version, write_if_changed, write_static_assets as write_render_assets,
 };
-pub use tomet_shelf_template::{BookRenderer, TemplateBundle};
+pub use tomet_shelf_icons::{LUCIDE_SPRITE, SIMPLE_SPRITE, StandardIconRenderer};
+pub mod renderer;
+pub use renderer::{BookRenderer, TemplateBundle};
 
 pub const ICON_ASSETS: &[StaticAsset] = &[
     StaticAsset {
@@ -94,11 +95,11 @@ pub const COMPONENT_VERSIONS: &[(&str, &str)] = &[
     ("tmt_switch_css_version", TMT_SWITCH_CSS),
 ];
 
-// Templates (Single source of truth in tomet-shelf-template)
-pub const BASE_HTML: &str = include_str!("../../tomet-shelf-template/templates/base.html");
-pub const PAGE_HTML: &str = include_str!("../../tomet-shelf-template/templates/page.html");
-pub const INDEX_HTML: &str = include_str!("../../tomet-shelf-template/templates/index.html");
-pub const MACROS_HTML: &str = include_str!("../../tomet-shelf-template/templates/macros.html");
+// Templates (Single source of truth in tomet-shelf-assets)
+pub const BASE_HTML: &str = include_str!("../templates/base.html");
+pub const PAGE_HTML: &str = include_str!("../templates/page.html");
+pub const INDEX_HTML: &str = include_str!("../templates/index.html");
+pub const MACROS_HTML: &str = include_str!("../templates/macros.html");
 
 /// Official `tomet-shelf` UI template and asset bundle.
 pub const ASSETS: TemplateBundle = TemplateBundle {

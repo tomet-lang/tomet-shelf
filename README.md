@@ -16,8 +16,7 @@ Fast static site generator and documentation server specifically built for Tomet
 ## Workspace Layout
 
 - `app` (`tomet-shelf-cli`) -- CLI binary (`tomet-shelf`).
-- `crates/tomet-shelf-assets` (`tomet-shelf-assets`) -- Official frontend web assets, templates, theme styling, and client scripts.
-- `crates/tomet-shelf-template` (`tomet-shelf-template`) -- MiniJinja page template renderer implementation.
+- `crates/tomet-shelf-assets` (`tomet-shelf-assets`) -- Official frontend web assets, Askama templates, theme styling, and client scripts.
 - `crates/tomet-shelf-headless` (`tomet-shelf-headless`) -- Headless SSG engine, vault state, and dev server orchestration.
 - `crates/tomet-shelf-headless-config` (`tomet-shelf-config`) -- `shelf.toml` configuration parser, models, and i18n dictionaries.
 - `crates/tomet-shelf-headless-document` (`tomet-shelf-document`) -- Tomet document parsing, AST transformation, and metadata extraction.

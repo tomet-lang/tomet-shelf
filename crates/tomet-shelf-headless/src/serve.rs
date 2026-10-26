@@ -663,8 +663,8 @@ mod event_kind_tests {
 #[cfg(test)]
 mod ssr_tests {
     use super::*;
-    use std::fs;
     use crate::renderer::MinimalRendererFactory;
+    use std::fs;
     use tomet_shelf_serve::axum::body::to_bytes;
     use tomet_shelf_serve::axum::http::header;
 

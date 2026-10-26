@@ -20,7 +20,7 @@ let
     fileset = lib.fileset.unions [
       (craneLib.fileset.commonCargoSources root)
       (root + "/crates/tomet-shelf-assets/frontend")
-      (root + "/crates/tomet-shelf-template/templates")
+      (root + "/crates/tomet-shelf-assets/templates")
       (root + "/crates/tomet-shelf-icons/assets")
     ];
   };

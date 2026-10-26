@@ -84,9 +84,7 @@ pub fn create_doc_icon_custom_element(
     renderer: Option<Arc<dyn IconRenderer>>,
 ) -> CustomElementRenderer {
     let base = base_path.to_string();
-    CustomElementRenderer::new(move |ctx| {
-        render_doc_icon(ctx, &base, renderer.as_deref())
-    })
+    CustomElementRenderer::new(move |ctx| render_doc_icon(ctx, &base, renderer.as_deref()))
 }
 
 #[cfg(test)]
@@ -130,8 +128,7 @@ mod tests {
     fn renders_with_mock_renderer() {
         let renderer = MockRenderer;
         let a = args("star", Some("lucide"));
-        let html =
-            render_doc_icon(ctx("doc.icon", &a, true), "", Some(&renderer)).unwrap();
+        let html = render_doc_icon(ctx("doc.icon", &a, true), "", Some(&renderer)).unwrap();
         assert_eq!(html, "<svg class=\"mock-icon\">star</svg>");
     }
 
@@ -139,8 +136,7 @@ mod tests {
     fn an_unknown_icon_name_is_a_visible_placeholder_not_nothing() {
         let renderer = MockRenderer;
         let a = args("this-icon-does-not-exist", Some("lucide"));
-        let html =
-            render_doc_icon(ctx("doc.icon", &a, true), "", Some(&renderer)).unwrap();
+        let html = render_doc_icon(ctx("doc.icon", &a, true), "", Some(&renderer)).unwrap();
         assert!(html.contains("tm-doc-icon-missing"));
         assert!(html.contains("this-icon-does-not-exist"));
     }

@@ -4,9 +4,7 @@ use anyhow::Result;
 use askama::Template;
 use std::collections::HashMap;
 use tomet_shelf_config::BookConfig;
-use tomet_shelf_document::{
-    HeroChipItem, InfoboxRowItem, ProcessedDoc, SectionTab, TocItem,
-};
+use tomet_shelf_document::{HeroChipItem, InfoboxRowItem, ProcessedDoc, SectionTab, TocItem};
 use tomet_shelf_headless::{
     Backlink, EntrySummary, PageRenderer, RendererFactory, SectionSummary, StaticAsset,
     content_version,

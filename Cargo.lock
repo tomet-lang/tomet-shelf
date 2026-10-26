@@ -3605,10 +3605,14 @@ name = "tomet-shelf-assets"
 version = "0.1.0"
 dependencies = [
  "anyhow",
+ "askama",
+ "serde",
+ "serde_json",
  "tomet-shelf-config",
+ "tomet-shelf-document",
  "tomet-shelf-headless",
  "tomet-shelf-icons",
- "tomet-shelf-template",
+ "tomet-shelf-render",
 ]
 
 [[package]]
@@ -3733,21 +3737,6 @@ dependencies = [
  "tokio",
  "tower-http 0.5.2",
  "tracing",
-]
-
-[[package]]
-name = "tomet-shelf-template"
-version = "0.1.0"
-dependencies = [
- "anyhow",
- "askama",
- "serde",
- "serde_json",
- "tomet-shelf-config",
- "tomet-shelf-document",
- "tomet-shelf-headless",
- "tomet-shelf-icons",
- "tomet-shelf-render",
 ]
 
 [[package]]

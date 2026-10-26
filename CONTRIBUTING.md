@@ -29,7 +29,7 @@ Use the affected crate or subsystem as the scope:
 
 - **CLI**: `cli`, `app` (`app`)
 - **Headless Engine**: `headless`, `config`, `document`, `route`, `search`, `serve` (`crates/tomet-shelf-headless*`)
-- **Assets & Templates**: `assets`, `template`, `ui` (`crates/tomet-shelf-assets`, `crates/tomet-shelf-template`)
+- **Assets & Templates**: `assets`, `ui` (`crates/tomet-shelf-assets`)
 - **Infra / Meta**: `nix`, `ci`, `deps`, `docs`
 
 > [!tip]

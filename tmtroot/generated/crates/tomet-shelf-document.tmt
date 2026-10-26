@@ -1,6 +1,6 @@
 ::kind(api)
 
-::meta{crate: tomet-shelf-document, dependencies: list(tomet-shelf-config, tomet-shelf-route, tomet-shelf-search), dependents: list(tomet-shelf-headless, tomet-shelf-render, tomet-shelf-template)}
+::meta{crate: tomet-shelf-document, dependencies: list(tomet-shelf-config, tomet-shelf-route, tomet-shelf-search), dependents: list(tomet-shelf-assets, tomet-shelf-headless, tomet-shelf-render)}
 
 =[tomet-shelf-document]
 

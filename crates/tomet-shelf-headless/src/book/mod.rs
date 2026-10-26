@@ -12,9 +12,9 @@ pub mod search;
 pub mod state;
 
 pub use crate::renderer;
+pub use slug::{RouteTable, clean_doc_slug, normalize_path, normalize_path_str};
 pub use tomet_shelf_document as document;
 pub use tomet_shelf_document::slug;
-pub use slug::{RouteTable, clean_doc_slug, normalize_path, normalize_path_str};
 
 use anyhow::{Context, Result};
 use rayon::prelude::*;
@@ -29,9 +29,7 @@ use tracing::{info, warn};
 pub use state::{RenderContext, VaultState, render_single_document, render_single_document_html};
 
 use crate::assets::write_static_assets;
-use crate::renderer::{
-    Backlink, EntrySummary, PageRenderer, RendererFactory, SectionSummary,
-};
+use crate::renderer::{Backlink, EntrySummary, PageRenderer, RendererFactory, SectionSummary};
 use media::copy_vault_media;
 use tomet_shelf_config::{BookConfig, SearchEngine};
 use tomet_shelf_document::ProcessedDoc;

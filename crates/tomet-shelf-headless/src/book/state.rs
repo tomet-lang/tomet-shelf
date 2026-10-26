@@ -146,19 +146,20 @@ impl VaultState {
             })
             .collect();
 
-        let doc_icons: HashMap<String, tomet_shelf_document::DocIcon> = if config.ui.links.note_icons {
-            processed
-                .iter()
-                .filter_map(|r| r.as_ref().ok())
-                .filter_map(|doc| {
-                    doc.icon
-                        .as_ref()
-                        .map(|icon| (doc.slug.clone(), icon.clone()))
-                })
-                .collect()
-        } else {
-            HashMap::new()
-        };
+        let doc_icons: HashMap<String, tomet_shelf_document::DocIcon> =
+            if config.ui.links.note_icons {
+                processed
+                    .iter()
+                    .filter_map(|r| r.as_ref().ok())
+                    .filter_map(|doc| {
+                        doc.icon
+                            .as_ref()
+                            .map(|icon| (doc.slug.clone(), icon.clone()))
+                    })
+                    .collect()
+            } else {
+                HashMap::new()
+            };
 
         let full_url_prefix = config.build.full_url_prefix();
         let clean_url_prefix = full_url_prefix.as_str();

@@ -18,9 +18,7 @@ pub use tomet_shelf_render as render;
 pub use tomet_shelf_route as route;
 pub use tomet_shelf_search as search;
 
-pub use assets::{
-    StaticAsset, content_version, write_if_changed, write_static_assets,
-};
+pub use assets::{StaticAsset, content_version, write_if_changed, write_static_assets};
 pub use renderer::{
     Backlink, EntrySummary, MinimalRenderer, MinimalRendererFactory, PageRenderer, RendererFactory,
     SectionSummary,

@@ -12,7 +12,6 @@ rust-version = "1.85"
 tomet-shelf-assets = { path = "crates/tomet-shelf-assets" }
 tomet-shelf-icons = { path = "crates/tomet-shelf-icons" }
 tomet-shelf-render = { path = "crates/tomet-shelf-render" }
-tomet-shelf-template = { path = "crates/tomet-shelf-template" }
 #--- Headless ---
 tomet-shelf-headless = { path = "crates/tomet-shelf-headless" }
 tomet-shelf-config = { path = "crates/tomet-shelf-headless-config" }
