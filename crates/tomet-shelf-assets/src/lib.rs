@@ -3,11 +3,24 @@ use std::path::Path;
 use std::sync::LazyLock;
 
 pub use tomet_shelf_config::{BookConfig, i18n};
-pub use tomet_shelf_render::assets::{
-    ICON_ASSETS, LUCIDE_SPRITE, SIMPLE_SPRITE, StaticAsset, content_version, write_if_changed,
-    write_static_assets as write_render_assets,
+pub use tomet_shelf_icons::{LUCIDE_SPRITE, SIMPLE_SPRITE, StandardIconRenderer};
+pub use tomet_shelf_headless::assets::{
+    StaticAsset, content_version, write_if_changed, write_static_assets as write_render_assets,
 };
 pub use tomet_shelf_template::{BookRenderer, TemplateBundle};
+
+pub const ICON_ASSETS: &[StaticAsset] = &[
+    StaticAsset {
+        path: "icons/lucide.svg",
+        mime: "image/svg+xml",
+        content: LUCIDE_SPRITE,
+    },
+    StaticAsset {
+        path: "icons/simple.svg",
+        mime: "image/svg+xml",
+        content: SIMPLE_SPRITE,
+    },
+];
 
 // Stylesheets
 pub const BOOK_CSS: &str = concat!(
@@ -104,14 +117,14 @@ pub static JS_VERSION: LazyLock<String> = LazyLock::new(|| content_version(BOOK_
 
 pub fn write_static_assets(out_dir: &Path, src_dir: &Path, config: &BookConfig) -> Result<()> {
     let renderer = BookRenderer::new(config, &ASSETS, false)?;
-    use tomet_shelf_render::PageRenderer;
+    use tomet_shelf_headless::PageRenderer;
     write_render_assets(out_dir, src_dir, config, renderer.static_assets())
 }
 
 #[cfg(test)]
 mod tests {
     use super::*;
-    use tomet_shelf_render::PageRenderer;
+    use tomet_shelf_headless::PageRenderer;
 
     #[test]
     fn assets_versions_are_valid() {

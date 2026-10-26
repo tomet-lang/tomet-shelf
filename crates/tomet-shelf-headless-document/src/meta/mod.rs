@@ -15,8 +15,8 @@ use serde_json::{Map, Value};
 use std::collections::HashSet;
 use std::path::Path;
 
-use super::html::{color_chip_html, external_link_html, is_external_url, sanitize_color_hex};
-use super::links::{
+use crate::html::{color_chip_html, external_link_html, is_external_url, sanitize_color_hex};
+use crate::links::{
     clean_ref_target, format_meta_value_to_html, resolve_meta_link, resolve_meta_media_path,
 };
 use tomet_shelf_config::BookConfig;
@@ -42,9 +42,8 @@ pub struct MetaProperties {
     /// resolved; the body's own links are collected from the parsed document.
     pub linked_slugs: Vec<String>,
     pub primary_color: Option<String>,
-    pub icon: Option<String>,
+    pub icon: Option<crate::icon::DocIcon>,
     pub icon_image_url: Option<String>,
-    pub link_icon: Option<String>,
     pub banner_url: Option<String>,
     pub banner_y: Option<f64>,
     pub images: Vec<String>,
@@ -60,7 +59,7 @@ impl MetaProperties {
 }
 
 /// Context shared by every extraction step below.
-struct MetaCtx<'a> {
+pub(super) struct MetaCtx<'a> {
     from_path: &'a Path,
     vault_index: &'a tomet::links::VaultLinkIndex,
     config: &'a BookConfig,
@@ -245,14 +244,13 @@ pub fn extract(
         }
     }
 
-    let (icon_html, icon_image_url, link_icon) = extract_icon(&cx, map);
+    let (icon, icon_image_url) = extract_icon(&cx, map);
 
     MetaProperties {
         linked_slugs,
         primary_color: primary_color(map),
-        icon: icon_html,
+        icon,
         icon_image_url,
-        link_icon,
         banner_url: map
             .get("banner")
             .and_then(extract_media_target)

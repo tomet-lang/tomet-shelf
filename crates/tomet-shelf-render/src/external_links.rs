@@ -4,8 +4,7 @@
 use regex::Regex;
 use std::sync::LazyLock;
 
-use super::html::escape_html;
-use super::icon::is_simple_icon;
+use crate::html::escape_html;
 use tomet_shelf_config::{FaviconService, LinksConfig};
 
 static EXTERNAL_LINK_RE: LazyLock<Regex> = LazyLock::new(|| {
@@ -94,18 +93,37 @@ fn normalize_host(raw_host: &str) -> String {
     }
 }
 
+use tomet_shelf_icons::IconRenderer;
+
 /// Resolves the HTML string for an external link's prefix icon.
-fn resolve_link_icon(host: &str, config: &LinksConfig, base_path: &str) -> Option<String> {
+fn resolve_link_icon(
+    host: &str,
+    config: &LinksConfig,
+    base_path: &str,
+    icon_renderer: Option<&dyn IconRenderer>,
+) -> Option<String> {
     let norm = normalize_host(host);
 
     // 1. Check known domains for Simple Icons
-    if let Some(icon_name) = domain_to_simple_icon(&norm)
-        && is_simple_icon(icon_name)
-    {
-        let safe_name = escape_html(icon_name);
-        return Some(format!(
-            "<svg class=\"tm-link-icon\" aria-hidden=\"true\"><use href=\"{base_path}/icons/simple.svg#{safe_name}\"></use></svg>"
-        ));
+    if let Some(icon_name) = domain_to_simple_icon(&norm) {
+        if let Some(renderer) = icon_renderer {
+            if renderer.has_icon("simple", icon_name) {
+                if let Some(html) = renderer.render_link(icon_name, "simple", base_path) {
+                    return Some(html);
+                }
+            }
+        } else if let Some(renderer) = tomet_shelf_icons::default_icon_renderer() {
+            if renderer.has_icon("simple", icon_name) {
+                if let Some(html) = renderer.render_link(icon_name, "simple", base_path) {
+                    return Some(html);
+                }
+            }
+        } else {
+            let safe_name = escape_html(icon_name);
+            return Some(format!(
+                "<svg class=\"tm-link-icon\" aria-hidden=\"true\"><use href=\"{base_path}/icons/simple.svg#{safe_name}\"></use></svg>"
+            ));
+        }
     }
 
     // 2. Fallback to Favicon API service
@@ -127,7 +145,12 @@ fn resolve_link_icon(host: &str, config: &LinksConfig, base_path: &str) -> Optio
 }
 
 /// Enhances external links in rendered HTML by inserting a site/brand icon prefix.
-pub fn enhance_external_links(body_html: &str, config: &LinksConfig, base_path: &str) -> String {
+pub fn enhance_external_links(
+    body_html: &str,
+    config: &LinksConfig,
+    base_path: &str,
+    icon_renderer: Option<&dyn IconRenderer>,
+) -> String {
     if !config.external_icons {
         return body_html.to_string();
     }
@@ -148,7 +171,7 @@ pub fn enhance_external_links(body_html: &str, config: &LinksConfig, base_path: 
                 return caps[0].to_string();
             }
 
-            if let Some(icon_html) = resolve_link_icon(raw_host, config, base_path) {
+            if let Some(icon_html) = resolve_link_icon(raw_host, config, base_path, icon_renderer) {
                 format!("<a{attrs}>{icon_html}{inner_content}</a>")
             } else {
                 caps[0].to_string()
@@ -162,7 +185,7 @@ mod tests {
     use super::*;
 
     fn enhance(html: &str, config: &LinksConfig) -> String {
-        enhance_external_links(html, config, "")
+        enhance_external_links(html, config, "", None)
     }
 
     #[test]
@@ -170,7 +193,7 @@ mod tests {
         let config = LinksConfig::default();
         let html =
             r#"<p><a class="tm-url" href="https://github.com/tomet-lang/tomet">GitHub</a></p>"#;
-        let out = enhance_external_links(html, &config, "/my-repo");
+        let out = enhance_external_links(html, &config, "/my-repo", None);
         assert!(out.contains("<use href=\"/my-repo/icons/simple.svg#github\"></use>"));
     }
 

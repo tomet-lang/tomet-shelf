@@ -1,0 +1,192 @@
+::kind(api)
+
+::meta{crate: tomet-shelf-document, dependencies: list(tomet-shelf-config, tomet-shelf-route, tomet-shelf-search), dependents: list(tomet-shelf-headless, tomet-shelf-render, tomet-shelf-template)}
+
+=[tomet-shelf-document]
+
+Document parsing, AST transformation, and metadata extraction for `tomet-shelf`.
+
+==[Module html]
+
+Building blocks for the HTML this crate assembles by hand.
+
+Infobox values reach the template through `| safe`, so anything produced
+here has to be safe to drop straight into the page.
+
+===[Functions]
+
+====[fn escape_html]
+
+Escape text for interpolation into HTML text nodes and double-quoted attributes.
+
+====[fn sanitize_color_hex]
+
+Normalize a `@meta.colors` entry to a bare hex body (`#AABBCC` -> `aabbcc`).
+
+Returns `None` for anything that is not a 3/4/6/8-digit hex color, which keeps
+unvetted text out of the inline `style` attributes that consume it.
+
+====[fn color_chip_html]
+
+A colour swatch, or plain escaped text when the value is not a hex colour.
+
+====[fn external_link_html]
+
+====[fn is_external_url]
+
+==[Module icon]
+
+===[Enums]
+
+====[enum DocIcon]
+
+Structured representation of a document icon.
+
+Documents never produce HTML strings for icons. Instead, they produce
+structured `DocIcon` variants, delegating presentation markup to `tomet-shelf-render`
+or shelf UI engines (e.g. Leptos, Svelte, Web Components).
+
+==[Module links]
+
+Resolving the link references that appear inside `@meta` values.
+
+The body's links are resolved upstream by `tomet-transform`; these are the
+ones that only exist as metadata strings -- `parent: "[[unit]]"` and friends
+-- which never pass through the renderer.
+
+===[Structs]
+
+====[struct ParsedLinkRef]
+
+A parsed link reference representation.
+
+===[Functions]
+
+====[fn is_link_ref]
+
+====[fn parse_link_ref]
+
+Extract the core target and optional alias from link reference syntax.
+
+====[fn clean_ref_target]
+
+Clean link references like `@link(ref:"@foo")` or `ref:bar` into plain labels.
+
+====[fn resolve_meta_link]
+
+Resolve a `@meta` value that looks like a link into `(href, label)`.
+
+Returns `None` when the value is not a link reference at all. An empty href
+means the reference is a link to a page that does not exist yet.
+
+====[fn format_meta_value_to_html]
+
+Render a `@meta` value as infobox HTML: a link when it is one, escaped text otherwise.
+
+====[fn resolve_meta_media_path]
+
+Resolve a media reference in `@meta` (e.g. `@link(ref:+hash.png)`) to a URL.
+
+====[fn outgoing_page_slugs]
+
+The pages this document links to, as slugs, in the order they appear.
+
+Collected from the parsed body before link resolution rewrites the targets,
+then resolved the same way `@meta` references are. Only links that land on
+another Tomet document count -- media and external URLs are not pages, and
+a document linking to itself is not a backlink.
+
+====[fn slug_from_href]
+
+The slug a resolved `@meta` href points at, if it points at a page at all.
+
+==[Module meta]
+
+Turning a document's `@meta` block into the page's chrome: the hero chips,
+the infobox rows, and the images the template hangs off them.
+
+===[Structs]
+
+====[struct HeroChipItem]
+
+====[struct InfoboxRowItem]
+
+====[struct MetaProperties]
+
+Everything the page template reads out of `@meta`.
+
+===[Functions]
+
+====[fn extract]
+
+Read the page's chrome out of `@meta`.
+
+`kind` is the document's element kind, used as an infobox row when the
+metadata does not already say what this page is.
+
+==[Module toc]
+
+The table of contents and the sticky-tab tree built from it.
+
+===[Structs]
+
+====[struct TocItem]
+
+====[struct TocNode]
+
+===[Functions]
+
+====[fn toc_from_outline]
+
+Turn the renderer's heading outline into the page TOC, alongside the first
+content H1 (used as a title fallback).
+
+Only levels 1-4 make it into the TOC; deeper headings are structure the
+sticky tabs have no room for.
+
+====[fn build_section_tabs]
+
+Fold a flat TOC into the tree the sticky-tab header renders.
+
+Roots are the shallowest level present (H1 when the document has any),
+and every deeper heading nests under the most recent shallower one.
+
+===[Type Aliases]
+
+====[type SectionTab]
+
+==[Structs]
+
+===[struct ProcessedDoc]
+
+==[Functions]
+
+===[fn extract_workspace_config_blocks]
+
+Extract the `::config`/`::settings` blocks of a workspace-wide document.
+
+===[fn inject_workspace_config_blocks]
+
+Prepend pre-parsed workspace-wide config blocks so shared macros are in scope.
+
+===[fn parse_tomet_document]
+
+Read a document far enough to know what it is.
+
+The build has to decide what the site publishes before it resolves a
+single link, since a link to a document the site leaves out has to come
+out broken. That decision needs the `::kind`, and the `::kind` needs a
+parse -- so the parse is done once, here, and handed on.
+
+===[fn process_tomet_document]
+
+===[fn process_parsed_document]
+
+===[fn process_parsed_document_with_blocks]
+
+Turn a parsed document into the page it becomes using pre-parsed workspace config blocks.
+
+===[fn process_parsed_document_with_custom_element]
+
+Turn a parsed document into the page it becomes using pre-parsed workspace config blocks
+and an optional custom element renderer (e.g. for `@doc.icon`).

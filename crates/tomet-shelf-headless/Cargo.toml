@@ -7,6 +7,8 @@ description = "Headless book & wiki engine for Tomet"
 
 [dependencies]
 tomet-shelf-config = { workspace = true }
+tomet-shelf-document = { workspace = true }
+tomet-shelf-icons = { workspace = true }
 tomet-shelf-render = { workspace = true }
 tomet-shelf-route = { workspace = true }
 tomet-shelf-search = { workspace = true }

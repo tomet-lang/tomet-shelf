@@ -7,7 +7,8 @@ description = "Official UI assets and templates for tomet-shelf"
 
 [dependencies]
 tomet-shelf-config = { workspace = true }
-tomet-shelf-render = { workspace = true }
+tomet-shelf-headless = { workspace = true }
+tomet-shelf-icons = { workspace = true }
 tomet-shelf-template = { workspace = true }
 
 #= Crates.io

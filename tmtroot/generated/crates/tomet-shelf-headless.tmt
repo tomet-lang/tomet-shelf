@@ -1,6 +1,6 @@
 ::kind(api)
 
-::meta{crate: tomet-shelf-headless, dependencies: list(tomet-shelf-config, tomet-shelf-render, tomet-shelf-route, tomet-shelf-search, tomet-shelf-serve), dependents: list(tomet-shelf-cli)}
+::meta{crate: tomet-shelf-headless, dependencies: list(tomet-shelf-config, tomet-shelf-document, tomet-shelf-icons, tomet-shelf-render, tomet-shelf-route, tomet-shelf-search, tomet-shelf-serve), dependents: list(tomet-shelf-assets, tomet-shelf-cli, tomet-shelf-template)}
 
 =[tomet-shelf-headless]
 
@@ -12,6 +12,23 @@ Provides the primary API for building and serving Tomet books:
 - `run_dev_server` a local development server with live reload.:Runs
 - `config::BookConfig` parser and models.:Configuration
 - `PageRenderer` / [`RendererFactory`]: Template-engine-agnostic page rendering traits.
+
+==[Module assets]
+
+===[Structs]
+
+====[struct StaticAsset]
+
+A static asset file (CSS, JS, SVG, etc.) to be written to `out_dir` during
+static builds and served from memory by the dev server.
+
+===[Functions]
+
+====[fn content_version]
+
+====[fn write_static_assets]
+
+====[fn write_if_changed]
 
 ==[Module book]
 
@@ -268,6 +285,37 @@ Write content to path only if content has actually changed or file does not exis
 Returns Ok(true) if written, Ok(false) if skipped because unchanged.
 
 ====[fn build_book]
+
+==[Module renderer]
+
+===[Structs]
+
+====[struct SectionSummary]
+
+====[struct Backlink]
+
+A page that points at the one being rendered.
+
+====[struct EntrySummary]
+
+====[struct MinimalRenderer]
+
+Minimal template-engine-free renderer for headless tests and barebones rendering.
+
+====[struct MinimalRendererFactory]
+
+Unit factory that creates a [`MinimalRenderer`] for headless tests.
+
+===[Traits]
+
+====[trait PageRenderer]
+
+Template-engine-agnostic page renderer implemented by the application/theme layer.
+
+====[trait RendererFactory]
+
+Factory that creates a [`PageRenderer`] bound to a [`BookConfig`].
+Used by `build_book` and by the dev server (which re-creates the renderer on config hot-reload).
 
 ==[Module serve]
 

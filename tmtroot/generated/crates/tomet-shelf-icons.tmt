@@ -1,0 +1,46 @@
+::kind(api)
+
+::meta{crate: tomet-shelf-icons, dependencies: list(), dependents: list(tomet-shelf-assets, tomet-shelf-headless, tomet-shelf-render, tomet-shelf-template)}
+
+=[tomet-shelf-icons]
+
+Standard icon provider and inline SVG renderer for `tomet-shelf`.
+
+Provides inline SVG rendering for Lucide and Simple Icons, removing the need
+for external SVG sprite sheets and resolving browser Shadow DOM / CORS quirks.
+
+==[Structs]
+
+===[struct IconRequest]
+
+Request parameters for rendering an icon.
+
+===[struct SymbolData]
+
+===[struct StandardIconRenderer]
+
+Standard icon renderer that renders Lucide and Simple Icons as inline SVG,
+or images as `<img>` tags.
+
+==[Traits]
+
+===[trait IconRenderer]
+
+Pluggable icon renderer trait implemented by icon libraries (like `tomet-shelf-icons`)
+or custom shelf engines (like `stela-shelf`).
+
+==[Functions]
+
+===[fn set_default_icon_renderer]
+
+Sets the global default icon renderer (e.g. `StandardIconRenderer` from `tomet-shelf-icons`).
+
+===[fn default_icon_renderer]
+
+Retrieves the global default icon renderer if one has been registered.
+
+==[Constants]
+
+===[const LUCIDE_SPRITE]
+
+===[const SIMPLE_SPRITE]

@@ -20,7 +20,7 @@ Fast static site generator and documentation server specifically built for Tomet
 - `crates/tomet-shelf-template` (`tomet-shelf-template`) -- MiniJinja page template renderer implementation.
 - `crates/tomet-shelf-headless` (`tomet-shelf-headless`) -- Headless SSG engine, vault state, and dev server orchestration.
 - `crates/tomet-shelf-headless-config` (`tomet-shelf-config`) -- `shelf.toml` configuration parser, models, and i18n dictionaries.
-- `crates/tomet-shelf-headless-render` (`tomet-shelf-render`) -- Tomet AST processing, AST transforms, and renderer traits.
+- `crates/tomet-shelf-headless-document` (`tomet-shelf-document`) -- Tomet document parsing, AST transformation, and metadata extraction.
 - `crates/tomet-shelf-headless-route` (`tomet-shelf-route`) -- Route resolution, slug generation, and URL sanitization.
 - `crates/tomet-shelf-headless-search` (`tomet-shelf-search`) -- Full-text search indexing.
 - `crates/tomet-shelf-headless-serve` (`tomet-shelf-serve`) -- Axum development server and WebSocket live reload.

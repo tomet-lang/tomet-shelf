@@ -67,7 +67,6 @@ mod tests {
             primary_color: None,
             icon: None,
             icon_image_url: Some("/vault/img/raora_icon.png".to_string()),
-            link_icon: None,
             banner_url: None,
             banner_original_url: None,
             banner_y: None,

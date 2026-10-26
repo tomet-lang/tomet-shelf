@@ -3606,7 +3606,8 @@ version = "0.1.0"
 dependencies = [
  "anyhow",
  "tomet-shelf-config",
- "tomet-shelf-render",
+ "tomet-shelf-headless",
+ "tomet-shelf-icons",
  "tomet-shelf-template",
 ]
 
@@ -3633,6 +3634,24 @@ dependencies = [
 ]
 
 [[package]]
+name = "tomet-shelf-document"
+version = "0.1.0"
+dependencies = [
+ "anyhow",
+ "image",
+ "percent-encoding",
+ "regex",
+ "serde",
+ "serde_json",
+ "tomet",
+ "tomet-shelf-config",
+ "tomet-shelf-route",
+ "tomet-shelf-search",
+ "tracing",
+ "unicode-segmentation",
+]
+
+[[package]]
 name = "tomet-shelf-headless"
 version = "0.1.0"
 dependencies = [
@@ -3648,6 +3667,8 @@ dependencies = [
  "tokio",
  "tomet",
  "tomet-shelf-config",
+ "tomet-shelf-document",
+ "tomet-shelf-icons",
  "tomet-shelf-render",
  "tomet-shelf-route",
  "tomet-shelf-search",
@@ -3660,19 +3681,24 @@ dependencies = [
 ]
 
 [[package]]
+name = "tomet-shelf-icons"
+version = "0.1.0"
+dependencies = [
+ "tomet",
+]
+
+[[package]]
 name = "tomet-shelf-render"
 version = "0.1.0"
 dependencies = [
  "anyhow",
- "image",
- "percent-encoding",
  "regex",
  "serde",
  "serde_json",
  "tomet",
  "tomet-shelf-config",
- "tomet-shelf-route",
- "tomet-shelf-search",
+ "tomet-shelf-document",
+ "tomet-shelf-icons",
  "tracing",
  "unicode-segmentation",
 ]
@@ -3718,6 +3744,9 @@ dependencies = [
  "serde",
  "serde_json",
  "tomet-shelf-config",
+ "tomet-shelf-document",
+ "tomet-shelf-headless",
+ "tomet-shelf-icons",
  "tomet-shelf-render",
 ]
 

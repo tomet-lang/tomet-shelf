@@ -2,8 +2,9 @@ use anyhow::Result;
 use serde::{Deserialize, Serialize};
 
 use crate::assets::StaticAsset;
-use crate::document::ProcessedDoc;
 use tomet_shelf_config::BookConfig;
+use tomet_shelf_document::{DocIcon, ProcessedDoc};
+use tomet_shelf_icons::IconRenderer;
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct SectionSummary {
@@ -48,12 +49,25 @@ pub trait PageRenderer: Send + Sync {
     fn static_assets(&self) -> &[StaticAsset] {
         &[]
     }
+
+    /// Optional notification of document note icons across the vault.
+    fn set_doc_icons(&mut self, _icons: &std::collections::HashMap<String, DocIcon>) {}
+
+    /// Optional icon renderer supplied by this theme.
+    fn icon_renderer(&self) -> Option<std::sync::Arc<dyn IconRenderer>> {
+        None
+    }
 }
 
 /// Factory that creates a [`PageRenderer`] bound to a [`BookConfig`].
 /// Used by `build_book` and by the dev server (which re-creates the renderer on config hot-reload).
 pub trait RendererFactory: Send + Sync {
     fn create(&self, config: &BookConfig, is_dev: bool) -> Result<Box<dyn PageRenderer>>;
+
+    /// Optional icon renderer supplied by this renderer factory.
+    fn icon_renderer(&self) -> Option<std::sync::Arc<dyn IconRenderer>> {
+        None
+    }
 }
 
 impl<F> RendererFactory for F
@@ -185,7 +199,13 @@ impl PageRenderer for MinimalRenderer {
             String::new()
         };
         let icon_span = match &doc.icon {
-            Some(ic) => format!(r#"<span class="page-icon">{ic}</span>"#),
+            Some(DocIcon::Text(t)) => format!(r#"<span class="page-icon">{t}</span>"#),
+            Some(DocIcon::Named { name, .. }) => {
+                format!(r#"<span class="page-icon">{name}</span>"#)
+            }
+            Some(DocIcon::Image { src }) => {
+                format!(r#"<img class="page-icon" src="{src}" />"#)
+            }
             None => String::new(),
         };
         let content = format!(

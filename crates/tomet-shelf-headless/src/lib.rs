@@ -6,19 +6,25 @@
 //! - [`config::BookConfig`]: Configuration parser and models.
 //! - [`PageRenderer`] / [`RendererFactory`]: Template-engine-agnostic page rendering traits.
 
+pub mod assets;
 pub mod book;
+pub mod renderer;
 pub mod serve;
 
 // Companion subcrates re-exports
 pub use tomet_shelf_config as config;
-pub use tomet_shelf_config::i18n;
+pub use tomet_shelf_document as document;
 pub use tomet_shelf_render as render;
-pub use tomet_shelf_render::assets;
-pub use tomet_shelf_render::{
-    MinimalRenderer, MinimalRendererFactory, PageRenderer, RendererFactory, StaticAsset,
-};
 pub use tomet_shelf_route as route;
 pub use tomet_shelf_search as search;
+
+pub use assets::{
+    StaticAsset, content_version, write_if_changed, write_static_assets,
+};
+pub use renderer::{
+    Backlink, EntrySummary, MinimalRenderer, MinimalRendererFactory, PageRenderer, RendererFactory,
+    SectionSummary,
+};
 
 pub use book::{BuildReport, DocFailure, build_book};
 pub use config::BookConfig;

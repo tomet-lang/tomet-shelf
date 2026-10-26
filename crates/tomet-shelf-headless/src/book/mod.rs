@@ -11,8 +11,10 @@ pub(crate) mod prune;
 pub mod search;
 pub mod state;
 
+pub use crate::renderer;
+pub use tomet_shelf_document as document;
+pub use tomet_shelf_document::slug;
 pub use slug::{RouteTable, clean_doc_slug, normalize_path, normalize_path_str};
-pub use tomet_shelf_render::{document, renderer, slug};
 
 use anyhow::{Context, Result};
 use rayon::prelude::*;
@@ -26,13 +28,13 @@ use tracing::{info, warn};
 
 pub use state::{RenderContext, VaultState, render_single_document, render_single_document_html};
 
-use media::copy_vault_media;
-use tomet_shelf_config::{BookConfig, SearchEngine};
-use tomet_shelf_render::document::ProcessedDoc;
-use tomet_shelf_render::renderer::{
+use crate::assets::write_static_assets;
+use crate::renderer::{
     Backlink, EntrySummary, PageRenderer, RendererFactory, SectionSummary,
 };
-use tomet_shelf_render::write_static_assets;
+use media::copy_vault_media;
+use tomet_shelf_config::{BookConfig, SearchEngine};
+use tomet_shelf_document::ProcessedDoc;
 
 use loader::{ScannedVault, scan_vault};
 use manifest::{BuildManifest, LookupManifest};
@@ -64,8 +66,8 @@ pub struct BuildReport {
     pub unpublished: HashSet<String>,
     /// The book's table of contents, for the same reason.
     pub book_index: Vec<EntrySummary>,
-    /// Note icon HTML snippets keyed by slug, for internal link decoration.
-    pub doc_icons: HashMap<String, String>,
+    /// Note icon descriptors keyed by slug, for presentation layers.
+    pub doc_icons: HashMap<String, tomet_shelf_document::DocIcon>,
     /// Global routing table mapping document paths to slugs.
     pub route_table: slug::RouteTable,
 }
@@ -226,7 +228,10 @@ pub fn build_book(
     );
 
     // 2. Initialize page renderer and write static assets
-    let renderer: Box<dyn PageRenderer> = renderer_factory.create(config, is_dev)?;
+    let mut renderer: Box<dyn PageRenderer> = renderer_factory.create(config, is_dev)?;
+    let icon_renderer = renderer
+        .icon_renderer()
+        .or_else(|| renderer_factory.icon_renderer());
     write_static_assets(out_dir, src_dir, config, renderer.static_assets())
         .context("Failed to write static assets")?;
 
@@ -328,13 +333,17 @@ pub fn build_book(
         "Processing {} document(s)...",
         scanned.doc_files.len() - unpublished.len()
     );
+    let custom_element = Some(tomet_shelf_render::create_doc_icon_custom_element(
+        config.build.clean_base_path(),
+        icon_renderer,
+    ));
     let mut processed: Vec<Result<ProcessedDoc, DocFailure>> = parsed
         .into_par_iter()
         .zip(scanned.doc_files.par_iter())
         .filter(|(_, doc_file)| !unpublished.contains(&doc_file.rel_path))
         .map(|(result, doc_file)| {
             let (doc, _) = result?;
-            document::process_parsed_document_with_blocks(
+            document::process_parsed_document_with_custom_element(
                 doc,
                 &doc_file.rel_path,
                 Some(&doc_file.abs_path),
@@ -343,6 +352,7 @@ pub fn build_book(
                 &scanned.workspace_config_blocks,
                 &unpublished,
                 Some(&route_table),
+                custom_element.clone(),
             )
             .map_err(|e| DocFailure {
                 rel_path: doc_file.rel_path.clone(),
@@ -354,34 +364,21 @@ pub fn build_book(
     // 5.5. Optimize referenced banners and profile images
     image_opt::optimize_docs_media(&mut processed, src_dir, out_dir, config);
 
-    // 5.6. Enhance internal links with target note icons
-    let doc_icons: HashMap<String, String> = if config.ui.links.note_icons {
-        let note_icons: HashMap<String, String> = processed
+    // 5.6. Collect target note icons across the vault
+    let doc_icons: HashMap<String, tomet_shelf_document::DocIcon> = if config.ui.links.note_icons {
+        processed
             .iter()
             .filter_map(|r| r.as_ref().ok())
             .filter_map(|doc| {
-                doc.link_icon
+                doc.icon
                     .as_ref()
                     .map(|icon| (doc.slug.clone(), icon.clone()))
             })
-            .collect();
-
-        if !note_icons.is_empty() {
-            let note_link_prefix = config.build.full_url_prefix();
-            processed.par_iter_mut().for_each(|res| {
-                if let Ok(doc) = res {
-                    doc.body_html = document::enhance_internal_links(
-                        &doc.body_html,
-                        &note_icons,
-                        &note_link_prefix,
-                    );
-                }
-            });
-        }
-        note_icons
+            .collect()
     } else {
         HashMap::new()
     };
+    renderer.set_doc_icons(&doc_icons);
 
     // 6. Reverse the links: who points at each page.
     let docs: Vec<&ProcessedDoc> = processed.iter().filter_map(|r| r.as_ref().ok()).collect();

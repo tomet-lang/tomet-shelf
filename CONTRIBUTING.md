@@ -28,7 +28,7 @@ All commits must follow the Conventional Commits format: `type(scope): descripti
 Use the affected crate or subsystem as the scope:
 
 - **CLI**: `cli`, `app` (`app`)
-- **Headless Engine**: `headless`, `config`, `render`, `route`, `search`, `serve` (`crates/tomet-shelf-headless*`)
+- **Headless Engine**: `headless`, `config`, `document`, `route`, `search`, `serve` (`crates/tomet-shelf-headless*`)
 - **Assets & Templates**: `assets`, `template`, `ui` (`crates/tomet-shelf-assets`, `crates/tomet-shelf-template`)
 - **Infra / Meta**: `nix`, `ci`, `deps`, `docs`
 

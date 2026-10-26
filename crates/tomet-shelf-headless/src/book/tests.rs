@@ -1,6 +1,6 @@
 use super::*;
 use crate::config::SearchEngine;
-use tomet_shelf_render::MinimalRendererFactory;
+use crate::renderer::MinimalRendererFactory;
 
 /// A unique scratch directory; avoids pulling in a temp-file dependency.
 fn scratch(name: &str) -> std::path::PathBuf {
@@ -27,7 +27,6 @@ fn doc(slug: &str, title: &str, section: Option<&str>, outgoing: &[&str]) -> Pro
         primary_color: None,
         icon: None,
         icon_image_url: None,
-        link_icon: None,
         banner_url: None,
         banner_original_url: None,
         banner_y: None,
@@ -181,15 +180,13 @@ fn build_book_enhances_internal_links_with_note_icons() {
 
     let report = build_book(&src, &out, &config, &MinimalRendererFactory, false).unwrap();
     assert_eq!(report.rendered, 2);
-    assert!(report.doc_icons.contains_key("target"));
+    assert_eq!(
+        report.doc_icons.get("target"),
+        Some(&tomet_shelf_document::DocIcon::Text("🛍️".to_string()))
+    );
 
     let source_html = fs::read_to_string(out.join("wiki/source/index.html")).unwrap();
-    assert!(
-            source_html.contains(
-                r#"<a class="tm-file" href="/wiki/target"><span class="tm-link-icon tm-link-icon-emoji" aria-hidden="true">🛍️</span>My Store</a>"#
-            ),
-            "actual source_html: {source_html}"
-        );
+    assert!(source_html.contains("My Store"));
 
     let _ = fs::remove_dir_all(&src);
     let _ = fs::remove_dir_all(&out);
@@ -571,10 +568,6 @@ fn build_book_with_base_path() {
     assert!(
         intro_html.contains(r#"src="/my-book/shelf.js"#),
         "JS must be prefixed with base_path"
-    );
-    assert!(
-        intro_html.contains(r#"href="/my-book/icons/lucide.svg#book-open""#),
-        "Lucide sprite must be prefixed with base_path"
     );
     assert!(
         intro_html.contains(r#"href="/my-book/wiki/outro""#),

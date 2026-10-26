@@ -1,6 +1,6 @@
 ::kind(api)
 
-::meta{crate: tomet-shelf-assets, dependencies: list(tomet-shelf-config, tomet-shelf-render, tomet-shelf-template), dependents: list(tomet-shelf-cli)}
+::meta{crate: tomet-shelf-assets, dependencies: list(tomet-shelf-config, tomet-shelf-headless, tomet-shelf-icons, tomet-shelf-template), dependents: list(tomet-shelf-cli)}
 
 =[tomet-shelf-assets]
 
@@ -9,6 +9,8 @@
 ===[fn write_static_assets]
 
 ==[Constants]
+
+===[const ICON_ASSETS]
 
 ===[const BOOK_CSS]
 

@@ -207,8 +207,10 @@ fn icon_as_embed_or_link_or_image_path_resolves() {
         None,
     );
     assert_eq!(
-        props_embed.icon.as_deref(),
-        Some(r#"<img class="tm-doc-icon-img" src="/vault/avatar.png" alt="icon" loading="lazy">"#)
+        props_embed.icon,
+        Some(crate::icon::DocIcon::Image {
+            src: "/vault/avatar.png".to_string()
+        })
     );
     assert_eq!(
         props_embed.icon_image_url.as_deref(),
@@ -220,20 +222,24 @@ fn icon_as_embed_or_link_or_image_path_resolves() {
         None,
     );
     assert_eq!(
-        props_link.icon.as_deref(),
-        Some(r#"<img class="tm-doc-icon-img" src="/vault/avatar.png" alt="icon" loading="lazy">"#)
+        props_link.icon,
+        Some(crate::icon::DocIcon::Image {
+            src: "/vault/avatar.png".to_string()
+        })
     );
 
     let props_str = extract_from(r#"{"icon": "profile.jpg"}"#, None);
     assert_eq!(
-        props_str.icon.as_deref(),
-        Some(r#"<img class="tm-doc-icon-img" src="/vault/profile.jpg" alt="icon" loading="lazy">"#)
+        props_str.icon,
+        Some(crate::icon::DocIcon::Image {
+            src: "/vault/profile.jpg".to_string()
+        })
     );
 
     let props_emoji = extract_from(r#"{"icon": "🎂"}"#, None);
     assert_eq!(
-        props_emoji.icon.as_deref(),
-        Some(r#"<span class="avatar-text avatar-text-1">🎂</span>"#)
+        props_emoji.icon,
+        Some(crate::icon::DocIcon::Text("🎂".to_string()))
     );
     assert_eq!(props_emoji.icon_image_url, None);
 }

@@ -4,7 +4,7 @@
 use regex::Regex;
 use std::sync::LazyLock;
 
-use super::html::escape_html;
+use crate::html::escape_html;
 
 static PRE_CODE_RE: LazyLock<Regex> = LazyLock::new(|| {
     Regex::new(r#"(?s)<pre([^>]*)>(\s*)<code([^>]*)>(.*?)</code>(\s*)</pre>"#)

@@ -13,7 +13,7 @@
 - @link(ref:"crates")
   - @link(ref:"tomet-shelf-cli")
   - @link(ref:"tomet-shelf-headless")
-  - @link(ref:"tomet-shelf-render")
+  - @link(ref:"tomet-shelf-document")
   - @link(ref:"tomet-shelf-route")
   - @link(ref:"tomet-shelf-search")
   - @link(ref:"tomet-shelf-serve")

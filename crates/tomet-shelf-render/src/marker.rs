@@ -5,9 +5,19 @@
 use regex::Regex;
 use std::sync::LazyLock;
 
-use super::html::escape_html;
-use super::icon::is_lucide_icon;
+use crate::html::escape_html;
 use tomet_shelf_config::MarkersConfig;
+use tomet_shelf_icons::IconRenderer;
+
+fn is_lucide_icon(name: &str, renderer: Option<&dyn IconRenderer>) -> bool {
+    if let Some(r) = renderer {
+        return r.has_icon("lucide", name);
+    }
+    !name.is_empty()
+        && name.chars().all(|c| c.is_ascii_lowercase() || c == '-')
+        && !name.contains(':')
+        && !name.chars().all(|c| c.is_ascii_digit())
+}
 
 static LI_MARKER_RE: LazyLock<Regex> = LazyLock::new(|| {
     // The trailing ` ?` swallows the one space `tomet-html` always emits
@@ -62,7 +72,12 @@ pub(crate) fn normalize_lucide_name(name: &str) -> &str {
     }
 }
 
-fn resolve_marker(raw_val: &str, content: &str, config: &MarkersConfig) -> ResolvedMarker {
+fn resolve_marker(
+    raw_val: &str,
+    content: &str,
+    config: &MarkersConfig,
+    icon_renderer: Option<&dyn IconRenderer>,
+) -> ResolvedMarker {
     // When the feature is disabled, render everything as a clean pill badge.
     if !config.enable {
         let badge_content = if !content.trim().is_empty() {
@@ -179,7 +194,7 @@ fn resolve_marker(raw_val: &str, content: &str, config: &MarkersConfig) -> Resol
     // 4. Namespaced icon name: `lucide.name`
     if let Some(lucide_name) = trimmed.strip_prefix("lucide.") {
         let norm = normalize_lucide_name(lucide_name);
-        if is_lucide_icon(norm) {
+        if is_lucide_icon(norm, icon_renderer) || icon_renderer.is_none() {
             return ResolvedMarker::Icon {
                 icon: norm.to_string(),
                 color: None,
@@ -191,7 +206,7 @@ fn resolve_marker(raw_val: &str, content: &str, config: &MarkersConfig) -> Resol
 
     // 5. Bare icon name in Lucide sprite (e.g. `flame`, `bug`, `triangle-alert`, etc.)
     let norm = normalize_lucide_name(trimmed);
-    if is_lucide_icon(norm) {
+    if is_lucide_icon(norm, icon_renderer) {
         return ResolvedMarker::Icon {
             icon: norm.to_string(),
             color: None,
@@ -228,7 +243,12 @@ fn add_class_to_attrs(attrs: &str, new_class: &str) -> String {
 /// - Replaces checkbox/icon markers with Lucide SVGs (if `config.enable` is true)
 /// - Replaces raw bracketed text markers `[xxx]` with pill badges
 /// - Injects task item classes onto enclosing `<li>`s
-pub fn enhance_list_markers(body_html: &str, config: &MarkersConfig, base_path: &str) -> String {
+pub fn enhance_list_markers(
+    body_html: &str,
+    config: &MarkersConfig,
+    base_path: &str,
+    icon_renderer: Option<&dyn IconRenderer>,
+) -> String {
     LI_MARKER_RE
         .replace_all(body_html, |caps: &regex::Captures| {
             let li_attrs = &caps[1];
@@ -237,7 +257,7 @@ pub fn enhance_list_markers(body_html: &str, config: &MarkersConfig, base_path: 
             let span_content = &caps[4];
 
             let raw_val = extract_data_marker(span_attrs).unwrap_or("");
-            let resolved = resolve_marker(raw_val, span_content, config);
+            let resolved = resolve_marker(raw_val, span_content, config, icon_renderer);
 
             match resolved {
                 ResolvedMarker::Icon {
@@ -269,8 +289,22 @@ pub fn enhance_list_markers(body_html: &str, config: &MarkersConfig, base_path: 
                         String::new()
                     };
 
+                    let icon_html = if let Some(renderer) = icon_renderer {
+                        renderer.render_marker(&icon, &pkg, base_path).unwrap_or_else(|| {
+                            format!("<svg class=\"tm-doc-icon\" aria-hidden=\"true\"><use href=\"{base_path}/icons/{safe_pkg}.svg#{safe_icon}\"></use></svg>")
+                        })
+                    } else if let Some(renderer) = tomet_shelf_icons::default_icon_renderer() {
+                        renderer.render_marker(&icon, &pkg, base_path).unwrap_or_else(|| {
+                            format!("<svg class=\"tm-doc-icon\" aria-hidden=\"true\"><use href=\"{base_path}/icons/{safe_pkg}.svg#{safe_icon}\"></use></svg>")
+                        })
+                    } else {
+                        format!(
+                            "<svg class=\"tm-doc-icon\" aria-hidden=\"true\"><use href=\"{base_path}/icons/{safe_pkg}.svg#{safe_icon}\"></use></svg>"
+                        )
+                    };
+
                     format!(
-                        "<li{new_li_attrs}>{ws}<span class=\"tm-list-marker tm-list-marker-icon{done_marker_class}\"{safe_marker_attr}{style_attr}><svg class=\"tm-doc-icon\" aria-hidden=\"true\"><use href=\"{base_path}/icons/{safe_pkg}.svg#{safe_icon}\"></use></svg></span>"
+                        "<li{new_li_attrs}>{ws}<span class=\"tm-list-marker tm-list-marker-icon{done_marker_class}\"{safe_marker_attr}{style_attr}>{icon_html}</span>"
                     )
                 }
                 ResolvedMarker::Badge { html } => {
@@ -297,7 +331,7 @@ mod tests {
     use tomet_shelf_config::MarkerEntryConfig;
 
     fn enhance(html: &str, config: &MarkersConfig) -> String {
-        enhance_list_markers(html, config, "")
+        enhance_list_markers(html, config, "", None)
     }
 
     #[test]
@@ -308,7 +342,7 @@ mod tests {
             custom: HashMap::new(),
         };
         let html = "<ul>\n<li><span class=\"tm-list-marker\"></span> todo item</li>\n</ul>";
-        let out = enhance_list_markers(html, &config, "/my-repo");
+        let out = enhance_list_markers(html, &config, "/my-repo", None);
         assert!(out.contains("<use href=\"/my-repo/icons/lucide.svg#square\"></use>"));
     }
 

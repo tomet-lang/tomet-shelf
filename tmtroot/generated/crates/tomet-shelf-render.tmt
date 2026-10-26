@@ -1,100 +1,146 @@
 ::kind(api)
 
-::meta{crate: tomet-shelf-render, dependencies: list(tomet-shelf-config, tomet-shelf-route, tomet-shelf-search), dependents: list(tomet-shelf-assets, tomet-shelf-headless, tomet-shelf-template)}
+::meta{crate: tomet-shelf-render, dependencies: list(tomet-shelf-config, tomet-shelf-document, tomet-shelf-icons), dependents: list(tomet-shelf-headless, tomet-shelf-template)}
 
 =[tomet-shelf-render]
 
-==[Module assets]
+HTML tag injection and presentation rendering for `tomet-shelf`.
 
-===[Structs]
+Provides post-processing and HTML tag injection for document markup:
 
-====[struct StaticAsset]
+- Code block decoration (language badge, copy button)
+- List marker enhancement (task checkboxes, badge pills)
+- Link icon enhancement (external brand/favicons, internal note icons)
+- `@doc.icon` custom element rendering
+- HTML escaping and presentation formatters
 
-A static asset file (CSS, JS, SVG, etc.) to be written to `out_dir` during
-static builds and served from memory by the dev server.
+==[Module code]
 
-===[Functions]
-
-====[fn content_version]
-
-====[fn write_static_assets]
-
-====[fn write_if_changed]
-
-===[Constants]
-
-====[const LUCIDE_SPRITE]
-
-====[const SIMPLE_SPRITE]
-
-====[const ICON_ASSETS]
-
-Built-in icon sprites used by `@doc.icon(...)` and list markers.
-
-==[Module document]
-
-One source document, turned into everything a page needs.
-
-===[Structs]
-
-====[struct ProcessedDoc]
+Code block enhancement: wraps `<pre><code>` blocks with a header bar containing
+an optional language label (top-left) and a clipboard copy button (top-right).
 
 ===[Functions]
 
-====[fn extract_workspace_config_blocks]
+====[fn enhance_code_blocks]
 
-Extract the `::config`/`::settings` blocks of a workspace-wide document.
+Enhances code blocks in the rendered HTML by wrapping them in a container
+with a language label and a copy button.
 
-====[fn inject_workspace_config_blocks]
+==[Module doc_icon]
 
-Prepend pre-parsed workspace-wide config blocks so shared macros are in scope.
+Renders `@doc.icon("name", pkg:"lucide")` via a pluggable [`IconRenderer`].
 
-====[fn parse_tomet_document]
+Tomet resolves this element but deliberately never draws it, by design: an
+external renderer is meant to implement the notation. This module connects
+the element to [`IconRenderer`] (wired in as a
+`tomet_html::RenderOptions::custom_element` hook).
 
-Read a document far enough to know what it is.
+If no [`IconRenderer`] is configured or an unknown icon is requested,
+a visible placeholder is rendered so typos in documents are visible.
 
-Read a document far enough to know what it is.
+===[Functions]
 
-The build has to decide what the site publishes before it resolves a
-single link, since a link to a document the site leaves out has to come
-out broken. That decision needs the `::kind`, and the `::kind` needs a
-parse -- so the parse is done once, here, and handed on.
+====[fn render_doc_icon]
 
-====[fn process_tomet_document]
+Renders a `@doc.icon` custom element into HTML.
 
-====[fn process_parsed_document]
+====[fn create_doc_icon_custom_element]
 
-====[fn process_parsed_document_with_blocks]
+Creates a `CustomElementRenderer` that handles `@doc.icon` elements.
 
-Turn a parsed document into the page it becomes using pre-parsed workspace config blocks.
+==[Module external_links]
 
-==[Module renderer]
+External link enhancement: adds brand SVG icons (via Simple Icons) or
+dynamic favicons (via Google Favicon API or DuckDuckGo) to external links.
 
-===[Structs]
+===[Functions]
 
-====[struct SectionSummary]
+====[fn enhance_external_links]
 
-====[struct Backlink]
+Enhances external links in rendered HTML by inserting a site/brand icon prefix.
 
-A page that points at the one being rendered.
+==[Module html]
 
-====[struct EntrySummary]
+Building blocks for the HTML this crate assembles by hand.
 
-====[struct MinimalRenderer]
+Infobox values reach the template through `| safe`, so anything produced
+here has to be safe to drop straight into the page.
 
-Minimal template-engine-free renderer for headless tests and barebones rendering.
+===[Functions]
 
-====[struct MinimalRendererFactory]
+====[fn escape_html]
 
-Unit factory that creates a [`MinimalRenderer`] for headless tests.
+Escape text for interpolation into HTML text nodes and double-quoted attributes.
 
-===[Traits]
+====[fn sanitize_color_hex]
 
-====[trait PageRenderer]
+Normalize a `@meta.colors` entry to a bare hex body (`#AABBCC` -> `aabbcc`).
 
-Template-engine-agnostic page renderer implemented by the application/theme layer.
+Returns `None` for anything that is not a 3/4/6/8-digit hex color, which keeps
+unvetted text out of the inline `style` attributes that consume it.
 
-====[trait RendererFactory]
+====[fn color_chip_html]
 
-Factory that creates a [`PageRenderer`] bound to a [`BookConfig`].
-Used by `build_book` and by the dev server (which re-creates the renderer on config hot-reload).
+A colour swatch, or plain escaped text when the value is not a hex colour.
+
+====[fn external_link_html]
+
+====[fn is_external_url]
+
+==[Module internal_links]
+
+Internal link enhancement: adds note icon prefixes (from note's @meta.icon)
+to internal links matching published documents in the vault.
+
+===[Functions]
+
+====[fn enhance_internal_links]
+
+Enhances internal links in rendered HTML by inserting the target note's icon prefix.
+
+==[Module marker]
+
+List marker processing: enhances `tomet-html`'s `<span class="tm-list-marker">`
+into Lucide SVG icons (for checkboxes and task markers) or clean badge pills (for
+timestamps, tags, and unmapped text).
+
+===[Functions]
+
+====[fn enhance_list_markers]
+
+Enhances list markers in the rendered HTML:
+
+- Replaces checkbox/icon markers with Lucide SVGs (if `config.enable` is true)
+- Replaces raw bracketed text markers `[xxx]` with pill badges
+- Injects task item classes onto enclosing `<li>`s
+
+==[Module meta]
+
+===[Functions]
+
+====[fn format_text_icon]
+
+Formats a plain text or emoji icon string according to avatar display rules:
+
+- 1 char -- single large glyph (`avatar-text-1`)
+- 2 chars -- horizontally auto-scaled without wrapping (`avatar-text-2`)
+- 3 chars -- 2x2 grid with 3rd item centered on bottom row (`avatar-grid avatar-grid-3`)
+- 4 chars -- 2x2 grid (`avatar-grid avatar-grid-4`)
+- 5 or more chars -- initials (first 2 graphemes rendered with `avatar-text-2 avatar-initials`)
+
+====[fn format_text_icon_link]
+
+====[fn render_page_icon]
+
+Renders a structured `DocIcon` into an HTML representation for page headers/chrome.
+
+====[fn render_page_link_icon]
+
+Renders a structured `DocIcon` into a small link prefix HTML icon.
+
+==[Functions]
+
+===[fn enhance_body_html]
+
+Enhances a raw HTML body string by injecting presentation tags:
+list markers, code blocks, and external links.

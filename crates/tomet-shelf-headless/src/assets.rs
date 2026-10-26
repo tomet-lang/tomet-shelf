@@ -6,9 +6,6 @@ use std::path::Path;
 
 use tomet_shelf_config::BookConfig;
 
-pub const LUCIDE_SPRITE: &str = include_str!("../assets/icons/lucide/sprite.svg");
-pub const SIMPLE_SPRITE: &str = include_str!("../assets/icons/simple/sprite.svg");
-
 pub fn content_version(content: &str) -> String {
     let mut hasher = DefaultHasher::new();
     content.hash(&mut hasher);
@@ -27,20 +24,6 @@ pub struct StaticAsset {
     pub content: &'static str,
 }
 
-/// Built-in icon sprites used by `@doc.icon(...)` and list markers.
-pub const ICON_ASSETS: &[StaticAsset] = &[
-    StaticAsset {
-        path: "icons/lucide.svg",
-        mime: "image/svg+xml",
-        content: LUCIDE_SPRITE,
-    },
-    StaticAsset {
-        path: "icons/simple.svg",
-        mime: "image/svg+xml",
-        content: SIMPLE_SPRITE,
-    },
-];
-
 pub fn write_static_assets(
     out_dir: &Path,
     src_dir: &Path,
@@ -49,7 +32,7 @@ pub fn write_static_assets(
 ) -> Result<()> {
     fs::create_dir_all(out_dir)?;
 
-    for asset in ICON_ASSETS.iter().chain(theme_assets.iter()) {
+    for asset in theme_assets {
         let rel = asset.path.trim_start_matches('/');
         write_if_changed(&out_dir.join(rel), asset.content)
             .with_context(|| format!("Failed to write {}", asset.path))?;

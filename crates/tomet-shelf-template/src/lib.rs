@@ -4,9 +4,12 @@ use anyhow::Result;
 use askama::Template;
 use std::collections::HashMap;
 use tomet_shelf_config::BookConfig;
-use tomet_shelf_render::{
-    Backlink, EntrySummary, HeroChipItem, InfoboxRowItem, PageRenderer, ProcessedDoc,
-    RendererFactory, SectionSummary, SectionTab, StaticAsset, TocItem, content_version,
+use tomet_shelf_document::{
+    HeroChipItem, InfoboxRowItem, ProcessedDoc, SectionTab, TocItem,
+};
+use tomet_shelf_headless::{
+    Backlink, EntrySummary, PageRenderer, RendererFactory, SectionSummary, StaticAsset,
+    content_version,
 };
 
 //==============================================================================
@@ -268,6 +271,12 @@ impl RendererFactory for TemplateBundle {
     fn create(&self, config: &BookConfig, is_dev: bool) -> Result<Box<dyn PageRenderer>> {
         Ok(Box::new(BookRenderer::new(config, self, is_dev)?))
     }
+
+    fn icon_renderer(&self) -> Option<std::sync::Arc<dyn tomet_shelf_icons::IconRenderer>> {
+        Some(std::sync::Arc::new(
+            tomet_shelf_icons::StandardIconRenderer::new(),
+        ))
+    }
 }
 
 //==============================================================================
@@ -290,6 +299,7 @@ pub struct BookRenderer {
     tmt_switch_css_version: String,
     rail_letters: Vec<String>,
     static_assets: Vec<StaticAsset>,
+    link_icons: std::collections::HashMap<String, String>,
     is_dev: bool,
 }
 
@@ -361,6 +371,7 @@ impl BookRenderer {
             tmt_switch_css_version,
             rail_letters,
             static_assets,
+            link_icons: std::collections::HashMap::new(),
             is_dev,
         })
     }
@@ -372,6 +383,27 @@ impl BookRenderer {
         book_index: &[EntrySummary],
     ) -> Result<String> {
         let page_url = format!("{}/{}", self.clean_url_prefix, doc.slug);
+
+        let icon_renderer = tomet_shelf_icons::StandardIconRenderer::new();
+        let rendered_icon = doc.icon.as_ref().map(|ic| {
+            tomet_shelf_render::render_page_icon(ic, &self.base_path, Some(&icon_renderer))
+        });
+
+        let body_html = tomet_shelf_render::enhance_body_html(
+            &doc.body_html,
+            &self.config,
+            &self.base_path,
+            Some(&icon_renderer),
+        );
+        let body_html = if self.config.ui.links.note_icons && !self.link_icons.is_empty() {
+            tomet_shelf_render::enhance_internal_links(
+                &body_html,
+                &self.link_icons,
+                &self.full_url_prefix,
+            )
+        } else {
+            body_html
+        };
 
         let template = PageTemplate {
             site_title: &self.config.book.title,
@@ -400,7 +432,7 @@ impl BookRenderer {
             section: doc.section.as_deref(),
             kind: doc.kind.as_deref(),
             primary_color: doc.primary_color.as_deref(),
-            icon: doc.icon.as_deref(),
+            icon: rendered_icon.as_deref(),
             icon_image_url: doc.icon_image_url.as_deref(),
             banner_url: doc.banner_url.as_deref(),
             banner_original_url: doc.banner_original_url.as_deref(),
@@ -412,7 +444,7 @@ impl BookRenderer {
             has_data: doc.has_data,
             toc: &doc.toc,
             section_tabs: &doc.section_tabs,
-            body_html: &doc.body_html,
+            body_html: &body_html,
             backlinks,
             book_index,
             page_url: &page_url,
@@ -477,5 +509,29 @@ impl PageRenderer for BookRenderer {
 
     fn static_assets(&self) -> &[StaticAsset] {
         &self.static_assets
+    }
+
+    fn icon_renderer(&self) -> Option<std::sync::Arc<dyn tomet_shelf_icons::IconRenderer>> {
+        Some(std::sync::Arc::new(
+            tomet_shelf_icons::StandardIconRenderer::new(),
+        ))
+    }
+
+    fn set_doc_icons(
+        &mut self,
+        icons: &std::collections::HashMap<String, tomet_shelf_document::DocIcon>,
+    ) {
+        let icon_renderer = tomet_shelf_icons::StandardIconRenderer::new();
+        self.link_icons = icons
+            .iter()
+            .map(|(slug, icon)| {
+                let html = tomet_shelf_render::render_page_link_icon(
+                    icon,
+                    &self.base_path,
+                    Some(&icon_renderer),
+                );
+                (slug.clone(), html)
+            })
+            .collect();
     }
 }

@@ -6,7 +6,7 @@
 
 use std::path::Path;
 
-use super::html::escape_html;
+use crate::html::escape_html;
 pub use crate::slug::strip_doc_extension;
 use crate::slug::{RouteTable, clean_doc_slug, normalize_path, normalize_path_str};
 

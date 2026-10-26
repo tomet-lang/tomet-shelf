@@ -1,9 +1,9 @@
 [package]
-name = "tomet-shelf-render"
+name = "tomet-shelf-document"
 version.workspace = true
 edition.workspace = true
 rust-version.workspace = true
-description = "Document parsing, AST transformation, and HTML rendering for tomet-shelf"
+description = "Document parsing, AST transformation, and metadata extraction for tomet-shelf"
 
 [dependencies]
 tomet-shelf-config = { workspace = true }

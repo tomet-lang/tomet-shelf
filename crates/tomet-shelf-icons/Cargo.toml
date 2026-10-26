@@ -1,0 +1,9 @@
+[package]
+name = "tomet-shelf-icons"
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+description = "Standard icon provider and inline SVG renderer for tomet-shelf"
+
+[dependencies]
+tomet = { workspace = true }

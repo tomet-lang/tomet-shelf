@@ -34,8 +34,8 @@ pub struct RenderContext<'a> {
     pub unpublished: &'a HashSet<String>,
     /// The book's table of contents, as the last full build arranged it.
     pub book_index: &'a [EntrySummary],
-    /// Note icon HTML snippets keyed by slug, for internal link decoration.
-    pub doc_icons: &'a HashMap<String, String>,
+    /// Note icon descriptors keyed by slug, for presentation layers.
+    pub doc_icons: &'a HashMap<String, tomet_shelf_document::DocIcon>,
     /// The vault-wide route table.
     pub route_table: &'a slug::RouteTable,
 }
@@ -50,7 +50,7 @@ pub struct VaultState {
     pub backlinks: HashMap<String, Vec<Backlink>>,
     pub unpublished: HashSet<String>,
     pub book_index: Vec<EntrySummary>,
-    pub doc_icons: HashMap<String, String>,
+    pub doc_icons: HashMap<String, tomet_shelf_document::DocIcon>,
     pub renderer: Box<dyn PageRenderer>,
     pub sections: Vec<SectionSummary>,
     pub catalog_entries: Vec<EntrySummary>,
@@ -118,13 +118,17 @@ impl VaultState {
 
         let written_index = read_written_index(&scanned, &parsed, src_dir, Some(&route_table));
 
+        let custom_element = Some(tomet_shelf_render::create_doc_icon_custom_element(
+            config.build.clean_base_path(),
+            renderer_factory.icon_renderer(),
+        ));
         let processed: Vec<Result<ProcessedDoc, DocFailure>> = parsed
             .into_par_iter()
             .zip(scanned.doc_files.par_iter())
             .filter(|(_, doc_file)| !unpublished.contains(&doc_file.rel_path))
             .map(|(result, doc_file)| {
                 let (doc, _) = result?;
-                document::process_parsed_document_with_blocks(
+                document::process_parsed_document_with_custom_element(
                     doc,
                     &doc_file.rel_path,
                     Some(&doc_file.abs_path),
@@ -133,6 +137,7 @@ impl VaultState {
                     &scanned.workspace_config_blocks,
                     &unpublished,
                     Some(&route_table),
+                    custom_element.clone(),
                 )
                 .map_err(|e| DocFailure {
                     rel_path: doc_file.rel_path.clone(),
@@ -141,17 +146,16 @@ impl VaultState {
             })
             .collect();
 
-        let doc_icons: HashMap<String, String> = if config.ui.links.note_icons {
-            let note_icons: HashMap<String, String> = processed
+        let doc_icons: HashMap<String, tomet_shelf_document::DocIcon> = if config.ui.links.note_icons {
+            processed
                 .iter()
                 .filter_map(|r| r.as_ref().ok())
                 .filter_map(|doc| {
-                    doc.link_icon
+                    doc.icon
                         .as_ref()
                         .map(|icon| (doc.slug.clone(), icon.clone()))
                 })
-                .collect();
-            note_icons
+                .collect()
         } else {
             HashMap::new()
         };
@@ -227,7 +231,8 @@ impl VaultState {
             None => processed_entries,
         };
 
-        let renderer = renderer_factory.create(config, is_dev)?;
+        let mut renderer = renderer_factory.create(config, is_dev)?;
+        renderer.set_doc_icons(&doc_icons);
 
         Ok(Self {
             config: config.clone(),
@@ -305,7 +310,11 @@ pub fn render_single_document_html(
         return Ok(None);
     }
 
-    let mut processed = document::process_parsed_document_with_blocks(
+    let custom_element = Some(tomet_shelf_render::create_doc_icon_custom_element(
+        config.build.clean_base_path(),
+        cx.renderer.icon_renderer(),
+    ));
+    let processed = document::process_parsed_document_with_custom_element(
         doc,
         rel_path,
         Some(abs_path),
@@ -314,12 +323,9 @@ pub fn render_single_document_html(
         cx.workspace_cfg_blocks,
         cx.unpublished,
         Some(cx.route_table),
+        custom_element,
     )?;
     let full_url_prefix = config.build.full_url_prefix();
-    if config.ui.links.note_icons && !cx.doc_icons.is_empty() {
-        processed.body_html =
-            document::enhance_internal_links(&processed.body_html, cx.doc_icons, &full_url_prefix);
-    }
     let html = cx
         .renderer
         .render_page(&processed, backlinks, cx.book_index)?;
@@ -343,7 +349,11 @@ pub fn render_single_document(
         return Ok(None);
     }
 
-    let mut processed = document::process_parsed_document_with_blocks(
+    let custom_element = Some(tomet_shelf_render::create_doc_icon_custom_element(
+        config.build.clean_base_path(),
+        cx.renderer.icon_renderer(),
+    ));
+    let mut processed = document::process_parsed_document_with_custom_element(
         doc,
         rel_path,
         Some(abs_path),
@@ -352,13 +362,10 @@ pub fn render_single_document(
         cx.workspace_cfg_blocks,
         cx.unpublished,
         Some(cx.route_table),
+        custom_element,
     )?;
     image_opt::optimize_single_doc_media(&mut processed, cx.src_dir, out_dir, config);
     let full_url_prefix = config.build.full_url_prefix();
-    if config.ui.links.note_icons && !cx.doc_icons.is_empty() {
-        processed.body_html =
-            document::enhance_internal_links(&processed.body_html, cx.doc_icons, &full_url_prefix);
-    }
     let html = cx
         .renderer
         .render_page(&processed, backlinks, cx.book_index)?;

@@ -10,7 +10,7 @@ use tracing::{info, warn};
 use crate::book::VaultState;
 use crate::book::loader::{exclude_prefixes, is_ignored_rel};
 use crate::config::BookConfig;
-use tomet_shelf_render::{ICON_ASSETS, RendererFactory};
+use crate::renderer::RendererFactory;
 use tomet_shelf_serve::axum::Router;
 use tomet_shelf_serve::axum::http::{StatusCode, Uri, header};
 use tomet_shelf_serve::axum::response::{Html, IntoResponse, Response};
@@ -213,18 +213,8 @@ pub fn handle_http_request(
         path.as_str()
     };
 
-    // 1. Embedded static assets (icon sprites + theme static assets)
+    // 1. Embedded static assets (theme static assets)
     let rel_asset = unbased_path.trim_start_matches('/');
-    for asset in ICON_ASSETS {
-        if asset.path.trim_start_matches('/') == rel_asset {
-            return (
-                StatusCode::OK,
-                [(header::CONTENT_TYPE, asset.mime)],
-                asset.content,
-            )
-                .into_response();
-        }
-    }
     {
         let state_lock = state.read().unwrap();
         if let Some(ref st) = *state_lock {
@@ -674,7 +664,7 @@ mod event_kind_tests {
 mod ssr_tests {
     use super::*;
     use std::fs;
-    use tomet_shelf_render::MinimalRendererFactory;
+    use crate::renderer::MinimalRendererFactory;
     use tomet_shelf_serve::axum::body::to_bytes;
     use tomet_shelf_serve::axum::http::header;
 
@@ -764,15 +754,6 @@ mod ssr_tests {
         assert_eq!(
             resp.headers().get(header::CONTENT_TYPE).unwrap(),
             "application/javascript; charset=utf-8"
-        );
-
-        // 3. Icons SVG
-        let uri = Uri::from_static("/icons/lucide.svg");
-        let resp = handle_http_request(&uri, handler.state(), &src, &config);
-        assert_eq!(resp.status(), StatusCode::OK);
-        assert_eq!(
-            resp.headers().get(header::CONTENT_TYPE).unwrap(),
-            "image/svg+xml"
         );
 
         let _ = fs::remove_dir_all(&src);

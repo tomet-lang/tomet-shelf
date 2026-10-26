@@ -240,8 +240,8 @@ pub fn optimize_docs_media(
             && let Some((rel, _)) = resolve_local_media_path(icon_img, src_dir, asset_prefix)
             && let Some(cached_url) = optimized_map.get(&(ImagePreset::Thumb, rel))
         {
-            if let Some(icon_html) = &mut doc.icon {
-                *icon_html = icon_html.replace(icon_img, cached_url);
+            if let Some(tomet_shelf_document::DocIcon::Image { src }) = &mut doc.icon {
+                *src = cached_url.clone();
             }
             doc.icon_image_url = Some(cached_url.clone());
         }
@@ -292,8 +292,8 @@ pub fn optimize_single_doc_media(
     {
         match optimize_image(&abs, &rel, ImagePreset::Thumb, out_dir) {
             Ok(Some(cached_url)) => {
-                if let Some(icon_html) = &mut doc.icon {
-                    *icon_html = icon_html.replace(icon_img, &cached_url);
+                if let Some(tomet_shelf_document::DocIcon::Image { src }) = &mut doc.icon {
+                    *src = cached_url.clone();
                 }
                 doc.icon_image_url = Some(cached_url);
             }
@@ -447,7 +447,6 @@ mod tests {
             primary_color: None,
             icon: None,
             icon_image_url: None,
-            link_icon: None,
             banner_url: Some("/vault/images/banner.png".to_string()),
             banner_original_url: Some("/vault/images/banner.png".to_string()),
             banner_y: None,
