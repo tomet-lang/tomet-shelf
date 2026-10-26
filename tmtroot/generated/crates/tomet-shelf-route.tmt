@@ -1,0 +1,61 @@
+::kind(api)
+
+::meta{crate: tomet-shelf-route, dependencies: list(tomet-shelf-config), dependents: list(tomet-shelf-headless, tomet-shelf-render)}
+
+=[tomet-shelf-route]
+
+Clean slug generation for URLs and page paths.
+
+Converts vault paths into safe, clean web slugs by:
+
+- Replacing spaces and unsafe/disallowed punctuation with hyphens (`-`).
+- Stripping emoji and graphical symbols.
+- Retaining alphanumeric characters (ASCII and Unicode, including Japanese Kanji/Hiragana/Katakana) and underscores (`_`).
+- Collapsing consecutive hyphens into a single hyphen.
+- Trimming leading and trailing hyphens from each path segment.
+- Preserving directory hierarchy (`/`).
+- Falling back to a deterministic hash (`doc-{hash}`) if a segment becomes empty.
+
+==[Structs]
+
+===[struct DocRouteInput]
+
+Metadata extracted from a document for routing resolution.
+
+===[struct RouteTable]
+
+Global routing table mapping every published document path to its unique clean slug.
+
+==[Functions]
+
+===[fn strip_doc_extension]
+
+Strip a single Tomet document extension: `foo/bar.tmt` -> `foo/bar`.
+
+Uses `strip_suffix` rather than `trim_end_matches`, which would chew through
+repeated suffixes and turn `notes.tmt.tmt` into `notes`.
+
+===[fn normalize_path]
+
+===[fn normalize_path_str]
+
+===[fn clean_segment]
+
+Sanitizes a single path segment (e.g. a directory name or file stem).
+
+===[fn clean_doc_slug]
+
+Generates a clean URL slug from a vault-relative document path.
+
+Strips document extensions (`.tmt`, `.tm`), normalizes path separators to `/`,
+and sanitizes each path segment independently.
+
+===[fn extract_route_metadata]
+
+Extract explicit `slug` and `id` from a document's `@meta` block, if present.
+
+==[Constants]
+
+===[const DOC_EXTENSIONS]
+
+Suffixes that mark a file as a Tomet document.

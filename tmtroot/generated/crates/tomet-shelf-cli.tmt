@@ -1,0 +1,5 @@
+::kind(api)
+
+::meta{crate: tomet-shelf-cli, dependencies: list(tomet-shelf-assets, tomet-shelf-headless), dependents: list()}
+
+=[tomet-shelf-cli]

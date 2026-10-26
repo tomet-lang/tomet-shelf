@@ -2,6 +2,15 @@
 // `source` is where its canonical content comes from.
 ::upstreams{
   commonfiles: { git: "https://github.com/tomet-lang/commonfiles.git", rev: main, root: base }
+  vocabularies: { git: "https://github.com/tomet-lang/vocabularies.git", rev: main, root: vocabularies }
+}
+
+// Schemas & Vocabularies
+"tmtroot/schema/vocabularies/rust@1.0.0.vocabulary.tmt": {
+  source: { upstream: vocabularies, path: "rust/rust@1.0.0.vocabulary.tmt" }
+}
+"tmtroot/schema/vocabularies/writ@1.0.0.vocabulary.tmt": {
+  source: { upstream: vocabularies, path: "writ/writ@1.0.0.vocabulary.tmt" }
 }
 
 // Environment

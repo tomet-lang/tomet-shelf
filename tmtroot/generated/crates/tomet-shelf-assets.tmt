@@ -1,0 +1,55 @@
+::kind(api)
+
+::meta{crate: tomet-shelf-assets, dependencies: list(tomet-shelf-config, tomet-shelf-render, tomet-shelf-template), dependents: list(tomet-shelf-cli)}
+
+=[tomet-shelf-assets]
+
+==[Functions]
+
+===[fn write_static_assets]
+
+==[Constants]
+
+===[const BOOK_CSS]
+
+===[const BOOK_JS]
+
+===[const TMT_BTN_CSS]
+
+===[const TMT_BADGE_CSS]
+
+===[const TMT_ICON_CSS]
+
+===[const TMT_SWATCH_CSS]
+
+===[const TMT_SWITCH_CSS]
+
+===[const TMT_BTN_CSS_VERSION]
+
+===[const TMT_BADGE_CSS_VERSION]
+
+===[const TMT_ICON_CSS_VERSION]
+
+===[const TMT_SWATCH_CSS_VERSION]
+
+===[const TMT_SWITCH_CSS_VERSION]
+
+===[const COMPONENT_ASSETS]
+
+===[const COMPONENT_VERSIONS]
+
+===[const BASE_HTML]
+
+===[const PAGE_HTML]
+
+===[const INDEX_HTML]
+
+===[const MACROS_HTML]
+
+===[const ASSETS]
+
+Official `tomet-shelf` UI template and asset bundle.
+
+===[const CSS_VERSION]
+
+===[const JS_VERSION]

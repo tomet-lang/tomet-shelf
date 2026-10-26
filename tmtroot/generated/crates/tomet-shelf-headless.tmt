@@ -1,0 +1,289 @@
+::kind(api)
+
+::meta{crate: tomet-shelf-headless, dependencies: list(tomet-shelf-config, tomet-shelf-render, tomet-shelf-route, tomet-shelf-search, tomet-shelf-serve), dependents: list(tomet-shelf-cli)}
+
+=[tomet-shelf-headless]
+
+Headless engine library surface for `tomet-shelf-headless`.
+
+Provides the primary API for building and serving Tomet books:
+
+- `book::build_book` an entire book from a vault directory.:Builds
+- `run_dev_server` a local development server with live reload.:Runs
+- `config::BookConfig` parser and models.:Configuration
+- `PageRenderer` / [`RendererFactory`]: Template-engine-agnostic page rendering traits.
+
+==[Module book]
+
+Turning an entire vault into a published book.
+
+===[Module catalog]
+
+The note list a hand-written `*.index.tmt` document defines.
+
+The catalog page lists every document in whatever order the vault walk
+produced, which is a filing order, not a reading order. An index document
+lets the author state the reading order instead: what to open first, what
+belongs under what, and what not to show at all.
+
+The file is an ordinary Tomet document -- a nested list of links -- so it
+needs no syntax of its own. An entry may also be a `${filter(...)}` query
+(tomet-core's `tomet-transform::index_query`, shared rather than
+reimplemented here): it expands into the same `@link(ref:"...")` shape
+before this module ever sees the tree, so [`collect_blocks`] does not
+need to know a query was ever there.
+
+```tomet
+@kind(doc.index)
+
+- @link(ref:"getting-started")
+- @link(ref:"concepts")
+  - @link(ref:"concepts/tomet")
+  - ${filter(contains(path, "concepts/"), by(path))}
+```
+
+====[Structs]
+
+=====[struct IndexEntry]
+
+One line of a hand-written index: the page it points at, and whatever the
+author nested under it.
+
+=====[struct IndexOutline]
+
+What reading one index document yielded.
+
+====[Functions]
+
+=====[fn is_control_document]
+
+True for the control documents that shape the book without being part of
+it. They are read by name and must not also become pages.
+
+=====[fn is_root_index]
+
+True for an index document that governs the whole book: one that sits at
+the vault root. Index files deeper in the vault are reserved for ordering
+their own folder, which nothing reads yet.
+
+=====[fn parse_index_document]
+
+Read one index document into the order it describes.
+
+`from_path` is the index document's own vault-relative path, which is what
+makes a relative `ref:` resolve against the folder the file sits in.
+`vault_root` is the root path of the vault to resolve `${...}` expressions.
+
+====[Constants]
+
+=====[const INDEX_SUFFIX]
+
+The suffix that marks a document as an index rather than a page.
+
+=====[const CONFIG_SUFFIX]
+
+The suffix that marks a document as workspace configuration.
+
+===[Module image_opt]
+
+====[Enums]
+
+=====[enum ImagePreset]
+
+====[Functions]
+
+=====[fn optimize_image]
+
+Optimizes an image from `src_abs` into `out_dir/cache/<preset>/<rel_path_with_webp_ext>`.
+
+Returns the public URL path (e.g. `/cache/banners/images/hero.webp`),
+or `None` if the file could not be decoded as an image.
+
+=====[fn resolve_local_media_path]
+
+Resolves a media URL from a document to its relative and absolute paths in `src_dir`.
+Returns `Some((rel_path, abs_path))` if the file exists locally in `src_dir`.
+
+=====[fn optimize_docs_media]
+
+Optimizes referenced banners and profile images across all documents in parallel.
+
+=====[fn optimize_single_doc_media]
+
+Optimizes media for a single document during incremental builds.
+
+===[Module kinds]
+
+Which `@kind`s the book publishes.
+
+`[build] exclude` drops documents by where they sit; this drops them by
+what they say they are. One ordered list does both an allow list and a
+deny list, the way `.gitignore` does:
+
+```toml
+kinds = ["*", "!config", "!index"]    # everything but these
+kinds = ["page", "unit"]              # only these
+kinds = ["*", "!deck.*", "deck.card"] # a namespace, minus one exception
+```
+
+The borrowed half is the notation, not the difficulty: gitignore's sharp
+edges come from walking a directory tree, where an excluded parent hides
+children that a later rule can no longer reach. Kinds are a flat set of
+names, so the last rule that matches simply wins.
+
+====[Functions]
+
+=====[fn publishes]
+
+True when a document of this kind belongs in the book.
+
+`kind` is `None` for a document that never declared one; only `*` matches
+it. A document no pattern matches is left out, which is what makes a list
+without any `*` read as "publish exactly these".
+
+===[Module loader]
+
+====[Structs]
+
+=====[struct ScannedVault]
+
+=====[struct DocFileInfo]
+
+=====[struct MediaFileInfo]
+
+====[Functions]
+
+=====[fn is_excluded_path]
+
+Returns true when `rel` is the excluded path `prefix` itself, or lives under it.
+
+Matching happens on path-segment boundaries, so an exclude entry like `dist`
+drops `dist/index.tmt` but keeps `distributed.tmt` and `old/distro/x.tmt`.
+Multi-segment entries (`"00-09 System/01 Apps"`) are matched as a whole.
+
+=====[fn exclude_prefixes]
+
+The paths a scan skips: the configured `build.exclude` entries plus the
+destination directory, so a build never eats its own output.
+
+=====[fn is_ignored_rel]
+
+True when a vault-relative path is excluded by config, or is hidden.
+
+Shared with the dev server so the watcher and the scanner agree on what
+belongs to the book.
+
+=====[fn scan_vault]
+
+====[Constants]
+
+=====[const MEDIA_EXTENSIONS]
+
+===[Module media]
+
+====[Structs]
+
+=====[struct MediaSync]
+
+How the media directory was brought up to date.
+
+Worth reporting separately: `copied` is the expensive one, and a build that
+keeps copying the same files every time means hard links are not available
+between the vault and the output.
+
+====[Enums]
+
+=====[enum SyncOutcome]
+
+====[Functions]
+
+=====[fn sync_media_file]
+
+=====[fn sync_single_media]
+
+=====[fn copy_vault_media]
+
+===[Module pagefind]
+
+====[Functions]
+
+=====[fn run_pagefind]
+
+=====[fn run_pagefind]
+
+Runs Pagefind's indexer in-process via its embedded service API, instead
+of shelling out to a `pagefind` executable on PATH. Trades build time and
+binary size (see the `embedded-search` feature) for a search index that
+works regardless of what's installed on the machine running `tomet-shelf`.
+
+===[Module search]
+
+Search index building for tomet-shelf.
+
+====[Functions]
+
+=====[fn build_search_index]
+
+Builds a `SearchIndex` from a collection of processed documents.
+
+===[Module state]
+
+In-memory vault state and per-page rendering contexts for dev SSR and SSG.
+
+====[Structs]
+
+=====[struct RenderContext]
+
+The vault-wide state a single page needs in order to render.
+
+The dev server holds all of this between edits; bundling it keeps the
+per-page call about the page.
+
+=====[struct VaultState]
+
+In-memory representation of the scanned and indexed vault state.
+Holds metadata, routes, backlinks, catalog, and renderer for on-demand SSR.
+
+====[Functions]
+
+=====[fn render_single_document_html]
+
+=====[fn render_single_document]
+
+===[Structs]
+
+====[struct DocFailure]
+
+A document that could not be turned into a page.
+
+====[struct BuildReport]
+
+What a build actually did, so callers can report on it or refuse to ship it.
+
+===[Functions]
+
+====[fn write_if_changed]
+
+Write content to path only if content has actually changed or file does not exist.
+Returns Ok(true) if written, Ok(false) if skipped because unchanged.
+
+====[fn build_book]
+
+==[Module serve]
+
+===[Structs]
+
+====[struct TometDevHandler]
+
+===[Functions]
+
+====[fn handle_http_request]
+
+==[Functions]
+
+===[fn run_dev_server]
+
+Run the local dev server with live reload: builds a `TometDevHandler`
+(tomet-aware incremental rebuilds) and hands it to
+`tomet_shelf_serve::run_dev_server`, which owns the actual file-watching,
+static serving, and websocket reload signaling.

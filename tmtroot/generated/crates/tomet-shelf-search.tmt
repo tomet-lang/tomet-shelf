@@ -1,0 +1,21 @@
+::kind(api)
+
+::meta{crate: tomet-shelf-search, dependencies: list(), dependents: list(tomet-shelf-headless, tomet-shelf-render)}
+
+=[tomet-shelf-search]
+
+==[Structs]
+
+===[struct SearchDocument]
+
+A single searchable document in the index.
+
+===[struct SearchIndex]
+
+The collection of all searchable documents.
+
+==[Functions]
+
+===[fn strip_html_to_plain_text]
+
+Strips HTML tags and unescapes basic entities to produce clean plain prose text.

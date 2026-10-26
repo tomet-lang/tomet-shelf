@@ -1,0 +1,27 @@
+::kind(api)
+
+::meta{crate: tomet-shelf-serve, dependencies: list(), dependents: list(tomet-shelf-headless)}
+
+=[tomet-shelf-serve]
+
+==[Enums]
+
+===[enum ReloadSignal]
+
+==[Traits]
+
+===[trait DevServerHandler]
+
+Handler trait for processing filesystem events and triggering rebuilds.
+Implementations encapsulate project-specific rebuild logic (e.g. Tomet book rendering).
+
+==[Functions]
+
+===[fn run_dev_server]
+
+Run a generic development server with live reload.
+
+===[fn resolve_within]
+
+Resolves `rel` against `root`, rejecting anything that would land
+outside it -- `..` segments, an absolute path, or a symlink escape.

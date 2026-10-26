@@ -1,0 +1,100 @@
+::kind(api)
+
+::meta{crate: tomet-shelf-render, dependencies: list(tomet-shelf-config, tomet-shelf-route, tomet-shelf-search), dependents: list(tomet-shelf-assets, tomet-shelf-headless, tomet-shelf-template)}
+
+=[tomet-shelf-render]
+
+==[Module assets]
+
+===[Structs]
+
+====[struct StaticAsset]
+
+A static asset file (CSS, JS, SVG, etc.) to be written to `out_dir` during
+static builds and served from memory by the dev server.
+
+===[Functions]
+
+====[fn content_version]
+
+====[fn write_static_assets]
+
+====[fn write_if_changed]
+
+===[Constants]
+
+====[const LUCIDE_SPRITE]
+
+====[const SIMPLE_SPRITE]
+
+====[const ICON_ASSETS]
+
+Built-in icon sprites used by `@doc.icon(...)` and list markers.
+
+==[Module document]
+
+One source document, turned into everything a page needs.
+
+===[Structs]
+
+====[struct ProcessedDoc]
+
+===[Functions]
+
+====[fn extract_workspace_config_blocks]
+
+Extract the `::config`/`::settings` blocks of a workspace-wide document.
+
+====[fn inject_workspace_config_blocks]
+
+Prepend pre-parsed workspace-wide config blocks so shared macros are in scope.
+
+====[fn parse_tomet_document]
+
+Read a document far enough to know what it is.
+
+Read a document far enough to know what it is.
+
+The build has to decide what the site publishes before it resolves a
+single link, since a link to a document the site leaves out has to come
+out broken. That decision needs the `::kind`, and the `::kind` needs a
+parse -- so the parse is done once, here, and handed on.
+
+====[fn process_tomet_document]
+
+====[fn process_parsed_document]
+
+====[fn process_parsed_document_with_blocks]
+
+Turn a parsed document into the page it becomes using pre-parsed workspace config blocks.
+
+==[Module renderer]
+
+===[Structs]
+
+====[struct SectionSummary]
+
+====[struct Backlink]
+
+A page that points at the one being rendered.
+
+====[struct EntrySummary]
+
+====[struct MinimalRenderer]
+
+Minimal template-engine-free renderer for headless tests and barebones rendering.
+
+====[struct MinimalRendererFactory]
+
+Unit factory that creates a [`MinimalRenderer`] for headless tests.
+
+===[Traits]
+
+====[trait PageRenderer]
+
+Template-engine-agnostic page renderer implemented by the application/theme layer.
+
+====[trait RendererFactory]
+
+Factory that creates a [`PageRenderer`] bound to a [`BookConfig`].
+Used by `build_book` and by the dev server (which re-creates the renderer on config hot-reload).

@@ -1,0 +1,15 @@
+::kind(api)
+
+::meta{crate: tomet-shelf-template, dependencies: list(tomet-shelf-config, tomet-shelf-render), dependents: list(tomet-shelf-assets)}
+
+=[tomet-shelf-template]
+
+==[Structs]
+
+===[struct TemplateBundle]
+
+Static HTML templates, CSS/JS assets, and extra static files for a theme.
+
+===[struct BookRenderer]
+
+Holds compiled MiniJinja templates and static assets for rendering book pages.
