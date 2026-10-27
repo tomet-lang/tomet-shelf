@@ -7,6 +7,14 @@ fn main() {
     let root = Path::new(&manifest_dir);
 
     println!("cargo:rerun-if-changed={}", root.join("frontend").display());
+    println!(
+        "cargo:rerun-if-changed={}",
+        root.join("templates").display()
+    );
+    println!(
+        "cargo:rerun-if-changed={}",
+        root.join("src/renderer.rs").display()
+    );
 
     let out_dir = env::var("OUT_DIR").expect("OUT_DIR not set by cargo");
     let output_path = Path::new(&out_dir).join("tailwind.css");
@@ -14,8 +22,6 @@ fn main() {
     let status = Command::new("tailwindcss")
         .current_dir(root)
         .args([
-            "-c",
-            "frontend/tailwind.config.ts",
             "-i",
             "frontend/styles/tailwind-input.css",
             "-o",

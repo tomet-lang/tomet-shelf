@@ -1,6 +1,6 @@
 {% import "macros.html" as ui %}
 <!DOCTYPE html>
-<html class="no-js" lang="{{ lang }}" data-view="{{ default_view }}">
+<html class="no-js" lang="{{ lang }}">
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
@@ -12,15 +12,6 @@
         if (savedTheme === 'dark' || savedTheme === 'light') {
           document.documentElement.setAttribute('data-theme', savedTheme);
         }
-        // Collapsed states for navigation panes
-        const narrow = window.innerWidth <= 900;
-        const collapsed = (key) => {
-          const saved = localStorage.getItem(key);
-          return saved !== null ? saved === 'true' : narrow;
-        };
-        if (collapsed('wiki-pane-nav-collapsed')) {
-          document.documentElement.setAttribute('data-nav-collapsed', 'true');
-        }
       } catch {}
     </script>
     <link rel="stylesheet" href="{{ base_path }}/shelf.css?v={{ css_version }}" />
@@ -28,22 +19,22 @@
     <link rel="stylesheet" href="{{ css }}" />
     {% endfor %}
   </head>
-  <body class="is-fluid bg-canvas text-text min-h-screen flex flex-col m-0 p-0 overflow-hidden font-sans">
+  <body class="bg-canvas text-text h-dvh flex flex-col m-0 p-0 overflow-hidden font-sans antialiased">
     <div id="page-progress-bar" data-pagefind-ignore></div>
 
     {% block content %}{% endblock %}
 
     <!-- Hover Page Preview (Obsidian / Wikipedia style) -->
-    <div id="wiki-page-preview" class="wiki-preview-card fixed w-[320px] max-w-[calc(100vw-32px)] bg-canvas rounded-xl py-3 px-4 shadow-[0_10px_25px_rgba(0,0,0,0.18)] border border-border z-[10000] pointer-events-auto box-border" hidden data-pagefind-ignore>
-      <div class="preview-header flex items-baseline justify-between gap-2 mb-1.5 pb-1 border-b border-border-subtle">
-        <span class="preview-title text-[0.95rem] font-bold text-link overflow-hidden text-ellipsis whitespace-nowrap"></span>
+    <div id="wiki-page-preview" class="wiki-preview-card fixed w-[320px] max-w-[calc(100vw-32px)] bg-surface rounded-xl py-3.5 px-4 shadow-lg z-[10000] pointer-events-auto box-border" hidden data-pagefind-ignore>
+      <div class="preview-header flex items-baseline justify-between gap-2 mb-1.5">
+        <span class="preview-title text-[0.925rem] font-bold text-link overflow-hidden text-ellipsis whitespace-nowrap"></span>
         <span class="preview-section text-xs text-text-muted whitespace-nowrap"></span>
       </div>
       <div class="preview-content flex gap-3 items-start">
-        <div class="preview-body flex-1 min-w-0 text-[0.85rem] text-text leading-relaxed max-h-24 line-clamp-4 break-words"></div>
-        <img class="preview-thumb w-16 h-16 object-cover shrink-0 rounded-md shadow-sm bg-subtle block" src="" alt="" hidden />
+        <div class="preview-body flex-1 min-w-0 text-[0.825rem] text-text-secondary leading-relaxed max-h-24 line-clamp-4 break-words"></div>
+        <img class="preview-thumb w-16 h-16 object-cover shrink-0 rounded-lg shadow-sm bg-subtle block" src="" alt="" hidden />
       </div>
-      <div class="preview-footer flex items-center justify-end mt-2 pt-1.5 border-t border-border-subtle">
+      <div class="preview-footer flex items-center justify-end mt-2.5">
         <span class="preview-peek-hint text-[0.7rem] text-text-muted inline-flex items-center gap-1">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" width="12" height="12"><polyline points="15 3 21 3 21 9"></polyline><polyline points="9 21 3 21 3 15"></polyline><line x1="21" y1="3" x2="14" y2="10"></line><line x1="3" y1="21" x2="10" y2="14"></line></svg>
           {{ self.t("preview.open_peek", "詳細を開く") }}
@@ -52,9 +43,9 @@
     </div>
 
     <!-- Center Peek Modal (Notion / Obsidian style) -->
-    <div id="wiki-center-peek" class="peek-overlay fixed inset-0 bg-[rgba(0,0,0,0.6)] z-[95000] flex items-center justify-center box-border p-4" hidden data-pagefind-ignore>
-      <div class="peek-dialog relative w-[800px] max-w-full max-h-[90vh] bg-canvas border border-border shadow-[0_20px_50px_rgba(0,0,0,0.25)] rounded-2xl flex flex-col overflow-hidden" role="dialog" aria-modal="true">
-        <header class="peek-header h-12 flex items-center justify-between px-4 bg-canvas border-b border-border shrink-0 select-none">
+    <div id="wiki-center-peek" class="peek-overlay fixed inset-0 bg-[rgba(0,0,0,0.5)] z-[95000] flex items-center justify-center box-border" hidden data-pagefind-ignore>
+      <div class="peek-dialog relative bg-surface shadow-xl flex flex-col overflow-hidden" role="dialog" aria-modal="true">
+        <header class="peek-header h-12 flex items-center justify-between px-4 bg-surface shadow-sm z-10 shrink-0 select-none">
           <div class="peek-header-crumbs flex items-center gap-2 text-[0.825rem] text-text-muted overflow-hidden text-ellipsis whitespace-nowrap" id="peek-crumbs"></div>
           <div class="peek-header-actions flex items-center gap-2 shrink-0">
             <tmt-btn variant="outline" size="sm" shape="square" class="peek-action-btn peek-btn-fullscreen" id="peek-btn-fullscreen" title="{{ self.t("peek.fullscreen", "全画面") }}" aria-label="{{ self.t("peek.fullscreen", "全画面") }}">
@@ -72,13 +63,13 @@
             </tmt-btn>
           </div>
         </header>
-        <div class="peek-scroll-body flex-1 overflow-y-auto p-6 box-border" id="peek-body"></div>
+        <div class="peek-scroll-body flex-1 overflow-y-auto box-border" id="peek-body"></div>
       </div>
     </div>
 
     <!-- Image Lightbox Modal -->
-    <div id="wiki-image-lightbox" class="lightbox-overlay fixed inset-0 bg-[rgba(0,0,0,0.85)] z-[100000] flex items-center justify-center p-5" hidden data-pagefind-ignore>
-      <div class="lightbox-dialog relative max-w-[92vw] max-h-[92vh] flex flex-col items-center bg-canvas border border-border rounded-2xl shadow-[0_16px_48px_rgba(0,0,0,0.5)] p-3">
+    <div id="wiki-image-lightbox" class="lightbox-overlay fixed inset-0 bg-[rgba(0,0,0,0.82)] z-[100000] flex items-center justify-center p-5" hidden data-pagefind-ignore>
+      <div class="lightbox-dialog relative max-w-[92vw] max-h-[92vh] flex flex-col items-center bg-surface rounded-2xl shadow-xl p-3">
         <tmt-btn variant="outline" size="sm" shape="square" class="lightbox-close absolute top-3 right-3" aria-label="{{ self.t("lightbox.close", "閉じる") }}">
           {{ ui::dsd_btn_shadow() }}
           ✕

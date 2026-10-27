@@ -3,9 +3,9 @@
 
 {% block content %}
 <!-- ==================== TOP APP BAR ==================== -->
-<header class="app-header h-[52px] min-h-[52px] px-4 flex items-center justify-between border-b border-border bg-canvas z-30 select-none" data-pagefind-ignore>
-  <div class="header-left flex items-center gap-3 min-w-0">
-    <tmt-btn variant="outline" size="sm" shape="square" class="pane-toggle-btn md:hidden" id="btn-toggle-nav" title="{{ self.t("pane.toc", "メニュー") }}" aria-label="{{ self.t("pane.toc", "メニュー") }}">
+<header class="app-header h-14 min-h-14 px-3.5 sm:px-5 flex items-center justify-between gap-2.5 bg-surface shadow-sm z-30 select-none" data-pagefind-ignore>
+  <div class="header-left flex items-center gap-2.5 sm:gap-3 min-w-0">
+    <tmt-btn variant="outline" size="sm" shape="square" class="pane-toggle-btn shrink-0 md:hidden" id="btn-toggle-nav" title="{{ self.t("pane.toc", "メニュー") }}" aria-label="{{ self.t("pane.toc", "メニュー") }}" aria-expanded="false">
       {{ ui::dsd_btn_shadow() }}
       <svg viewBox="0 0 24 24" width="15" height="15" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round">
         <line x1="3" y1="12" x2="21" y2="12"></line>
@@ -13,108 +13,53 @@
         <line x1="3" y1="18" x2="21" y2="18"></line>
       </svg>
     </tmt-btn>
-    <a href="{{ home_url }}" class="app-brand flex items-center gap-2 font-bold text-text no-underline text-sm shrink-0">
-      <span class="brand-title tracking-tight">{{ site_title }}</span>
+    <a href="{{ home_url }}" class="app-brand flex items-center gap-2 font-bold text-text no-underline hover:no-underline text-sm min-w-0 sm:shrink-0">
+      <span class="brand-title tracking-tight overflow-hidden text-ellipsis whitespace-nowrap">{{ site_title }}</span>
     </a>
-    <div class="header-separator text-border select-none hidden sm:inline">/</div>
-    <nav class="header-breadcrumbs flex items-center gap-1.5 text-xs text-text-muted overflow-hidden text-ellipsis whitespace-nowrap hidden sm:flex" aria-label="{{ self.t("nav.breadcrumbs", "パンくずリスト") }}">
-      <a href="{{ home_url }}" class="crumb-link hover:text-text no-underline text-text-muted">{{ self.t("nav.home", "Home") }}</a>
+    <div class="header-separator text-text-muted/40 select-none hidden sm:inline">/</div>
+    <nav class="header-breadcrumbs items-center gap-1.5 text-xs text-text-muted overflow-hidden text-ellipsis whitespace-nowrap hidden sm:flex" aria-label="{{ self.t("nav.breadcrumbs", "パンくずリスト") }}">
+      <a href="{{ home_url }}" class="crumb-link hover:text-text no-underline text-text-muted transition-colors">{{ self.t("nav.home", "Home") }}</a>
       {% if let Some(section) = section %}
-      <span class="crumb-sep">/</span>
+      <span class="crumb-sep opacity-50">/</span>
       <span class="crumb-section font-medium text-text-secondary" data-pagefind-filter="section">{{ section }}</span>
       {% endif %}
-      <span class="crumb-sep">/</span>
+      <span class="crumb-sep opacity-50">/</span>
       <span class="crumb-current text-text font-medium overflow-hidden text-ellipsis">{{ page_title }}</span>
     </nav>
   </div>
 
   <div class="header-right flex items-center gap-2.5 shrink-0">
-    <!-- Search Bar in Header (Elevated layer with shadow) -->
-    <div class="search-container relative">
-      <div class="search-input-wrapper flex items-center relative bg-canvas rounded-lg shadow-sm border border-border">
-        {{ ui::tmt_icon("search", "xs", "lucide", "search-input-icon absolute left-2.5 text-text-muted pointer-events-none block", "", "") }}
-        <input
-          type="search"
-          id="wiki-search-input"
-          class="w-[200px] sm:w-[260px] h-[32px] pl-8 pr-12 text-xs bg-transparent border-none text-text placeholder-text-muted focus:outline-none"
-          placeholder="{{ self.t("search.placeholder", "検索 (Ctrl+K)...") }}"
-          autocomplete="off"
-          spellcheck="false"
-        />
-        <tmt-badge variant="kbd" size="xs" shape="rect" clickable class="search-shortcut-badge absolute right-1.5 top-1.5" title="Ctrl+K / /" aria-label="Ctrl+K / /">
-          {{ ui::dsd_badge_shadow("") }}⌘K
-        </tmt-badge>
-      </div>
-      <div id="wiki-search-results" class="search-results absolute top-full right-0 mt-1.5 w-[440px] max-w-[calc(100vw-32px)] max-h-[420px] overflow-y-auto bg-canvas rounded-xl z-[1000] shadow-[0_12px_32px_rgba(0,0,0,0.18)] border border-border" hidden></div>
-
-      <template id="search-result-item-template">
-        <a class="search-result-item">
-          <div class="search-result-row">
-            <img class="search-result-thumb" alt="" loading="lazy" hidden />
-            <div class="search-result-main">
-              <div class="search-result-title">
-                <span class="result-title-text"></span>
-                <span class="search-result-kind" hidden></span>
-                <span class="search-result-section" hidden></span>
-              </div>
-              <div class="search-result-path" hidden></div>
-              <div class="search-result-aliases" hidden><span class="alias-label"></span> <span class="alias-text"></span></div>
-              <div class="search-result-excerpt" hidden></div>
-            </div>
-          </div>
-        </a>
-      </template>
-    </div>
-
-    <!-- Theme Toggle (Elevated Button Layer) -->
-    <tmt-btn variant="outline" size="sm" shape="square" class="theme-toggle-btn" id="btn-header-theme" title="{{ self.t("theme.toggle", "テーマ切り替え") }}" aria-label="{{ self.t("theme.toggle_label", "テーマ切り替え") }}">
-      {{ ui::dsd_btn_shadow() }}
-      <svg class="icon-theme icon-sun" viewBox="0 0 24 24" width="15" height="15" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round">
-        <circle cx="12" cy="12" r="4"></circle>
-        <path d="M12 2v2"></path>
-        <path d="M12 20v2"></path>
-        <path d="m4.93 4.93 1.41 1.41"></path>
-        <path d="m17.66 17.66 1.41 1.41"></path>
-        <path d="M2 12h2"></path>
-        <path d="M20 12h2"></path>
-        <path d="m6.34 17.66-1.41 1.41"></path>
-        <path d="m19.07 4.93-1.41 1.41"></path>
-      </svg>
-      <svg class="icon-theme icon-moon" viewBox="0 0 24 24" width="15" height="15" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round">
-        <path d="M12 3a6 6 0 0 0 9 9 9 9 0 1 1-9-9Z"></path>
-      </svg>
-    </tmt-btn>
+    {{ ui::search_box() }}
+    {{ ui::theme_toggle_btn("btn-header-theme") }}
   </div>
 </header>
 
 <!-- ==================== MAIN 3-PANE LAYOUT ==================== -->
-<div class="app-layout flex-1 min-h-0 flex flex-row overflow-hidden bg-canvas">
+<div class="app-layout flex-1 min-h-0 flex flex-row overflow-hidden bg-canvas relative">
   <script>
     window.tmtPageUrl = {{ self.page_url_json()|safe }};
   </script>
 
   <!-- Mobile backdrop -->
-  <div class="pane-backdrop fixed inset-0 bg-black/40 z-40 hidden" id="pane-nav-backdrop" aria-hidden="true"></div>
+  <div class="pane-backdrop" id="pane-nav-backdrop" aria-hidden="true"></div>
 
-  <!-- PANE 1: LEFT NAVIGATION PANE (Vault Tree / Reading Order) -->
-  <aside class="book-pane pane-nav w-[260px] min-w-[260px] max-w-[280px] h-full flex flex-col border-r border-border bg-canvas select-none shrink-0" id="pane-nav" data-pagefind-ignore>
-    <div class="pane-header h-10 px-3.5 flex items-center justify-between border-b border-border-subtle shrink-0">
-      <span class="pane-title text-xs font-bold uppercase tracking-wider text-text-muted">{{ self.t("pane.index", "ナビゲーション") }}</span>
-    </div>
-    <div class="pane-scroll flex-1 overflow-y-auto p-3 [scrollbar-width:thin] [scrollbar-color:var(--text-muted)_transparent]">
+  <!-- PANE 1: LEFT NAVIGATION PANE (Vault Tree & Recent Notes) -->
+  <aside class="pane-nav w-[264px] min-w-[264px] max-w-[280px] h-full flex flex-col bg-canvas select-none shrink-0" id="pane-nav" data-pagefind-ignore>
+    <div class="pane-scroll flex-1 overflow-y-auto px-3 py-4 [scrollbar-width:thin] [scrollbar-color:var(--text-muted)_transparent]">
+      <div class="px-2.5 mb-2 text-[0.7rem] font-bold uppercase tracking-wider text-text-muted">{{ self.t("pane.index", "ナビゲーション") }}</div>
       {% if !book_index.is_empty() %}
-      <div class="pane-book-index mb-6">
+      <div class="pane-book-index mb-5">
         {{ self.book_index_html()|safe }}
       </div>
       {% endif %}
 
-      <div class="pane-recent shrink-0 pt-2 border-t border-border-subtle" id="pane-recent-section" hidden>
-        <div class="toc-heading text-xs font-bold text-text-muted uppercase tracking-wider mb-2">{{ self.t("recent.heading", "最近のノート") }}</div>
-        <ul class="recent-items list-none m-0 p-0 flex flex-col gap-1" id="pane-recent-list"></ul>
+      <div class="pane-recent shrink-0 pt-3" id="pane-recent-section" hidden>
+        <div class="px-2.5 mb-1.5 text-[0.7rem] font-bold text-text-muted uppercase tracking-wider">{{ self.t("recent.heading", "最近のノート") }}</div>
+        <ul class="recent-items list-none m-0 p-0 flex flex-col gap-0.5" id="pane-recent-list"></ul>
 
         <template id="recent-note-item-template">
           <li>
-            <a class="recent-link block py-1 px-2 text-xs text-text-muted hover:text-text hover:bg-subtle rounded transition-colors no-underline overflow-hidden text-ellipsis whitespace-nowrap">
+            <a class="recent-link block py-1.5 px-2.5 text-[0.8rem] text-text-secondary hover:text-text hover:bg-subtle rounded-md transition-colors no-underline overflow-hidden text-ellipsis whitespace-nowrap">
               <span class="recent-title"></span>
             </a>
           </li>
@@ -124,7 +69,7 @@
   </aside>
 
   <!-- PANE 2: CENTER ARTICLE CANVAS (Main Content) -->
-  <main class="book-pane pane-content flex-1 min-w-0 h-full overflow-y-auto bg-canvas" id="book-content-scroll" data-pagefind-body>
+  <main class="pane-content flex-1 min-w-0 h-full overflow-y-auto bg-surface" id="book-content-scroll" data-pagefind-body>
     <div class="article-container max-w-[820px] mx-auto py-8 px-6 sm:px-10">
       {% if !slug.is_empty() %}
       <span class="sr-only" data-pagefind-meta="path" data-pagefind-weight="10.0">{{ slug }}</span>
@@ -135,11 +80,11 @@
 
       <!-- Article Header / Hero Section -->
       {% if let Some(banner_url) = banner_url %}
-      <div class="hero-section relative mb-8 rounded-xl overflow-hidden border border-border shadow-sm bg-canvas">
+      <div class="hero-section relative mb-8 rounded-xl overflow-hidden shadow-sm bg-subtle">
         {{ ui::hero_banner(banner_url, banner_y, page_title, banner_original_url.unwrap_or("")) }}
         <div class="hero-content relative flex items-start gap-4 p-5">
           {% if let Some(icon) = icon %}
-          <div class="hero-avatar flex items-center justify-center shrink-0 w-[60px] h-[60px] -mt-8 rounded-xl bg-canvas shadow-md border border-border text-[2rem]">
+          <div class="hero-avatar flex items-center justify-center shrink-0 w-[60px] h-[60px] -mt-9 rounded-xl bg-surface shadow-md text-[2rem]">
             <span class="avatar-icon">{{ icon|safe }}</span>
           </div>
           {% endif %}
@@ -147,7 +92,7 @@
             <div class="hero-title-row flex items-baseline gap-2.5 flex-wrap">
               <h1 class="content-title m-0 text-[1.85rem] font-bold leading-tight tracking-tight text-text" data-pagefind-meta="title" data-pagefind-weight="10">{{ page_title }}</h1>
               {% if let Some(kind) = kind %}
-              <span class="kind-tag kind-{{ kind }} inline-block px-2 py-0.5 text-xs font-medium rounded-full bg-subtle text-text-secondary capitalize whitespace-nowrap" data-pagefind-filter="kind">{{ kind }}</span>
+              <span class="kind-tag kind-{{ kind }} inline-block px-2.5 py-0.5 text-xs font-medium rounded-full bg-surface shadow-sm text-text-secondary capitalize whitespace-nowrap" data-pagefind-filter="kind">{{ kind }}</span>
               {% endif %}
             </div>
             {% if !hero_chips.is_empty() %}
@@ -162,13 +107,13 @@
         </div>
       </div>
       {% else %}
-      <header class="article-header mb-6 pb-4 border-b border-border">
+      <header class="article-header mb-7">
         <div class="title-row flex items-baseline justify-between gap-3">
           <div class="flex items-baseline gap-2.5 flex-wrap min-w-0">
-            {% if let Some(icon) = icon %}<span class="title-icon text-2xl mr-1">{{ icon|safe }}</span>{% endif %}
+            {% if let Some(icon) = icon %}<span class="title-icon text-2xl mr-0.5">{{ icon|safe }}</span>{% endif %}
             <h1 class="content-title m-0 text-[2rem] font-bold leading-tight tracking-tight text-text" data-pagefind-meta="title" data-pagefind-weight="10">{{ page_title }}</h1>
             {% if let Some(kind) = kind %}
-            <span class="kind-tag kind-{{ kind }} inline-block px-2 py-0.5 text-xs font-medium rounded-full bg-subtle text-text-secondary capitalize whitespace-nowrap" data-pagefind-filter="kind">{{ kind }}</span>
+            <span class="kind-tag kind-{{ kind }} inline-block px-2.5 py-0.5 text-xs font-medium rounded-full bg-subtle text-text-secondary capitalize whitespace-nowrap" data-pagefind-filter="kind">{{ kind }}</span>
             {% endif %}
           </div>
           {% if is_dev && !source_path.is_empty() %}
@@ -185,8 +130,8 @@
 
       <!-- Wikipedia-style Summary Infobox (if data present) -->
       {% if has_data %}
-      <aside class="infobox float-right w-[280px] ml-6 mb-6 rounded-xl border border-border bg-canvas shadow-sm overflow-hidden" data-pagefind-body>
-        <div class="infobox-title bg-subtle py-2.5 px-3.5 text-sm font-bold text-center border-b border-border flex items-center justify-center gap-2" data-pagefind-ignore>
+      <aside class="infobox float-right w-[280px] ml-6 mb-6 rounded-xl bg-subtle shadow-sm overflow-hidden" data-pagefind-body>
+        <div class="infobox-title py-2.5 px-3.5 text-sm font-bold text-center flex items-center justify-center gap-2" data-pagefind-ignore>
           {% if let Some(icon) = icon %}<span class="infobox-icon">{{ icon|safe }}</span>{% endif %}
           <span>{{ page_title }}</span>
         </div>
@@ -197,9 +142,9 @@
         <table class="infobox-table w-full border-collapse text-xs">
           <tbody>
             {% for row in infobox_rows %}
-            <tr class="border-b border-border-subtle last:border-b-0">
-              <th class="infobox-label w-[38%] py-2 px-3 font-semibold text-text-muted text-left align-top">{{ row.label }}</th>
-              <td class="infobox-data py-2 px-3 text-text align-top break-words">
+            <tr class="infobox-row">
+              <th class="infobox-label w-[38%] py-2 px-3 font-semibold text-text-secondary text-left align-top">{{ row.label }}</th>
+              <td class="infobox-data py-2 px-3 text-text align-top break-words relative">
                 <span class="infobox-data-val">{{ row.value|safe }}</span>
               </td>
             </tr>
@@ -218,16 +163,16 @@
   </main>
 
   <!-- PANE 3: RIGHT CONTEXT PANE (TOC & Backlinks) -->
-  <aside class="book-pane pane-context w-[250px] min-w-[250px] max-w-[260px] h-full flex flex-col border-l border-border bg-canvas shrink-0 select-none hidden lg:flex" id="pane-context" data-pagefind-ignore>
-    <div class="pane-scroll flex-1 overflow-y-auto p-4 [scrollbar-width:thin] [scrollbar-color:var(--text-muted)_transparent]">
+  <aside class="pane-context w-[252px] min-w-[252px] max-w-[264px] h-full flex-col bg-canvas shrink-0 select-none hidden lg:flex" id="pane-context" data-pagefind-ignore>
+    <div class="pane-scroll flex-1 overflow-y-auto px-3.5 py-4 [scrollbar-width:thin] [scrollbar-color:var(--text-muted)_transparent]">
       <!-- Table of Contents (On this page) -->
       {% if !toc.is_empty() %}
       <div class="context-section mb-6">
-        <div class="toc-heading text-xs font-bold text-text-muted uppercase tracking-wider mb-2.5">{{ self.t("toc.heading", "目次") }}</div>
-        <ul class="toc-items list-none m-0 p-0 flex flex-col gap-1">
+        <div class="toc-heading px-2 mb-2 text-[0.7rem] font-bold text-text-muted uppercase tracking-wider">{{ self.t("toc.heading", "目次") }}</div>
+        <ul class="toc-items list-none m-0 p-0 flex flex-col gap-0.5">
           {% for item in toc %}
           <li class="toc-item leading-snug" style="margin-left: {{ (item.level - 1) * 8 }}px">
-            <a href="#{{ item.id }}" class="book-toc-link block py-1 px-1.5 text-xs text-text-secondary hover:text-text hover:bg-subtle rounded transition-colors no-underline overflow-hidden text-ellipsis" data-target="{{ item.id }}">{{ item.text }}</a>
+            <a href="#{{ item.id }}" class="book-toc-link block py-1 px-2 text-xs text-text-secondary hover:text-text hover:bg-subtle rounded-md transition-colors no-underline overflow-hidden text-ellipsis" data-target="{{ item.id }}">{{ item.text }}</a>
           </li>
           {% endfor %}
         </ul>
@@ -235,24 +180,24 @@
       {% endif %}
 
       <!-- Backlinks (Linked Mentions) -->
-      <div class="context-section pt-4 border-t border-border-subtle">
-        <div class="toc-heading text-xs font-bold text-text-muted uppercase tracking-wider mb-2.5 flex items-center justify-between">
+      <div class="context-section">
+        <div class="toc-heading px-2 mb-2 text-[0.7rem] font-bold text-text-muted uppercase tracking-wider flex items-center justify-between">
           <span>{{ self.t("backlinks.heading", "参照元ノート") }}</span>
-          <span class="backlink-count text-[10px] font-semibold px-1.5 py-0.2 rounded-full bg-subtle text-text-muted">{{ backlinks.len() }}</span>
+          <span class="backlink-count text-[10px] font-semibold px-1.5 py-0.5 rounded-full bg-surface shadow-sm text-text-muted">{{ backlinks.len() }}</span>
         </div>
         {% if !backlinks.is_empty() %}
         <ul class="backlink-items list-none m-0 p-0 flex flex-col gap-1">
           {% for link in backlinks %}
           <li class="backlink-item">
-            <a href="{{ link.url }}" class="backlink-link block py-1.5 px-2 text-xs text-text-secondary hover:text-text hover:bg-subtle rounded transition-colors no-underline">
+            <a href="{{ link.url }}" class="backlink-link block py-1.5 px-2.5 text-xs text-text-secondary hover:text-text hover:bg-surface hover:shadow-sm rounded-lg transition-all no-underline">
               <span class="backlink-title font-medium block overflow-hidden text-ellipsis whitespace-nowrap">{{ link.title }}</span>
-              {% if let Some(section) = link.section %}<span class="backlink-section block text-[10px] text-text-muted overflow-hidden text-ellipsis whitespace-nowrap">{{ section }}</span>{% endif %}
+              {% if let Some(section) = link.section %}<span class="backlink-section block text-[10px] text-text-muted overflow-hidden text-ellipsis whitespace-nowrap mt-0.5">{{ section }}</span>{% endif %}
             </a>
           </li>
           {% endfor %}
         </ul>
         {% else %}
-        <div class="backlinks-empty text-xs text-text-muted py-2 italic">
+        <div class="backlinks-empty px-2 text-xs text-text-muted py-1.5">
           {{ self.t("backlinks.empty", "このノートを参照している他のノートはありません") }}
         </div>
         {% endif %}

@@ -1,12 +1,66 @@
 {#
-  Fragments the page template needs in more than one place.
-
-  page.html renders the same document twice -- once as the multi-pane book
-  view, once as the single-column classic view -- and the hero appears both
-  with and without a banner, so several blocks were sitting in the file four
-  times over. Each copy had to be edited in lockstep; these macros are the
-  single copy.
+  Shared UI fragments and Declarative Shadow DOM Web Component macros.
 #}
+
+{% macro search_box() %}
+<div class="search-container relative">
+  <div class="search-input-wrapper flex items-center relative bg-subtle rounded-lg transition-all">
+    {{ tmt_icon("search", "xs", "lucide", "search-input-icon absolute left-2.5 text-text-muted pointer-events-none block", "", "") }}
+    <input
+      type="search"
+      id="wiki-search-input"
+      class="w-[136px] sm:w-[220px] md:w-[260px] h-8 pl-8 pr-2.5 sm:pr-12 text-xs text-ellipsis bg-transparent border-none text-text placeholder:text-text-muted focus:outline-none"
+      placeholder="{{ self.t("search.placeholder", "検索 (Ctrl+K)...") }}"
+      autocomplete="off"
+      spellcheck="false"
+    />
+    <tmt-badge variant="kbd" size="xs" shape="rect" clickable class="search-shortcut-badge absolute right-1.5 top-1/2 -translate-y-1/2 hidden sm:inline-flex" title="Ctrl+K / /" aria-label="Ctrl+K / /">
+      {{ dsd_badge_shadow("") }}⌘K
+    </tmt-badge>
+  </div>
+  <div id="wiki-search-results" class="search-results absolute top-full right-0 mt-2 w-[440px] max-w-[calc(100vw-24px)] max-h-[420px] overflow-y-auto bg-surface rounded-xl p-1.5 z-[1000] shadow-lg" hidden></div>
+
+  <template id="search-result-item-template">
+    <a class="search-result-item">
+      <div class="search-result-row">
+        <img class="search-result-thumb" alt="" loading="lazy" hidden />
+        <div class="search-result-main">
+          <div class="search-result-title">
+            <span class="result-title-text"></span>
+            <span class="search-result-kind" hidden></span>
+            <span class="search-result-section" hidden></span>
+          </div>
+          <div class="search-result-path" hidden></div>
+          <div class="search-result-aliases" hidden><span class="alias-label"></span> <span class="alias-text"></span></div>
+          <div class="search-result-excerpt" hidden></div>
+        </div>
+      </div>
+    </a>
+  </template>
+</div>
+{% endmacro %}
+
+{% macro theme_toggle_btn(id_attr="") %}
+<tmt-btn variant="outline" size="sm" shape="square" class="theme-toggle-btn"{% if !id_attr.is_empty() %} id="{{ id_attr }}"{% endif %} title="{{ self.t("theme.toggle", "テーマ切り替え") }}" aria-label="{{ self.t("theme.toggle_label", "テーマ切り替え") }}">
+  {{ dsd_btn_shadow() }}
+  <span class="theme-icon-stack">
+    <svg class="icon-theme icon-sun" viewBox="0 0 24 24" width="15" height="15" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round">
+      <circle cx="12" cy="12" r="4"></circle>
+      <path d="M12 2v2"></path>
+      <path d="M12 20v2"></path>
+      <path d="m4.93 4.93 1.41 1.41"></path>
+      <path d="m17.66 17.66 1.41 1.41"></path>
+      <path d="M2 12h2"></path>
+      <path d="M20 12h2"></path>
+      <path d="m6.34 17.66-1.41 1.41"></path>
+      <path d="m19.07 4.93-1.41 1.41"></path>
+    </svg>
+    <svg class="icon-theme icon-moon" viewBox="0 0 24 24" width="15" height="15" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round">
+      <path d="M12 3a6 6 0 0 0 9 9 9 9 0 1 1-9-9Z"></path>
+    </svg>
+  </span>
+</tmt-btn>
+{% endmacro %}
 
 {% macro edit_menu(source_path) %}
 <div class="edit-dropdown relative inline-block" data-pagefind-ignore>
@@ -16,8 +70,8 @@
       <path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"></path>
     </svg>
   </button>
-  <div class="edit-dropdown-menu absolute top-[calc(100%+4px)] right-0 min-w-[135px] rounded-none py-1 z-[9999] flex flex-col" hidden>
-    <a href="vscode://file{{ source_path }}" class="edit-dropdown-item flex items-center gap-[7px] box-border w-full px-3 py-1.5 text-[0.73rem] text-shell-text no-underline! whitespace-nowrap cursor-pointer" title="{{ self.t("edit.vscode", "VS Code") }}">
+  <div class="edit-dropdown-menu absolute top-[calc(100%+4px)] right-0 min-w-[140px] py-1 z-[9999] flex flex-col" hidden>
+    <a href="vscode://file{{ source_path }}" class="edit-dropdown-item flex items-center gap-[7px] box-border w-full px-3 py-1.5 text-[0.75rem] text-text no-underline! whitespace-nowrap cursor-pointer" title="{{ self.t("edit.vscode", "VS Code") }}">
       <svg class="item-svg" viewBox="0 0 24 24" width="13" height="13" stroke="#007acc" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round">
         <path d="m18 16 4-4-4-4"></path>
         <path d="m6 8-4 4 4 4"></path>
@@ -25,20 +79,20 @@
       </svg>
       <span>{{ self.t("edit.vscode", "VS Code") }}</span>
     </a>
-    <a href="cursor://file{{ source_path }}" class="edit-dropdown-item flex items-center gap-[7px] box-border w-full px-3 py-1.5 text-[0.73rem] text-shell-text no-underline! whitespace-nowrap cursor-pointer" title="{{ self.t("edit.cursor", "Cursor") }}">
+    <a href="cursor://file{{ source_path }}" class="edit-dropdown-item flex items-center gap-[7px] box-border w-full px-3 py-1.5 text-[0.75rem] text-text no-underline! whitespace-nowrap cursor-pointer" title="{{ self.t("edit.cursor", "Cursor") }}">
       <svg class="item-svg" viewBox="0 0 24 24" width="13" height="13" stroke="#e5a000" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round">
         <path d="m4.037 4.688 15.376 6.15a.994.994 0 0 1 .09 1.834l-5.69 2.53-2.53 5.69a.994.994 0 0 1-1.834-.09l-6.15-15.376a.993.993 0 0 1 .738-.738z"></path>
       </svg>
       <span>{{ self.t("edit.cursor", "Cursor") }}</span>
     </a>
-    <button type="button" class="edit-dropdown-item btn-copy-path flex items-center gap-[7px] box-border w-full px-3 py-1.5 text-[0.73rem] text-shell-text bg-transparent border-0 text-left whitespace-nowrap cursor-pointer" data-path="{{ source_path }}" title="{{ self.t("edit.copy_path_title", "パスをコピー") }}">
+    <button type="button" class="edit-dropdown-item btn-copy-path flex items-center gap-[7px] box-border w-full px-3 py-1.5 text-[0.75rem] text-text bg-transparent border-0 text-left whitespace-nowrap cursor-pointer" data-path="{{ source_path }}" title="{{ self.t("edit.copy_path_title", "パスをコピー") }}">
       <svg class="item-svg" viewBox="0 0 24 24" width="13" height="13" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round">
         <rect width="14" height="14" x="8" y="8" rx="2" ry="2"></rect>
         <path d="M4 16c-1.1 0-2-.9-2-2V4c0-1.1.9-2 2-2h10c1.1 0 2 .9 2 2"></path>
       </svg>
       <span>{{ self.t("edit.copy_path", "パスをコピー") }}</span>
     </button>
-    <button type="button" class="edit-dropdown-item btn-source-view-toggle flex items-center gap-[7px] box-border w-full px-3 py-1.5 text-[0.73rem] text-shell-text bg-transparent border-0 text-left whitespace-nowrap cursor-pointer" data-source-path="{{ source_path }}" title="{{ self.t("edit.view_source", "ソースを表示") }}">
+    <button type="button" class="edit-dropdown-item btn-source-view-toggle flex items-center gap-[7px] box-border w-full px-3 py-1.5 text-[0.75rem] text-text bg-transparent border-0 text-left whitespace-nowrap cursor-pointer" data-source-path="{{ source_path }}" title="{{ self.t("edit.view_source", "ソースを表示") }}">
       <svg class="item-svg" viewBox="0 0 24 24" width="13" height="13" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round">
         <path d="m16 18 6-6-6-6"></path>
         <path d="m8 6-6 6 6 6"></path>
@@ -50,7 +104,7 @@
 {% endmacro %}
 
 {% macro hero_banner(banner_url, banner_y, page_title, banner_original_url) %}
-<div class="hero-banner-wrapper relative w-full h-[220px] overflow-hidden bg-surface-subtle">
+<div class="hero-banner-wrapper relative w-full h-[220px] overflow-hidden bg-subtle">
   <img
     src="{{ banner_url }}"
     {% if !banner_original_url.is_empty() %}data-original="{{ banner_original_url }}"{% endif %}
@@ -135,76 +189,7 @@
 </div>
 {% endmacro %}
 
-{% macro sticky_tabs_tree(section_tabs) %}
-<div class="sticky-tabs-list">
-  {% for h1 in section_tabs %}
-  <div class="sticky-tab-node level-{{ h1.level }}" data-id="{{ h1.id }}" data-level="{{ h1.level }}">
-    <button type="button" class="sticky-tab-btn level-{{ h1.level }}" data-target="{{ h1.id }}" title="[H{{ h1.level }}] {{ h1.text }}">
-      <span class="sticky-tab-label">
-        <span class="sticky-tab-text">{{ h1.text }}</span>
-      </span>
-    </button>
-
-    {% if !h1.children.is_empty() %}
-    <div class="sticky-children-slot level-2-slot{% if h1.peek_levels.len() > 1 %} has-layered-peek{% endif %}" data-parent-id="{{ h1.id }}">
-      {% for peek_level in h1.peek_levels %}
-      <span class="sticky-children-peek level-{{ peek_level }}" aria-hidden="true"></span>
-      {% endfor %}
-      {% for h2 in h1.children %}
-      <div class="sticky-tab-node level-{{ h2.level }}" data-id="{{ h2.id }}" data-level="{{ h2.level }}">
-        <button type="button" class="sticky-tab-btn level-{{ h2.level }}" data-target="{{ h2.id }}" title="[H{{ h2.level }}] {{ h2.text }}">
-          <span class="sticky-tab-label">
-            <span class="sticky-tab-text">{{ h2.text }}</span>
-          </span>
-        </button>
-
-        {% if !h2.children.is_empty() %}
-        <div class="sticky-children-slot level-3-slot{% if h2.peek_levels.len() > 1 %} has-layered-peek{% endif %}" data-parent-id="{{ h2.id }}">
-          {% for peek_level in h2.peek_levels %}
-          <span class="sticky-children-peek level-{{ peek_level }}" aria-hidden="true"></span>
-          {% endfor %}
-          {% for h3 in h2.children %}
-          <div class="sticky-tab-node level-{{ h3.level }}" data-id="{{ h3.id }}" data-level="{{ h3.level }}">
-            <button type="button" class="sticky-tab-btn level-{{ h3.level }}" data-target="{{ h3.id }}" title="[H{{ h3.level }}] {{ h3.text }}">
-              <span class="sticky-tab-label">
-                <span class="sticky-tab-text">{{ h3.text }}</span>
-              </span>
-            </button>
-          </div>
-          {% endfor %}
-        </div>
-        {% endif %}
-      </div>
-      {% endfor %}
-    </div>
-    {% endif %}
-  </div>
-  {% endfor %}
-</div>
-{% endmacro %}
-
-{% macro sticky_edge_btn(direction, id_attr) %}
-<tmt-btn variant="outline" shape="square" size="sm" class="sticky-edge-btn sticky-edge-{{ direction }}"{% if !id_attr.is_empty() %} id="{{ id_attr }}"{% endif %} data-direction="{{ direction }}" title="{% if direction == "top" %}{{ self.t("sticky.to_top", "最上部へ") }}{% else %}{{ self.t("sticky.to_bottom", "最下部へ") }}{% endif %}" aria-label="{% if direction == "top" %}{{ self.t("sticky.to_top", "最上部へ") }}{% else %}{{ self.t("sticky.to_bottom", "最下部へ") }}{% endif %}" data-pagefind-ignore>
-  {{ dsd_btn_shadow("", "", false, "button") }}
-  <svg viewBox="0 0 24 24" width="14" height="14" stroke="currentColor" stroke-width="2.2" fill="none" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-    {% if direction == "top" %}
-    <path d="M5 5h14"></path>
-    <path d="M12 20V10"></path>
-    <path d="m7 14 5-5 5 5"></path>
-    {% else %}
-    <path d="M12 4v10"></path>
-    <path d="m7 10 5 5 5-5"></path>
-    <path d="M5 19h14"></path>
-    {% endif %}
-  </svg>
-</tmt-btn>
-{% endmacro %}
-
-{#
-  Primitive atom: <tmt-btn>
-  Encapsulated button component using Web Components & Declarative Shadow DOM.
-  Provides strict style isolation with zero client-JS dependency for rendering.
-#}
+{# Primitive atom: <tmt-btn> #}
 {% macro dsd_btn_shadow(title="", aria_label="", disabled=false, btn_type="button") %}
   <template shadowrootmode="open">
     <link rel="stylesheet" href="{{ base_path }}/components/tmt-btn.css?v={{ tmt_btn_css_version }}">
@@ -233,10 +218,7 @@
 </tmt-btn>
 {% endmacro %}
 
-{#
-  Primitive atom: <tmt-badge>
-  Encapsulated badge/chip component using Web Components & Declarative Shadow DOM.
-#}
+{# Primitive atom: <tmt-badge> #}
 {% macro dsd_badge_shadow(href="") %}
   <template shadowrootmode="open">
     <link rel="stylesheet" href="{{ base_path }}/components/tmt-badge.css?v={{ tmt_badge_css_version }}">
@@ -270,10 +252,7 @@
 </tmt-badge>
 {% endmacro %}
 
-{#
-  Primitive atom: <tmt-icon>
-  Encapsulated icon component using Web Components & Declarative Shadow DOM.
-#}
+{# Primitive atom: <tmt-icon> #}
 {% macro dsd_icon_shadow(name="", size="sm", pkg="lucide") %}
   <template shadowrootmode="open">
     <link rel="stylesheet" href="{{ base_path }}/components/tmt-icon.css?v={{ tmt_icon_css_version }}">
@@ -300,9 +279,7 @@
 </tmt-icon>
 {% endmacro %}
 
-{#
-  Primitive atom: <tmt-swatch>
-#}
+{# Primitive atom: <tmt-swatch> #}
 {% macro dsd_swatch_shadow() %}
   <template shadowrootmode="open">
     <link rel="stylesheet" href="{{ base_path }}/components/tmt-swatch.css?v={{ tmt_swatch_css_version }}">
@@ -311,9 +288,7 @@
   </template>
 {% endmacro %}
 
-{#
-  Primitive atom: <tmt-switch>
-#}
+{# Primitive atom: <tmt-switch> #}
 {% macro dsd_switch_shadow() %}
   <template shadowrootmode="open">
     <link rel="stylesheet" href="{{ base_path }}/components/tmt-switch.css?v={{ tmt_switch_css_version }}">

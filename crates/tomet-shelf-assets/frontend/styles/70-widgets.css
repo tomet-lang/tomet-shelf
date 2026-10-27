@@ -1,71 +1,55 @@
-/* ==================== SEARCH BOX ====================
-   search-container/-input-wrapper/-input-icon and search-results' box model
-   are Tailwind utility classes in the markup now (base.html). The dead
-   `kbd.search-shortcut-badge` rule (leftover from before that badge became
-   <tmt-badge>, same story as .floating-collapse-btn in 10-shell.css) is
-   just gone -- no `<kbd>` with this class exists anymore. */
-tmt-badge.search-shortcut-badge {
-  position: absolute;
-  right: 5px;
-  top: 5px;
-  --tmt-badge-radius: 3px;
-}
+/* ==================== SEARCH, PREVIEW & LIGHTBOX WIDGETS ==================== */
 
-/* Sits inside .floating-controls or header */
-#wiki-search-input {
-  width: 180px;
-  height: 28px;
-  padding: 0 38px 0 26px;
-  background: var(--bg-subtle);
-  border: none;
-  border-radius: 6px;
-  color: var(--text-primary);
-  font-size: 0.82rem;
-  box-sizing: border-box;
-  box-shadow: var(--shadow-sm);
-  transition: background 0.15s ease, box-shadow 0.15s ease;
-}
-#wiki-search-input:focus {
-  outline: none;
-  background: var(--bg-surface);
+.search-input-wrapper:focus-within {
+  background-color: var(--bg-surface);
   box-shadow: var(--shadow-md);
 }
-#wiki-search-input::placeholder {
-  color: var(--text-muted);
+
+tmt-badge.search-shortcut-badge {
+  --tmt-badge-radius: 4px;
 }
+
 .search-results[hidden] {
   display: none !important;
 }
+
 .search-result-item {
   display: block;
-  padding: 8px 12px;
-  border: none;
-  border-radius: 6px;
-  margin: 2px 4px;
+  padding: 8px 10px;
+  border-radius: 8px;
   text-decoration: none !important;
   color: inherit !important;
+  transition: background-color 0.12s ease;
 }
+
+.search-result-item + .search-result-item {
+  margin-top: 2px;
+}
+
 .search-result-item:hover,
 .search-result-item.selected {
   background: var(--bg-subtle);
 }
+
 .search-result-row {
   display: flex;
   gap: 10px;
   align-items: flex-start;
 }
+
 .search-result-thumb {
   width: 36px;
   height: 36px;
   object-fit: cover;
-  border: none;
-  border-radius: 4px;
+  border-radius: 6px;
   flex-shrink: 0;
 }
+
 .search-result-main {
   flex: 1;
   min-width: 0;
 }
+
 .search-result-title {
   font-weight: 600;
   color: var(--link);
@@ -73,18 +57,22 @@ tmt-badge.search-shortcut-badge {
   margin-bottom: 2px;
   display: flex;
   align-items: center;
+  flex-wrap: wrap;
   gap: 6px;
 }
-.search-result-kind, .search-result-section {
-  font-size: 0.7rem;
-  padding: 2px 6px;
-  border: none;
-  border-radius: 4px;
-  background: var(--bg-subtle);
-  color: var(--text-muted);
+
+.search-result-kind,
+.search-result-section {
+  font-size: 0.68rem;
+  padding: 1.5px 6px;
+  border-radius: 9999px;
+  background: var(--bg-surface);
+  box-shadow: var(--shadow-sm);
+  color: var(--text-secondary);
   font-weight: 500;
   text-transform: capitalize;
 }
+
 .search-result-path {
   display: block;
   font-size: 0.72rem;
@@ -96,58 +84,57 @@ tmt-badge.search-shortcut-badge {
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
-  opacity: 0.8;
 }
+
 .search-result-aliases {
   display: block;
   font-size: 0.75rem;
-  color: var(--text-muted);
+  color: var(--text-secondary);
   margin-top: 1px;
   margin-bottom: 2px;
   line-height: 1.3;
 }
+
 .search-result-aliases .alias-label {
   font-weight: 600;
-  opacity: 0.85;
+  color: var(--text-muted);
   margin-right: 4px;
 }
+
 .search-result-excerpt {
-  font-size: 0.75rem;
-  color: var(--text-muted);
-  line-height: 1.35;
+  font-size: 0.76rem;
+  color: var(--text-secondary);
+  line-height: 1.4;
   display: -webkit-box;
   -webkit-line-clamp: 2;
   -webkit-box-orient: vertical;
   overflow: hidden;
 }
+
+.search-result-excerpt mark {
+  background: rgba(var(--mark-rgb, 255, 219, 88), 0.35);
+  color: var(--text-primary);
+  border-radius: 3px;
+  padding: 0 2px;
+}
+
 .search-status {
-  padding: 16px;
+  padding: 18px 16px;
   text-align: center;
   color: var(--text-muted);
-  font-size: 0.85rem;
+  font-size: 0.84rem;
 }
 
-/* ==================== PAGE PREVIEW ====================
-   wiki-preview-card/preview-header/-title/-section/-content/-body/-thumb
-   are Tailwind utility classes in the markup now (base.html). preview-footer
-   and preview-peek-hint (72-center-peek.css) are too; that file's
-   .wiki-preview-card{cursor,transition} / :hover rules add properties
-   these utilities don't touch, so there's no overlap to worry about. */
-.preview-thumb[hidden] {
-  display: none;
-}
-
-/* ==================== IMAGE LIGHTBOX ==================== */
-/* lightbox-overlay/-dialog/-img-wrapper/-caption are Tailwind utility
-   classes in the markup now (base.html); lightbox-close was already
-   <tmt-btn> from an earlier pass this session. */
+/* ==================== PAGE PREVIEW & LIGHTBOX ==================== */
+.preview-thumb[hidden],
 .lightbox-overlay[hidden] {
-  display: none;
+  display: none !important;
 }
+
 .lightbox-img-wrapper img {
   max-width: 100%;
   max-height: calc(92vh - 64px);
   object-fit: contain;
   display: block;
+  border-radius: 8px;
 }
-

@@ -1,170 +1,25 @@
-/* ==================== BREADCRUMBS & TOC ====================
-   nav-breadcrumbs/-crumb-home/-crumb-section, toc-heading, toc-items (split
-   off from .recent-items below -- that one's JS-generated, see
-   38-recent-notes.js, and stays), toc-item, book-toc-link's box model, and
-   pane-graph-box are Tailwind utility classes in the markup now.
-   pane-nav-section and toc-number were dead: neither appears in any
-   template or script.
+/* ==================== INFOBOX, SIDEBAR TREE & COLOR CHIPS ==================== */
 
-   pane-toc and pane-placeholder-box stay hand-written even though they also
-   appear in page.html: 80-router.js creates a bare `<div class="pane-toc">`
-   with `document.createElement` + `className` (no utility classes) when a
-   client-side navigation lands on a page whose TOC panel didn't exist yet,
-   and 39-lookup-pane.js's loading/empty states build pane-placeholder-box
-   via `innerHTML` the same bare way -- removing either rule would leave
-   those JS-rendered states unstyled. Appearing in a template is necessary
-   but not sufficient for Tailwind conversion -- it also has to be the
-   *only* place the class is produced. */
-.pane-toc {
-  padding: 12px 14px;
-}
-.pane-placeholder-box {
-  padding: 10px 12px;
-  border: none;
-  border-radius: 6px;
-  background: var(--bg-subtle);
-  font-size: 0.75rem;
-  color: var(--text-muted);
-  text-align: center;
-}
-.recent-items {
-  list-style: none;
-  margin: 0;
-  padding: 0;
-}
-.book-toc-link:hover {
-  color: var(--link);
-  background: var(--bg-subtle);
-}
-.book-toc-link.is-active {
-  color: var(--link);
-  font-weight: 600;
-  background: var(--bg-subtle);
-  border-radius: 4px;
-}
-
-.pane-graph-box .placeholder-icon {
-  font-size: 1.1rem;
-}
-
-/* Pinned below .pane-scroll */
-.pane-recent {
-  flex-shrink: 0;
-  padding: 0;
-  border: none;
-  position: relative;
-}
-
-.pane-recent .toc-heading {
-  margin: 0;
-  padding: 6px 10px;
-  background: var(--bg-canvas);
-  border: none;
-  box-shadow: var(--shadow-sm);
-  position: relative;
-  z-index: 1;
-}
-
-.recent-heading-dir {
-  margin-left: 6px;
-  color: var(--text-muted);
-  font-weight: 400;
-  letter-spacing: 0.1em;
-  opacity: 0.7;
-}
-
-.recent-items {
-  display: flex;
-  flex-direction: row;
-  align-items: flex-end;
-  direction: rtl;
-  gap: 4px;
-  overflow-x: hidden;
-  overflow-y: hidden;
-  padding: 10px 8px 4px;
-  background: var(--bg-canvas);
-}
-[data-theme="dark"] .recent-items {
-  background: var(--bg-canvas);
-}
-.recent-items > li {
-  flex: 0 0 auto;
-  direction: ltr;
-}
-
-.recent-items > li:has(.recent-link.is-current) {
-  margin-left: 4px;
-}
-
-.recent-link,
-.recent-items .recent-link:visited {
-  display: flex;
-  align-items: flex-start;
-  justify-content: center;
-  box-sizing: border-box;
-  width: 34px;
-  height: 160px;
-  padding: 8px 4px 6px;
-  color: var(--text) !important;
-  text-decoration: none !important;
-  background: var(--bg-surface);
-  border: none;
-  border-radius: 4px;
-  box-shadow: var(--shadow-sm);
-  transition: transform 0.15s ease, box-shadow 0.15s ease, color 0.12s ease;
-}
-[data-theme="dark"] .recent-link,
-[data-theme="dark"] .recent-items .recent-link:visited {
-  box-shadow: 0 2px 3px rgba(0, 0, 0, 0.4);
-}
-.recent-title {
-  writing-mode: vertical-rl;
-  text-orientation: mixed;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-  max-height: 100%;
-  font-size: 0.78rem;
-}
-.recent-link:hover,
-.recent-items .recent-link:visited:hover {
-  z-index: 1;
-  color: var(--link);
-  transform: translateY(-4px);
-  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.2);
-}
-[data-theme="dark"] .recent-link:hover,
-[data-theme="dark"] .recent-items .recent-link:visited:hover {
-  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.5);
-}
-/* The one book actually being read: taller (JS adds a fixed bonus on top of
-   its title-length height) and a bit wider, so it reads as a bigger volume
-   at a glance rather than something you have to notice is tinted. */
-.recent-link.is-current {
-  width: 42px;
-  font-weight: 700;
-  background: color-mix(in srgb, var(--link) 14%, var(--recent-book-bg));
-  border-top-color: var(--link-visited);
-}
-
-/* ==================== INFOBOX (DATA PROFILE) ==================== */
 .infobox {
-  border: 1px solid var(--border);
-  background-color: var(--surface);
-  font-size: 0.85rem;
+  border: none;
+  background-color: var(--bg-subtle);
+  font-size: 0.84rem;
   line-height: 1.5;
-  margin: 10px;
-  box-sizing: border-box;
-  border-radius: 6px;
+  border-radius: 12px;
   overflow: hidden;
-  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.05);
+  box-shadow: var(--shadow-sm);
 }
 
-/* .infobox-title/-table/-label/-data(base)/-data-val are Tailwind utility
-   classes in the markup now. Everything nested under .infobox-icon and
-   .infobox-data's .tm-link stays hand-written: both come from icon.rs /
-   tomet-html's Rust-rendered content (inserted via `| safe`), which never
-   appears in a scanned template file -- see 40-hero.css's file header. */
+.infobox-title {
+  background-color: color-mix(in srgb, var(--text-primary) 4%, var(--bg-subtle));
+  color: var(--text-primary);
+}
+
+.infobox-row + .infobox-row {
+  border-top: 1px solid
+    color-mix(in srgb, var(--text-primary) 6%, transparent);
+}
+
 .infobox-title .infobox-icon,
 .infobox-title span:first-child:not(:last-child) {
   display: inline-flex;
@@ -173,6 +28,7 @@
   line-height: 1;
   flex-shrink: 0;
 }
+
 .infobox-title .infobox-icon .avatar-text-1 {
   font-size: 1.25em;
 }
@@ -187,7 +43,7 @@
   font-size: 0.58em;
 }
 .infobox-title .infobox-icon .avatar-grid-2 {
-  font-size: 0.70em;
+  font-size: 0.7em;
 }
 .infobox-title .tm-doc-icon-img {
   width: 1.25em;
@@ -205,23 +61,55 @@
 .infobox-data .tm-link {
   display: inline-flex;
   align-items: center;
-  padding: 1px 6px;
+  padding: 2px 7px;
   margin: 1px 2px;
-  border-radius: 4px;
-  background: var(--surface-subtle);
-  border: 1px solid var(--border-subtle);
+  border-radius: 6px;
+  background: var(--bg-surface);
+  border: none;
+  box-shadow: var(--shadow-sm);
   font-size: 0.85em;
-  text-decoration: none !important;
-  transition: border-color 0.15s ease, color 0.15s ease, background-color 0.15s ease;
-}
-.infobox-data .tm-link:hover {
-  border-color: var(--link);
   color: var(--link);
-  background: var(--surface);
+  text-decoration: none !important;
+  transition:
+    color 0.15s ease,
+    box-shadow 0.15s ease,
+    transform 0.15s ease;
 }
-/* Positioning and reveal-on-hover only -- the skin is <tmt-btn> now
-   (variant="ghost" size="xs" shape="square"), see page.html and
-   macros.html's dsd_btn_shadow. */
+
+.infobox-data .tm-link:hover {
+  color: var(--accent-primary);
+  box-shadow: var(--shadow-md);
+  transform: translateY(-1px);
+}
+
+/* Color swatch chips emitted by tomet-shelf-render (html.rs) */
+.color-chip-wrapper {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 1px 7px 1px 5px;
+  border-radius: 9999px;
+  background: var(--bg-surface);
+  box-shadow: var(--shadow-sm);
+  vertical-align: middle;
+}
+
+.color-chip {
+  display: inline-block;
+  width: 11px;
+  height: 11px;
+  border-radius: 9999px;
+  flex-shrink: 0;
+  box-shadow: inset 0 0 0 1px rgba(0, 0, 0, 0.15);
+}
+
+.color-hex {
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+  font-size: 0.78rem;
+  color: var(--text-secondary);
+}
+
+/* Infobox hover copy button */
 .infobox-copy-btn {
   position: absolute;
   right: 6px;
@@ -231,39 +119,28 @@
   pointer-events: none;
   transition: opacity 0.15s ease;
 }
+
 .infobox-data:hover .infobox-copy-btn,
 .infobox-data:focus-within .infobox-copy-btn {
-  opacity: 0.65;
+  opacity: 0.7;
   pointer-events: auto;
 }
+
 .infobox-copy-btn:hover {
   opacity: 1 !important;
 }
+
 .infobox-copy-btn.is-copied {
   opacity: 1 !important;
-  /* tmt-btn's own color override hook, not a plain `color` -- the visible
-     button lives inside its shadow root. */
   --tmt-btn-color: #10b981;
 }
 
-.infobox-header-cell {
-  background-color: var(--surface-subtle);
-  padding: 6px 10px;
-  font-weight: bold;
-  text-align: center;
-  border-top: 1px solid var(--border);
-  border-bottom: 1px solid var(--border);
-  color: var(--text);
-  font-size: 0.8rem;
-  letter-spacing: 0.05em;
-}
-
 .infobox-image-section {
-  padding: 8px 12px;
-  border-bottom: 1px solid var(--border-subtle);
-  background: var(--surface);
+  padding: 10px 12px;
+  background: color-mix(in srgb, var(--bg-surface) 50%, var(--bg-subtle));
   display: flex;
   align-items: center;
+  gap: 8px;
 }
 
 .infobox-image-wrapper {
@@ -286,9 +163,7 @@
   cursor: zoom-in;
   display: block;
   margin: 0 auto;
-  background: transparent;
-  border: none;
-  padding: 0;
+  border-radius: 6px;
   transition: opacity 0.12s ease;
 }
 
@@ -296,7 +171,7 @@
   position: absolute;
   top: 50%;
   transform: translateY(-50%);
-  background: rgba(0, 0, 0, 0.45);
+  background: rgba(15, 23, 42, 0.45);
   color: #ffffff;
   border: none;
   width: 28px;
@@ -328,7 +203,7 @@
 
 .costume-arrow:hover {
   opacity: 1 !important;
-  background: rgba(0, 0, 0, 0.75);
+  background: rgba(15, 23, 42, 0.75);
 }
 
 .infobox-costume-switcher {
@@ -346,351 +221,28 @@
   align-items: center;
 }
 
-/* switcher-label/-buttons/costume-thumb/-btn-num box models are Tailwind
-   utility classes in the markup now. .costume-btn itself needed no
-   replacement at all: it's <tmt-btn variant="outline" size="sm"
-   shape="square"> (macros.html), and this whole rule set -- base box model,
-   :focus, :not(.active):hover, .active -- was dead leftover from before
-   that migration. tmt-btn's own default outline-variant hover/active
-   styling (tmt-btn.css) already reproduces the same border-color swap to
-   var(--link) with zero var overrides needed; none of these properties,
-   set on the host, ever painted anything (same reasoning as
-   .floating-collapse-btn in 10-shell.css). */
-
-/* ==================== BACKLINKS ====================
-   backlink-items/-item/-link(base)/-title/-section are Tailwind utility
-   classes in the markup now. */
-.backlink-link:hover {
-  background: var(--surface-subtle);
-  border-left-color: var(--link);
-  color: var(--link);
-}
-
-/* ==================== BOOK INDEX (WRITTEN TOC) ====================
-   Not converted to Tailwind: book-index-items/-item/-link/-title/-meta are
-   also built by 39-lookup-pane.js's search results (`searchEntryHtml`) via
-   plain string templates with only the bare class name attached, no
-   utility classes -- removing these rules would leave every search result
-   unstyled. book-index-bg (search-result thumbnails only) is JS-only
-   outright. This whole section is the same "also in a template isn't
-   sufficient" case as pane-toc/pane-placeholder-box above. */
-/* Top-level entries render as a stack of obi (帯) -- the printed band a book
-   ships wrapped in, not the cover itself. A flat band reads clearly at this
-   size and has natural room for a blurb or thumbnail later. Bands overlap
-   like a pile set down one after another, each still showing a full band's
-   worth of the last one -- not just a sliver -- so nothing feels cramped. */
-#pane-panel-index .pane-tab-inner {
-  padding: 10px 10px 26px;
-}
-
-.book-index-items {
-  list-style: none;
-  margin: 0;
-  padding: 0;
-}
-
-.book-index-items > .book-index-item {
-  position: relative;
-}
-.book-index-items > .book-index-item + .book-index-item {
-  margin-top: -14px;
-}
-/* A book with sub-chapters keeps its nested list fully visible beneath it --
-   the next band in the pile starts fresh below that, not on top of it. */
-.book-index-items > .book-index-item:has(> .book-index-items) + .book-index-item {
-  margin-top: 0;
-}
-
-/* Nesting uses indentation and surface hierarchy */
-.book-index-items .book-index-items {
-  margin-left: 12px;
-  margin-top: 8px;
-  padding-left: 0;
-  border: none;
-}
-
-.book-index-item {
-  margin: 0;
-}
-
-.book-index-link {
-  position: relative;
+/* ==================== BOOK INDEX & NAVIGATION LINKS ==================== */
+:where(.book-index-link) {
   display: flex;
-  flex-direction: column;
-  gap: 3px;
-  padding: 13px 14px 22px;
-  color: var(--text) !important;
-  text-decoration: none !important;
-  background: var(--bg-surface);
-  border: none;
+  padding: 6px 10px;
   border-radius: 6px;
-  box-shadow: var(--shadow-sm);
-  transition: transform 0.15s ease, box-shadow 0.15s ease, background 0.15s ease;
-  overflow: hidden;
 }
 
-.book-index-link:visited,
-.book-index-link:hover,
-.book-index-link:focus-visible {
-  color: var(--text) !important;
+#pane-nav .book-index-link,
+#pane-nav .recent-link {
+  position: relative;
   text-decoration: none !important;
-}
-
-.book-index-link:visited,
-.book-index-link.is-visited {
-  border-left-color: var(--border) !important;
-}
-
-.book-index-bg {
-  position: absolute;
-  top: 0;
-  right: 0;
-  bottom: 0;
-  left: 33.333%;
   overflow: hidden;
-  pointer-events: none;
-  z-index: 0;
+  transition:
+    background-color 0.12s ease,
+    color 0.12s ease,
+    box-shadow 0.12s ease;
 }
 
-.book-index-bg img {
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-  object-position: right center;
-  opacity: 0.65;
-  filter: saturate(1.15);
-  transition: opacity 0.25s ease, transform 0.25s ease;
-  mask-image: linear-gradient(
-    to right,
-    transparent 0%,
-    rgba(0, 0, 0, 0.2) 20%,
-    rgba(0, 0, 0, 0.7) 60%,
-    rgba(0, 0, 0, 0.98) 100%
-  );
-  -webkit-mask-image: linear-gradient(
-    to right,
-    transparent 0%,
-    rgba(0, 0, 0, 0.2) 20%,
-    rgba(0, 0, 0, 0.7) 60%,
-    rgba(0, 0, 0, 0.98) 100%
-  );
-}
-
-.book-index-link:hover .book-index-bg img,
-.book-index-link:focus-visible .book-index-bg img {
-  opacity: 0.88;
-}
-
-.book-index-header {
-  position: relative;
-  z-index: 1;
-  padding: 7px 10px 5px 8px;
-  background: linear-gradient(
-    to right,
-    var(--surface) 0%,
-    var(--surface) 50%,
-    color-mix(in srgb, var(--surface) 75%, transparent) 68%,
-    transparent 85%
-  );
-}
-
-.book-index-title {
-  font-family: Georgia, 'Hiragino Mincho ProN', 'Yu Mincho', serif;
-  font-size: 0.88rem;
-  font-weight: 600;
-  line-height: 1.25;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-  color: var(--text) !important;
-  display: block;
-}
-
-.book-index-body {
-  position: relative;
-  z-index: 1;
-  padding: 5px 10px 8px 14px;
-  display: flex;
-  flex-direction: column;
-  gap: 3px;
-  box-sizing: border-box;
-}
-
-/* Section label, when an entry carries one -- a second, quieter line under
-   the title rather than the title-adjacent parenthetical the catalog used
-   before, since a spine only has room for one line of running text. */
-.book-index-meta {
-  font-size: 0.72rem;
-  font-weight: 500;
-  color: var(--text-muted);
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
-
-/* ==================== CATALOG SHELF (index.html entries) ==================== */
-/* Same band styling as the sidebar's written index, but the catalog lists
-   every note in the vault, so the top level fans out into a shelf row
-   instead of piling into a single stack -- there just isn't a "here" to
-   read top-to-bottom toward. Nested children (a written index still nests)
-   keep the normal piled-stack behavior underneath their parent. */
-.book-index-items.is-shelf {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(170px, 1fr));
-  gap: 16px 14px;
-}
-.book-index-items.is-shelf > .book-index-item {
-  margin-top: 0;
-}
-
-/* Hovering (or keyboard focus) draws that one band out of the pile. Since a
-   band is a self-contained rectangle -- not a sliver of a hidden cover --
-   there's nothing awkward to expose underneath it. */
-.book-index-link:hover,
-.book-index-link:focus-visible {
-  z-index: 5;
-  color: var(--text) !important;
-  transform: translateY(-6px);
-  box-shadow: 0 6px 14px rgba(0, 0, 0, 0.2);
-}
-
-/* Currently read page: a bookmark ribbon and a tinted band, left in its
-   place in the pile rather than pulled forward -- lifting it would only be
-   noteworthy if something were hidden beneath, and nothing is. */
-.book-index-link.is-here {
-  background: color-mix(in srgb, var(--link) 14%, var(--surface-subtle));
-  border-top-color: var(--link-visited);
-}
-.book-index-link.is-here::after {
-  content: "";
-  position: absolute;
-  top: -1px;
-  right: 10px;
-  width: 10px;
-  height: 14px;
-  background: var(--link-visited);
-  clip-path: polygon(0 0, 100% 0, 100% 100%, 50% 78%, 0 100%);
-}
-
-/* ==================== LOOKUP (A-Z / TAG BROWSE + FILTER) ==================== */
-#pane-panel-lookup .pane-tab-inner {
-  padding: 0;
-}
-
-/* lookup-controls/-filter-input(base)/-tags(container) are Tailwind utility
-   classes in the markup now; lookup-tag-chip below is JS-generated
-   (39-lookup-pane.js populates .lookup-tags with them) and stays. */
-.lookup-filter-input:focus {
-  outline: none;
-  border-color: var(--link);
-}
-.lookup-filter-input::placeholder {
-  color: var(--text-muted);
-}
-
-.lookup-tag-chip {
-  display: inline-flex;
-  align-items: center;
-  padding: 3px 9px;
-  font-size: 0.7rem;
-  border: none;
-  border-radius: 999px;
-  background: var(--bg-subtle);
-  color: var(--text-secondary);
-  cursor: pointer;
-  box-shadow: var(--shadow-sm);
-  transition: background 0.12s ease, color 0.12s ease, box-shadow 0.12s ease;
-}
-.lookup-tag-chip:hover {
-  background: var(--bg-surface);
-  color: var(--link);
-  box-shadow: var(--shadow-md);
-}
-.lookup-tag-chip.is-active {
-  background: var(--accent-primary);
-  color: #ffffff;
-  font-weight: 600;
-  box-shadow: var(--shadow-sm);
-}
-
-.lookup-results .book-index-items {
-  display: flex;
-  flex-direction: column;
-  gap: 12px;
-}
-
-.lookup-results .book-index-items > .book-index-item + .book-index-item {
-  margin-top: 0;
-}
-
-.lookup-results .book-index-link {
-  padding: 0;
-  border-radius: 6px;
-  border: none;
-  background: var(--bg-surface);
-  box-shadow: var(--shadow-sm);
-}
-
-.lookup-results .book-index-link:visited,
-.lookup-results .book-index-link.is-visited {
-  border-left-color: transparent !important;
-}
-
-.lookup-results .book-index-link:hover,
-.lookup-results .book-index-link:focus-visible {
-  color: var(--text) !important;
-  transform: translateY(-2px);
-  box-shadow: var(--shadow-md);
-}
-
-.lookup-group-heading {
-  font-size: 0.72rem;
-  font-weight: 600;
-  color: var(--text-secondary);
-  letter-spacing: 0.08em;
-  margin-top: 14px;
-  padding: 8px 4px 5px;
-  border: none;
-  margin-bottom: 8px;
-}
-.lookup-group-heading:first-child {
-  margin-top: 0;
-}
-
-.lookup-pagination {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 8px;
-  margin-top: 14px;
-  padding-top: 12px;
-  border: none;
-}
-
-.lookup-page-btn {
-  padding: 5px 10px;
-  font-size: 0.72rem;
+#pane-nav .book-index-link:hover,
+#pane-nav .book-index-link:focus-visible,
+#pane-nav .recent-link:hover,
+#pane-nav .recent-link:focus-visible {
   color: var(--text-primary);
-  background: var(--bg-subtle);
-  border: none;
-  border-radius: 4px;
-  cursor: pointer;
-  box-shadow: var(--shadow-sm);
-  transition: background 0.12s ease, color 0.12s ease, box-shadow 0.12s ease;
+  background-color: color-mix(in srgb, var(--text-primary) 5%, transparent);
 }
-.lookup-page-btn:hover:not(:disabled) {
-  color: var(--link);
-  background: var(--bg-surface);
-  box-shadow: var(--shadow-md);
-}
-.lookup-page-btn:disabled {
-  opacity: 0.4;
-  cursor: default;
-}
-
-.lookup-page-status {
-  font-size: 0.72rem;
-  color: var(--text-muted);
-  white-space: nowrap;
-}
-

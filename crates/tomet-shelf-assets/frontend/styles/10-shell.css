@@ -1,364 +1,72 @@
-/* ==================== VIEW MODES ==================== */
-html[data-view="book"] .book-shell,
-html[data-view="book"] .book-view {
-  display: flex;
-}
-html[data-view="book"] .classic-view {
-  display: none;
-}
-html[data-view="classic"] .book-shell,
-html[data-view="classic"] .book-view {
-  display: none;
-}
-html[data-view="classic"] .classic-view {
-  display: block;
-  width: 100%;
-  max-width: 960px;
-  margin: 0 auto;
-  padding: 20px 20px 48px 20px;
-  box-sizing: border-box;
-}
+/* ==================== SHELL CHROME & TRANSITIONS ==================== */
 
-/* ==================== PAGE LOAD PROGRESS BAR ==================== */
+/* Page Load Progress Bar */
 #page-progress-bar {
   position: fixed;
   top: 0;
   left: 0;
-  height: 3px;
+  height: 2.5px;
   width: 0%;
-  background: var(--link);
+  background: var(--accent-primary);
   z-index: 10000;
   opacity: 0;
   pointer-events: none;
 }
+
 #page-progress-bar.is-loading {
   width: 80%;
   opacity: 1;
   transition: width 2.5s cubic-bezier(0.1, 0.5, 0.2, 1), opacity 0.12s ease;
 }
+
 #page-progress-bar.is-done {
   width: 100%;
   opacity: 1;
   transition: width 0.18s ease, opacity 0.25s ease 0.18s;
 }
 
-/* ==================== PAGE TRANSITIONS (CROSS-DOCUMENT MPA) ==================== */
+/* View Transitions (PJAX & Cross-Document MPA) */
 @view-transition {
   navigation: auto;
 }
 
-@keyframes article-exit-to-right {
-  0% {
+@keyframes article-exit {
+  from {
     opacity: 1;
-    transform: translateX(0);
+    transform: translateY(0);
   }
-  100% {
+  to {
     opacity: 0;
-    transform: translateX(16px);
+    transform: translateY(4px);
   }
 }
-@keyframes article-enter-from-left {
-  0% {
+
+@keyframes article-enter {
+  from {
     opacity: 0;
-    transform: translateX(-16px);
+    transform: translateY(6px);
   }
-  100% {
+  to {
     opacity: 1;
-    transform: translateX(0);
+    transform: translateY(0);
   }
 }
 
 ::view-transition-old(root),
-::view-transition-new(root) {
-  animation: none;
-}
-
-/* The browser also generates a ::view-transition-group(name) for every named
-   element, wrapping the old/new pair above. Left alone, it runs its own
-   default animation interpolating that wrapper's transform/width/height
-   (and backdrop-filter) from the old element's captured box to the new
-   one's -- on article-content this is a real cost every navigation, since
-   articles routinely differ in height, and width/height can't run on the
-   compositor the way transform can. The old/new pair already gets a
-   complete custom animation below (a plain slide + fade), so the group's
-   own resize/reposition animation on top of that is pure overhead here,
-   not a visible part of the design -- confirmed by screenshotting a
-   navigation between a very short and a very long article with this rule
-   toggled on and off, frame by frame; identical either way. */
+::view-transition-new(root),
 ::view-transition-group(root),
-::view-transition-group(article-content),
-::view-transition-group(floating-controls) {
+::view-transition-group(article-content) {
   animation: none;
 }
-::view-transition-group(floating-controls) {
-  z-index: 9000;
-}
 
-html[data-view="book"] .pane-article-container {
-  view-transition-name: article-content;
-}
-html[data-view="classic"] .classic-view {
+.article-container {
   view-transition-name: article-content;
 }
 
 ::view-transition-old(article-content) {
-  animation: 130ms cubic-bezier(0.4, 0, 1, 1) both article-exit-to-right;
+  animation: 110ms cubic-bezier(0.4, 0, 1, 1) both article-exit;
 }
+
 ::view-transition-new(article-content) {
-  animation: 170ms cubic-bezier(0, 0, 0.2, 1) both article-enter-from-left;
+  animation: 160ms cubic-bezier(0, 0, 0.2, 1) both article-enter;
 }
-
-/* ==================== FLOATING CONTROLS ==================== */
-.floating-controls {
-  position: fixed;
-  top: 10px;
-  right: 14px;
-  z-index: 9000;
-  view-transition-name: floating-controls;
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  background-color: var(--bg-surface);
-  color: var(--text-primary);
-  --text: var(--text-primary);
-  --text-muted: var(--text-secondary);
-  --tmt-btn-radius: 6px;
-  --tmt-btn-color: var(--text-secondary);
-  --tmt-btn-hover-color: var(--text-primary);
-  --tmt-btn-hover-bg: var(--bg-subtle);
-  --tmt-btn-active-color: var(--text-primary);
-  --tmt-btn-active-bg: var(--bg-subtle);
-  --tmt-btn-active-border: transparent;
-  border: none;
-  border-radius: 8px;
-  padding: 4px 6px;
-  box-shadow: var(--shadow-md);
-  user-select: none;
-}
-
-.floating-controls input,
-.floating-controls .view-switcher {
-  border-radius: 6px !important;
-}
-
-.floating-drag-handle:hover {
-  color: var(--text-primary);
-  background: var(--bg-subtle);
-}
-
-.floating-controls.is-dragging,
-.floating-controls.is-dragging .floating-drag-handle {
-  cursor: grabbing !important;
-}
-
-/* .floating-collapse-btn and .view-btn-icon (below) are <tmt-btn
-   variant="ghost" size="sm" shape="square"> now (base.html) -- their own
-   box model/skin lives in tmt-btn.css and the --tmt-btn-* vars above; a
-   dead leftover from that migration (background/color/border/width/height
-   set directly on the host, which doesn't paint) has been removed rather
-   than converted, since there was nothing live to convert. */
-
-.floating-controls.is-collapsed {
-  padding: 4px 6px;
-  gap: 4px;
-}
-
-.floating-controls.is-collapsed .search-container,
-.floating-controls.is-collapsed .view-switcher {
-  display: none !important;
-}
-
-.floating-controls.is-collapsed .collapse-icon-minimize {
-  display: none !important;
-}
-
-.floating-controls:not(.is-collapsed) .collapse-icon-maximize {
-  display: none !important;
-}
-
-.floating-controls .view-btn-icon svg {
-  pointer-events: none;
-}
-
-/* ==================== BOOK VIEW LAYOUT ==================== */
-/* book-shell/book-view's own box model is Tailwind utility classes in the
-   markup now (page.html) -- the pseudo-element scrollbar styling below has
-   no utility equivalent, so it stays. */
-.book-view::-webkit-scrollbar {
-  height: 8px;
-}
-.book-view::-webkit-scrollbar-track {
-  background: transparent;
-}
-.book-view::-webkit-scrollbar-thumb {
-  background: var(--border);
-  border-radius: 4px;
-}
-.book-view::-webkit-scrollbar-thumb:hover {
-  background: var(--text-muted);
-}
-
-/* .book-pane and .pane-header below are NOT converted to Tailwind utility
-   classes, on purpose: 20-panes.css's `.pane-nav > .pane-header,
-   .pane-data > .pane-header { ... }` and `.pane-nav`/`.pane-data`
-   themselves override most of these same properties, at equal specificity
-   to a plain utility class (one class selector each) -- today that's
-   resolved by source order (20-panes.css comes after this file). Moving
-   these properties onto utility classes on the *same* 3 markup instances
-   (pane-nav/pane-data/pane-content all share .book-pane/.pane-header) would
-   put them in BOOK_CSS's cascade after 20-panes.css (Tailwind's output is
-   near the end), so the utility would incorrectly win instead. Same story
-   for .pane-content-header (30-sticky-tabs.css) versus .pane-header's own
-   height/padding. Fixing this properly means per-instance utility sets
-   instead of one shared class, which is more churn than the three
-   uncontested properties below are worth. */
-.book-pane {
-  display: flex;
-  flex-direction: column;
-  height: 100%;
-  background: var(--bg-surface);
-  border: none;
-  flex-shrink: 0;
-  box-sizing: border-box;
-  scroll-snap-align: start;
-  position: relative;
-  overflow: hidden;
-}
-
-.book-view.is-ready .book-pane {
-  transition: width 0.22s cubic-bezier(0.2, 0, 0, 1),
-              min-width 0.22s cubic-bezier(0.2, 0, 0, 1),
-              max-width 0.22s cubic-bezier(0.2, 0, 0, 1),
-              flex-basis 0.22s cubic-bezier(0.2, 0, 0, 1);
-}
-
-.pane-header {
-  height: 41px;
-  background: var(--bg-canvas);
-  border: none;
-  box-shadow: var(--shadow-sm);
-  padding: 0 10px;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  font-size: 0.75rem;
-  font-weight: 600;
-  color: var(--text-secondary);
-  letter-spacing: 0.05em;
-  user-select: none;
-  flex-shrink: 0;
-  box-sizing: border-box;
-  position: relative;
-  z-index: 1;
-}
-
-[data-theme="dark"] .pane-header {
-  background: var(--bg-canvas);
-}
-
-.pane-header-collapsible {
-  cursor: pointer;
-}
-.pane-header-collapsible:hover {
-  background: var(--bg-subtle);
-  color: var(--text-primary);
-}
-.pane-header-collapsible:hover .pane-collapse-arrow {
-  color: var(--text-primary);
-}
-.pane-collapse-arrow {
-  font-size: 0.7rem;
-  color: var(--text-muted);
-  line-height: 1;
-  transition: color 0.15s ease;
-}
-
-/* ==================== PERMANENT LEFT RAIL ==================== */
-.book-rail-nav {
-  background-color: var(--bg-canvas);
-  border: none;
-  box-shadow: var(--shadow-sm);
-  color: var(--text-primary);
-  --text: var(--text-primary);
-  --text-muted: var(--text-secondary);
-  z-index: 20;
-}
-
-/* Rail Navigation Tabs */
-.rail-tab-nav,
-.rail-tab-theme,
-.rail-tab-palette {
-  --tmt-btn-hover-bg: var(--bg-subtle);
-  --tmt-btn-hover-color: var(--text-primary);
-  --tmt-btn-active-bg: var(--bg-subtle);
-  --tmt-btn-active-color: var(--text-primary);
-  --tmt-btn-active-border: transparent;
-}
-.rail-tab-palette {
-  --tmt-btn-column-padding: 12px 0;
-}
-
-.rail-tab-title:hover {
-  background: var(--bg-subtle);
-}
-
-/* 3. Rail Footer (Theme Switcher at the bottom of the Left Rail): Tailwind
-   utility classes in the markup now. */
-
-/* rail-tab-theme/-palette skin is <tmt-btn> now (see the --tmt-btn-* block
-   above). tmt-btn's `active` state means "already selected, clicks no-op"
-   (see tmt-btn.css / 05-tmt-btn.js), which is wrong for a disclosure
-   trigger that must still respond to a second click to close -- so the
-   palette button only gets the ordinary hover tint while its popover is
-   open, not the persistent active skin. Only the icon spin stays here,
-   since it targets a light-DOM child the shadow boundary can't reach. */
-.rail-tab-palette svg {
-  display: inline-block;
-  transition: transform 0.2s ease;
-}
-.rail-tab-palette:hover svg,
-.rail-tab-palette[aria-expanded="true"] svg {
-  transform: rotate(25deg);
-}
-
-/* ==================== SHELL PALETTE POPOVER ==================== */
-/* rail-palette-container/palette-section/-header/palette-swatches/swatch-dot
-   box models are Tailwind utility classes in the markup now (page.html).
-   shell-palette-popover keeps its grain texture/border/box-shadow here --
-   same reasoning as .hero-action-btn in 40-hero.css. */
-.shell-palette-popover {
-  background-color: var(--bg-surface);
-  border: none;
-  border-radius: 8px;
-  box-shadow: var(--shadow-lg);
-  --tmt-swatch-hover-bg: var(--bg-subtle);
-  --tmt-swatch-active-bg: var(--bg-subtle);
-  --tmt-swatch-active-border: transparent;
-}
-
-/* Author-level reinforcement -- see edit-dropdown-menu[hidden] in
-   40-hero.css for why this survives even with a plain class rule. */
-.shell-palette-popover[hidden] {
-  display: none !important;
-}
-
-.palette-section + .palette-section {
-  border-top: none;
-  margin-top: 6px;
-  padding-top: 6px;
-}
-
-[data-theme="dark"] .swatch-dot {
-  border-color: rgba(255, 255, 255, 0.35);
-}
-
-.swatch-slate { background: #6b8bb2; }
-.swatch-violet { background: #8e78b8; }
-.swatch-indigo { background: #4a7ebb; }
-.swatch-olive { background: #7a7d58; }
-
-
-
-/* Contrast Toggle Switch: <tmt-switch> now (tmt-switch.css) -- the label,
-   track and knob all live in its shadow root, so nothing is left here. */
-

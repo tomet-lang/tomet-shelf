@@ -1,159 +1,44 @@
-/* ==================== CLASSIC VIEW STYLES ====================
-   .breadcrumb/-section's own box model/color are Tailwind utility classes
-   in the markup now; the plain <a> inside has no class of its own; these
-   descendant rules still apply regardless (they only need the .breadcrumb
-   ancestor class, unaffected either way). */
-.breadcrumb a {
-  color: var(--link);
-  text-decoration: none;
-}
-.breadcrumb a:hover {
-  text-decoration: underline;
-}
+/* ==================== ARTICLE CONTENT & TYPOGRAPHY ====================
+   Styles for Rust-rendered document body (<article>) from tomet-convert-html
+   and tomet-shelf-render. */
 
-/* hero-section itself and hero-content/hero-avatar/hero-title-area/
-   hero-title-row are Tailwind utility classes directly in the markup now
-   (page.html's classic-view banner block) -- with their own, deliberately
-   smaller values than book-hero-section's, not a copy that drifted: this
-   is the single-column reading view. What's left here is the delta that
-   *is* shared markup -- hero_banner() is one macro used by both views, so
-   its wrapper/img need a scoped override rather than their own utilities. */
-.hero-section .hero-banner-wrapper {
-  height: 240px;
-  border: none;
-  cursor: zoom-in;
-}
-.hero-section .hero-banner-img {
-  margin: 0;
-  padding: 0;
-  border: none;
-}
-/* avatar-text-1/-2 and avatar-grid/-grid-2 below are Rust-generated
-   (icon.rs), not template markup -- see 40-hero.css's file header comment
-   for why that's out of Tailwind's reach. */
-.hero-section .avatar-text-1 { font-size: 1.85rem; }
-.hero-section .avatar-text-2 { font-size: 1.25rem; }
-.hero-section .avatar-grid { font-size: 0.95rem; padding: 4px; }
-.hero-section .avatar-grid-2 { font-size: 1.15rem; }
-
-.article-header {
-  margin: 0 0 16px 0;
-  padding-bottom: 6px;
-  border: none;
-}
-.title-row {
-  display: flex;
-  align-items: baseline;
-  justify-content: space-between;
-  gap: 12px;
-}
-.title-row h1 {
-  font-size: 1.875rem;
-  font-weight: 600;
-  margin: 0;
-  padding: 0;
-  border-bottom: none;
-  line-height: 1.3;
-}
-.title-inline-icon {
-  margin-right: 8px;
-  font-size: 1.5rem;
-  vertical-align: middle;
-}
-.title-inline-icon .tm-doc-icon-img {
-  width: 1.2em;
-  height: 1.2em;
-  vertical-align: -0.2em;
-  object-fit: contain;
-  display: inline-block;
-}
-
-
-/* Classic View Infobox (Float right on desktop, full width on mobile) */
-.classic-view .infobox {
-  float: right;
-  width: 280px;
-  max-width: 100%;
-  margin: 0 0 16px 24px;
-  border: none;
-  border-radius: 8px;
-  background: var(--bg-surface);
-  box-shadow: var(--shadow-sm);
-  padding: 12px;
-}
-@media (max-width: 768px) {
-  .classic-view .infobox {
-    float: none;
-    width: 100%;
-    margin: 0 0 20px 0;
-  }
-}
-
-/* Classic View TOC */
-.toc {
-  display: table;
-  background: var(--bg-surface);
-  border: none;
-  border-radius: 8px;
-  box-shadow: var(--shadow-sm);
-  padding: 12px 16px;
-  margin: 16px 0 24px 0;
-}
-.toc h2 {
-  font-size: 0.95rem;
-  font-weight: bold;
-  margin: 0 0 8px 0;
-  padding-bottom: 4px;
-  border: none;
-  text-align: center;
-  letter-spacing: 0.05em;
-}
-.toc ul {
-  margin: 0;
-  padding-left: 20px;
-  list-style: decimal;
-}
-.toc li {
-  margin: 4px 0;
-  font-size: 0.9rem;
-}
-.toc a {
-  color: var(--link);
-  text-decoration: none;
-}
-.toc a:hover {
-  text-decoration: underline;
-}
-.toc a.is-active {
-  font-weight: bold;
-  text-decoration: underline;
-}
-
-/* ==================== ARTICLE MARKUP STYLES ====================
-   Not converted to Tailwind: everything from here to the end of this file
-   (ARTICLE MARKUP/LINKS/LIST ITEM MARKERS) styles the <article> body --
-   tomet-html's Rust-rendered document content (tm-heading-number, tm-url,
-   etc.), inserted as raw HTML, never present in a scanned template file.
-   Same reasoning as 40-hero.css's file header. */
 article {
-  font-size: 0.95rem;
-  line-height: 1.7;
+  font-size: 0.96rem;
+  line-height: 1.75;
 }
 
-article h1, article h2, article h3, article h4, article h5, article h6 {
-  margin-top: 24px;
+article > :first-child {
+  margin-top: 0;
+}
+
+article h1,
+article h2,
+article h3,
+article h4,
+article h5,
+article h6 {
+  margin-top: 28px;
   margin-bottom: 12px;
   font-weight: 700;
-  line-height: 1.3;
+  line-height: 1.32;
+  color: var(--text-primary);
+  scroll-margin-top: 24px;
 }
 
-article h1 { font-size: 1.6rem; border: none; padding-bottom: 4px; }
-article h2 { font-size: 1.35rem; border: none; padding-bottom: 4px; }
-article h3 { font-size: 1.15rem; }
-article h4 { font-size: 1.0rem; }
+article h1 {
+  font-size: 1.55rem;
+}
+article h2 {
+  font-size: 1.32rem;
+}
+article h3 {
+  font-size: 1.12rem;
+}
+article h4 {
+  font-size: 1rem;
+}
 
-/* Section numbers: styled using the book's signature sticky-note palette
-   so heading numbers visually correlate with the sticky tabs above. */
+/* Section numbers emitted by tomet-convert-html */
 .tm-heading-number,
 article .tm-heading-number {
   display: inline-flex;
@@ -161,43 +46,64 @@ article .tm-heading-number {
   font-size: 0.72em;
   font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
   font-weight: 600;
-  padding: 0.12em 0.5em;
-  margin-right: 0.65em;
-  vertical-align: 0.12em;
-  border-radius: 3px;
+  padding: 0.14em 0.52em;
+  margin-right: 0.6em;
+  vertical-align: 0.1em;
+  border-radius: 5px;
   line-height: 1.2;
+  background: var(--bg-subtle);
+  color: var(--text-secondary);
   user-select: none;
 }
 
-/* H1: Soft yellow */
-article h1 .tm-heading-number {
-  background: var(--sticky-l1-bg);
-  color: var(--sticky-l1-color);
+/* Horizontal rules & titled dividers */
+article hr {
+  height: 1px;
+  border: none;
+  background: var(--border-subtle);
+  margin: 28px 0;
 }
 
-/* H2: Soft mint green */
-article h2 .tm-heading-number {
-  background: var(--sticky-l2-bg);
-  color: var(--sticky-l2-color);
+.tm-hr-titled {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin: 28px 0;
+  color: var(--text-muted);
+  font-size: 0.8rem;
+  font-weight: 600;
+  letter-spacing: 0.04em;
 }
 
-/* H3: Soft pastel sky blue */
-article h3 .tm-heading-number {
-  background: var(--sticky-l3-bg);
-  color: var(--sticky-l3-color);
+.tm-hr-titled hr {
+  flex: 1;
+  margin: 0;
 }
 
-/* H4+: Soft lavender purple */
-article h4 .tm-heading-number,
-article h5 .tm-heading-number,
-article h6 .tm-heading-number {
-  background: var(--sticky-l4-bg);
-  color: var(--sticky-l4-color);
+.tm-hr-titled > span > p {
+  margin: 0;
+}
+
+/* Block elements / callouts (@caution, etc.) */
+.tm-element {
+  margin: 16px 0;
+  padding: 12px 16px;
+  border-radius: 10px;
+  background: var(--bg-subtle);
+  color: var(--text-primary);
+  box-shadow: var(--shadow-sm);
+}
+
+.tm-element.tm-caution {
+  background: color-mix(in srgb, var(--link-unresolved) 9%, var(--bg-subtle));
 }
 
 /* ==================== ARTICLE LINKS (EXTERNAL & INTERNAL) ==================== */
 
-/* External links: standard external-link icon (box with arrow) */
+article a:not(.tm-unresolved):not(.tm-ref-unresolved):visited {
+  color: var(--link-visited);
+}
+
 article a[href^="http://"],
 article a[href^="https://"],
 article a.tm-url {
@@ -223,9 +129,11 @@ article a.tm-url::after {
   margin-left: 0.25em;
   vertical-align: -0.05em;
   background-color: currentColor;
-  -webkit-mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='2.2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M15 3h6v6'/%3E%3Cpath d='M10 14 21 3'/%3E%3Cpath d='M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6'/%3E%3C/svg%3E") no-repeat center / contain;
-  mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='2.2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M15 3h6v6'/%3E%3Cpath d='M10 14 21 3'/%3E%3Cpath d='M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6'/%3E%3C/svg%3E") no-repeat center / contain;
-  opacity: 0.8;
+  -webkit-mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='2.2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M15 3h6v6'/%3E%3Cpath d='M10 14 21 3'/%3E%3Cpath d='M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6'/%3E%3C/svg%3E")
+    no-repeat center / contain;
+  mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='2.2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M15 3h6v6'/%3E%3Cpath d='M10 14 21 3'/%3E%3Cpath d='M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6'/%3E%3C/svg%3E")
+    no-repeat center / contain;
+  opacity: 0.75;
   text-decoration: none !important;
   transition: opacity 0.15s ease;
 }
@@ -236,7 +144,7 @@ article a.tm-url:hover::after {
   opacity: 1;
 }
 
-/* Link prefix icon (Simple Icons SVG, Lucide SVG, favicon image, or note icon) */
+/* Link prefix icons */
 .tm-link-icon {
   display: inline-block;
   vertical-align: middle;
@@ -265,7 +173,6 @@ svg.tm-link-icon,
   stroke-linejoin: round;
 }
 
-/* Emoji link icons: natural inline text baseline, no artificial box constraints */
 .tm-link-icon-emoji {
   display: inline-block;
   vertical-align: baseline;
@@ -293,24 +200,30 @@ svg.tm-link-icon,
   cursor: inherit;
 }
 
-/* Internal links: clean offset underline for color-independent accessibility.
-   Maintains seamless Japanese typography without inserting awkward gaps between words and particles. */
-article a:not([href^="http://"]):not([href^="https://"]):not(.tm-url):not(.tm-ref-unresolved):not(:has(img:not(.tm-link-icon))) {
+/* Internal links: subtle offset underline */
+article
+  a:not([href^="http://"]):not([href^="https://"]):not(.tm-url):not(
+    .tm-unresolved
+  ):not(.tm-ref-unresolved):not(:has(img:not(.tm-link-icon))) {
   color: var(--link);
   text-decoration: underline;
-  text-decoration-color: color-mix(in srgb, currentColor 45%, transparent);
+  text-decoration-color: color-mix(in srgb, currentColor 40%, transparent);
   text-underline-offset: 3.5px;
   text-decoration-thickness: 1px;
   transition: text-decoration-color 0.15s ease;
 }
 
-article a:not([href^="http://"]):not([href^="https://"]):not(.tm-url):not(.tm-ref-unresolved):not(:has(img:not(.tm-link-icon))):hover {
+article
+  a:not([href^="http://"]):not([href^="https://"]):not(.tm-url):not(
+    .tm-unresolved
+  ):not(.tm-ref-unresolved):not(:has(img:not(.tm-link-icon))):hover {
   text-decoration-color: currentColor;
 }
 
-article p { margin: 12px 0; }
+article p {
+  margin: 12px 0;
+}
 
-/* Lists: Left padding aligns bullet dots at 1 CJK char (2ch) from the left edge */
 article ul,
 article ol {
   margin: 12px 0;
@@ -329,24 +242,18 @@ article li {
   margin: 4px 0;
 }
 
-article ul > li::marker {
-  color: var(--bullet-color);
-}
-
+article ul > li::marker,
 article ol > li::marker {
   color: var(--bullet-color);
 }
 
 /* ==================== LIST ITEM MARKERS (ICONS & BADGES) ==================== */
-
-/* Remove standard bullet for task checkbox and badge items (Plan A: markers replace the bullet) */
 article li.tm-task-item,
 article li.tm-list-item-with-badge {
   list-style: none;
   margin-inline-start: -1.25em;
 }
 
-/* Ensure nested lists inside marker/badge items indent cleanly by 1 character step */
 article li.tm-task-item > ul,
 article li.tm-task-item > ol,
 article li.tm-list-item-with-badge > ul,
@@ -354,7 +261,6 @@ article li.tm-list-item-with-badge > ol {
   padding-inline-start: 2.25em;
 }
 
-/* Icon list marker (checkbox, task icons) */
 .tm-list-marker-icon {
   display: inline-flex;
   align-items: center;
@@ -370,7 +276,6 @@ article li.tm-list-item-with-badge > ol {
   height: 1.15em;
 }
 
-/* Done task item styling */
 article li.tm-task-done {
   color: var(--text-muted);
 }
@@ -379,38 +284,42 @@ article li.tm-strikethrough {
   text-decoration: line-through;
 }
 
-/* Exclude the checkbox icon itself from strikethrough */
 article li.tm-strikethrough > .tm-list-marker {
   text-decoration: none;
   display: inline-flex;
 }
 
-/* Pill badge list marker (timestamps, tags, unmapped markers) */
 .tm-list-marker-badge {
   display: inline-flex;
   align-items: center;
   font-size: 0.75em;
   font-weight: 600;
   line-height: 1.2;
-  padding: 1.5px 7px;
+  padding: 2px 8px;
   border-radius: 9999px;
   background: var(--bg-subtle);
   color: var(--text-secondary);
-  border: none;
   margin-right: 0.45em;
   vertical-align: 0.12em;
   letter-spacing: 0.02em;
 }
 
-/* max-height caps a portrait image at 80% of the viewport */
-article img:not(.tm-link-icon):not(.tm-doc-icon-img) { max-width: 100%; max-height: 80vh; height: auto; display: block; margin: 16px auto; cursor: zoom-in; }
+article img:not(.tm-link-icon):not(.tm-doc-icon-img) {
+  max-width: 100%;
+  max-height: 80vh;
+  height: auto;
+  display: block;
+  margin: 16px auto;
+  border-radius: 8px;
+  cursor: zoom-in;
+}
 
-/* Code blocks: wrapped with header bar containing language and copy button */
+/* ==================== CODE BLOCKS & INLINE CODE ==================== */
 .code-block-wrapper {
   margin: 16px 0;
   background: var(--bg-subtle);
   border: none;
-  border-radius: 8px;
+  border-radius: 10px;
   box-shadow: var(--shadow-sm);
   overflow: hidden;
 }
@@ -420,10 +329,8 @@ article img:not(.tm-link-icon):not(.tm-doc-icon-img) { max-width: 100%; max-heig
   align-items: center;
   justify-content: space-between;
   padding: 4px 8px 4px 14px;
-  background: transparent;
-  border: none;
+  background: color-mix(in srgb, var(--text-primary) 3%, transparent);
   min-height: 32px;
-  box-sizing: border-box;
 }
 
 .code-block-header .code-lang {
@@ -431,7 +338,7 @@ article img:not(.tm-link-icon):not(.tm-doc-icon-img) { max-width: 100%; max-heig
   font-size: 0.72rem;
   font-weight: 600;
   text-transform: uppercase;
-  color: var(--text-secondary);
+  color: var(--text-muted);
   letter-spacing: 0.06em;
   user-select: none;
 }
@@ -441,11 +348,11 @@ article img:not(.tm-link-icon):not(.tm-doc-icon-img) { max-width: 100%; max-heig
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  padding: 4px 6px;
+  padding: 5px 6px;
   background: transparent;
   border: none;
-  border-radius: 4px;
-  color: var(--text-secondary);
+  border-radius: 6px;
+  color: var(--text-muted);
   cursor: pointer;
   line-height: 1;
   transition: color 0.15s ease, background-color 0.15s ease;
@@ -463,17 +370,14 @@ article img:not(.tm-link-icon):not(.tm-doc-icon-img) { max-width: 100%; max-heig
 }
 
 .code-block-header .code-copy-btn.is-copied {
-  color: #16a34a;
-}
-
-[data-theme="dark"] .code-block-header .code-copy-btn.is-copied {
-  color: #4ade80;
+  color: #10b981;
 }
 
 article .code-block-wrapper pre,
 .code-block-wrapper pre {
   margin: 0 !important;
   border: none !important;
+  box-shadow: none !important;
   background: transparent !important;
   padding: 12px 16px;
   overflow-x: auto;
@@ -482,115 +386,117 @@ article .code-block-wrapper pre,
 article pre {
   background: var(--bg-subtle);
   border: none;
-  border-radius: 8px;
+  border-radius: 10px;
   box-shadow: var(--shadow-sm);
   padding: 12px 16px;
   margin: 16px 0;
   overflow-x: auto;
-}
-article code {
-  background: var(--bg-subtle);
-  padding: 2px 6px;
-  border: none;
-  border-radius: 4px;
-  font-size: 0.9em;
-}
-article pre code {
-  border: none;
-  padding: 0;
-  background: transparent;
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+  font-size: 0.875rem;
+  line-height: 1.6;
 }
 
-/* Inline text highlight: ==xxx== */
+article code {
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+  background: var(--bg-subtle);
+  padding: 2px 6px;
+  border-radius: 5px;
+  font-size: 0.88em;
+}
+
+article pre code {
+  padding: 0;
+  background: transparent;
+  font-size: inherit;
+}
+
+/* Inline highlight */
 article mark {
   color: inherit;
-  margin-inline: -0.4em;
-  padding: 0.1em 0.4em;
-  border-radius: 0.8em 0.3em;
+  margin-inline: -0.35em;
+  padding: 0.08em 0.35em;
+  border-radius: 0.6em 0.25em;
   background: transparent;
   background-image: linear-gradient(
     105deg,
     transparent 0,
-    transparent 0.3em,
-    rgba(var(--mark-rgb, 255, 219, 88), 0.7) 0.5em,
-    rgba(var(--mark-rgb, 255, 219, 88), 0.4) 1.6em,
-    rgba(var(--mark-rgb, 255, 219, 88), 0.4) calc(100% - 1.4em),
-    rgba(var(--mark-rgb, 255, 219, 88), 0.7) calc(100% - 0.5em),
-    transparent calc(100% - 0.3em),
+    transparent 0.25em,
+    rgba(var(--mark-rgb, 255, 219, 88), 0.65) 0.45em,
+    rgba(var(--mark-rgb, 255, 219, 88), 0.38) 1.5em,
+    rgba(var(--mark-rgb, 255, 219, 88), 0.38) calc(100% - 1.3em),
+    rgba(var(--mark-rgb, 255, 219, 88), 0.65) calc(100% - 0.45em),
+    transparent calc(100% - 0.25em),
     transparent 100%
   );
   box-decoration-break: clone;
   -webkit-box-decoration-break: clone;
-  text-shadow: 0 0 0.75em var(--bg-surface);
 }
+
 article blockquote {
   margin: 16px 0;
   padding: 10px 16px;
   border: none;
   border-left: 3px solid var(--accent-primary);
-  border-radius: 0 6px 6px 0;
+  border-radius: 0 8px 8px 0;
   color: var(--text-secondary);
   background: var(--bg-subtle);
 }
+
 article table {
   border-collapse: collapse;
-  margin: 16px 0;
+  margin: 18px 0;
   border: none;
-  border-radius: 8px;
+  border-radius: 10px;
   box-shadow: var(--shadow-sm);
-  background-color: var(--bg-surface);
-  width: 100%;
-  display: block;
-  max-width: 100%;
-  overflow-x: auto;
-  -webkit-overflow-scrolling: touch;
-}
-article th {
   background-color: var(--bg-subtle);
-  border: none;
-  border-bottom: 1px solid var(--bg-subtle);
-  padding: 8px 14px;
-  font-weight: 600;
-  text-align: left;
-}
-article td {
-  border: none;
-  border-bottom: 1px solid var(--bg-subtle);
-  padding: 8px 14px;
-  background-color: var(--bg-surface);
+  width: 100%;
+  overflow: hidden;
+  font-size: 0.9rem;
 }
 
-/* `@ruby[漢字](rt:"かんじ")` -- native <ruby>/<rt>, styled only enough to
-   read as a small reading gloss rather than the browser's plain default. */
+article th {
+  background-color: color-mix(in srgb, var(--text-primary) 4%, var(--bg-subtle));
+  padding: 9px 14px;
+  font-weight: 600;
+  text-align: left;
+  color: var(--text-primary);
+}
+
+article td {
+  border-top: 1px solid
+    color-mix(in srgb, var(--text-primary) 6%, transparent);
+  padding: 9px 14px;
+  background-color: color-mix(in srgb, var(--bg-surface) 60%, var(--bg-subtle));
+}
+
 article ruby {
   ruby-position: over;
 }
+
 article rt {
   font-size: 0.55em;
   color: var(--text-muted);
   user-select: none;
 }
 
-/* `@doc.icon("name", pkg:"lucide")` -- sized as a glyph (1em square) so it
-   scales with surrounding text like the character it stands in for. */
+/* ==================== DOC ICONS ==================== */
 .tm-doc-icon {
   width: 1em;
   height: 1em;
   vertical-align: -0.125em;
   fill: none;
   stroke: currentColor;
-  /* The sprite's `<symbol>`s carry only path data, no presentation
-     attributes -- `<use>`'s shadow content inherits these from here,
-     matching Lucide's own default look. */
   stroke-width: 2;
   stroke-linecap: round;
   stroke-linejoin: round;
 }
+
 .tm-doc-icon[data-pkg="simple"],
 .tm-doc-icon:has(use[href*="simple.svg"]) {
   fill: currentColor;
   stroke: none;
 }
+
 .tm-doc-icon-img {
   width: 1em;
   height: 1em;
@@ -599,18 +505,18 @@ article rt {
   object-fit: contain;
   display: inline-block;
 }
+
 .tm-doc-icon-block {
   display: flex;
   justify-content: center;
   margin: 16px 0;
 }
+
 .tm-doc-icon-block .tm-doc-icon {
   width: 2rem;
   height: 2rem;
 }
-/* An icon name/pkg this book cannot draw -- a typo or an unvendored icon.
-   Visible on purpose: a document author should notice it, not lose the
-   icon silently. */
+
 .tm-doc-icon-missing {
   display: inline-flex;
   align-items: center;
@@ -618,15 +524,13 @@ article rt {
   width: 1.4em;
   height: 1.4em;
   border: 1px dashed var(--border);
-  border-radius: 3px;
+  border-radius: 4px;
   color: var(--text-muted);
   font-size: 0.85em;
   cursor: help;
 }
 
 /* ==================== FOOTNOTES ==================== */
-
-/* In-text footnote reference: sup.footnote-ref */
 article sup.footnote-ref {
   font-size: 0.75em;
   line-height: 0;
@@ -660,14 +564,13 @@ article sup.footnote-ref a:hover {
   text-decoration: none;
 }
 
-/* Document-end footnotes section */
 article section.footnotes,
 article .footnotes {
   margin-top: 40px;
   padding: 16px 20px;
-  border: none;
-  border-radius: 8px;
+  border-radius: 10px;
   background-color: var(--bg-subtle);
+  box-shadow: var(--shadow-sm);
   font-size: 0.88rem;
   color: var(--text-secondary);
 }
@@ -696,17 +599,15 @@ article .footnotes li p {
   margin: 0;
 }
 
-/* Smooth anchor target highlight */
 article section.footnotes li:target,
 article .footnotes li:target {
   background-color: var(--bg-surface);
-  border-radius: 4px;
+  border-radius: 6px;
+  padding: 2px 6px;
   box-shadow: var(--shadow-sm);
   outline: none;
-  transition: background-color 0.3s ease;
 }
 
-/* Backlink icon: ↩ */
 article a.footnote-backref {
   display: inline-block;
   color: var(--link);
@@ -724,8 +625,6 @@ article a.footnote-backref:hover {
 }
 
 /* ==================== TAGS ==================== */
-
-/* Tag container: span.tmt-tag-list or div.tmt-tag-list */
 .tmt-tag-list,
 article .tmt-tag-list {
   display: inline-flex;
@@ -736,7 +635,6 @@ article .tmt-tag-list {
   vertical-align: middle;
 }
 
-/* Individual tag chip: span.tmt-tag */
 .tmt-tag,
 article .tmt-tag {
   display: inline-flex;
@@ -744,14 +642,17 @@ article .tmt-tag {
   font-size: 0.78em;
   font-weight: 500;
   line-height: 1.25;
-  padding: 1.5px 7px;
+  padding: 2px 8px;
   border-radius: 9999px;
   background: var(--bg-subtle);
   color: var(--text-secondary);
   border: none;
   box-shadow: var(--shadow-sm);
   letter-spacing: 0.02em;
-  transition: background-color 0.15s ease, color 0.15s ease, box-shadow 0.15s ease;
+  transition:
+    background-color 0.15s ease,
+    color 0.15s ease,
+    box-shadow 0.15s ease;
 }
 
 .tmt-tag:hover,
@@ -760,4 +661,3 @@ article .tmt-tag:hover {
   color: var(--link);
   box-shadow: var(--shadow-md);
 }
-

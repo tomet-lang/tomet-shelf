@@ -28,8 +28,6 @@ pub const BOOK_CSS: &str = concat!(
     include_str!("../frontend/styles/00-base.css"),
     include_str!("../frontend/styles/10-shell.css"),
     include_str!("../frontend/styles/20-panes.css"),
-    include_str!("../frontend/styles/30-sticky-tabs.css"),
-    include_str!("../frontend/styles/35-sticky-tabs-vertical.css"),
     include_str!("../frontend/styles/40-hero.css"),
     include_str!("../frontend/styles/50-nav-infobox.css"),
     include_str!("../frontend/styles/60-content.css"),
@@ -173,5 +171,8 @@ mod tests {
             index_html.contains("href=\"/sub/components/tmt-btn.css?v="),
             "tmt-btn shadow stylesheet link inside macro uses base_path"
         );
+        let paths: Vec<&str> = renderer.static_assets().iter().map(|a| a.path).collect();
+        assert!(paths.contains(&"icons/lucide.svg"));
+        assert!(paths.contains(&"icons/simple.svg"));
     }
 }

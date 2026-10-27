@@ -1,3 +1,42 @@
-@tailwind base;
-@tailwind components;
+/* Tailwind v4, CSS-first. Preflight is intentionally not imported: the base
+   reset lives in 00-base.css. Token values are defined there as plain CSS
+   variables so they switch cleanly with light/dark theme attributes.
+
+   Utilities are emitted UNLAYERED so specificity and source order behave
+   predictably alongside the hand-written stylesheets in BOOK_CSS (lib.rs). */
+@import "tailwindcss/theme.css" layer(theme);
 @tailwind utilities;
+
+@source "../../templates";
+@source "../../src";
+@source "../src";
+
+@custom-variant dark (&:where([data-theme="dark"], [data-theme="dark"] *));
+
+@theme inline {
+  --color-*: initial;
+  --color-transparent: transparent;
+  --color-current: currentColor;
+  --color-canvas: var(--bg-canvas);
+  --color-bg: var(--bg);
+  --color-surface: var(--bg-surface);
+  --color-subtle: var(--bg-subtle);
+  --color-surface-subtle: var(--surface-subtle);
+  --color-border: var(--border);
+  --color-border-subtle: var(--border-subtle);
+  --color-text: var(--text);
+  --color-text-primary: var(--text-primary);
+  --color-text-secondary: var(--text-secondary);
+  --color-text-muted: var(--text-muted);
+  --color-link: var(--link);
+  --color-link-visited: var(--link-visited);
+  --color-unresolved: var(--unresolved);
+  --color-accent-primary: var(--accent-primary);
+
+  --shadow-*: initial;
+  --shadow-none: var(--shadow-none);
+  --shadow-sm: var(--shadow-sm);
+  --shadow-md: var(--shadow-md);
+  --shadow-lg: var(--shadow-lg);
+  --shadow-xl: var(--shadow-xl);
+}

@@ -63,20 +63,20 @@ fn render_book_index_items(buf: &mut String, items: &[EntrySummary], here: &str)
 
 fn render_catalog_entries(buf: &mut String, items: &[EntrySummary], top: bool) {
     if top {
-        buf.push_str("<ul class=\"book-index-items list-none m-0 p-0 grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-2\">");
+        buf.push_str("<ul class=\"book-index-items list-none m-0 p-0 grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3\">");
     } else {
-        buf.push_str("<ul class=\"book-index-items list-none m-0 p-0 flex flex-col gap-1 ml-3 mt-1 pl-2 border-l border-border-subtle\">");
+        buf.push_str("<ul class=\"book-index-items list-none m-0 p-0 flex flex-col gap-1.5 ml-3 mt-1.5 pl-2.5 border-l border-border-subtle\">");
     }
     for entry in items {
         buf.push_str("<li class=\"book-index-item\">");
         buf.push_str(&format!(
-            "<a href=\"{}\" class=\"book-index-link block p-2.5 rounded-lg border border-border bg-canvas hover:bg-subtle hover:border-accent-primary transition-all no-underline text-text\">\n      <span class=\"book-index-title font-semibold text-sm block overflow-hidden text-ellipsis whitespace-nowrap\">{}</span>",
+            "<a href=\"{}\" class=\"book-index-link block p-3.5 rounded-xl bg-surface shadow-sm hover:shadow-md transition-all no-underline text-text\">\n      <span class=\"book-index-title font-semibold text-sm block overflow-hidden text-ellipsis whitespace-nowrap\">{}</span>",
             html_escape(&entry.url),
             html_escape(&entry.title)
         ));
         if let Some(ref section) = entry.section {
             buf.push_str(&format!(
-                "\n      <span class=\"book-index-meta text-xs text-text-muted block mt-0.5\">{}</span>",
+                "\n      <span class=\"book-index-meta text-xs text-text-muted block mt-1\">{}</span>",
                 html_escape(section)
             ));
         }
@@ -341,7 +341,8 @@ impl BookRenderer {
             }
         }
 
-        let mut static_assets = Vec::with_capacity(2 + bundle.extra_assets.len());
+        let mut static_assets =
+            Vec::with_capacity(2 + crate::ICON_ASSETS.len() + bundle.extra_assets.len());
         static_assets.push(StaticAsset {
             path: "shelf.css",
             mime: "text/css; charset=utf-8",
@@ -352,7 +353,12 @@ impl BookRenderer {
             mime: "application/javascript; charset=utf-8",
             content: bundle.book_js,
         });
-        static_assets.extend_from_slice(bundle.extra_assets);
+        static_assets.extend_from_slice(crate::ICON_ASSETS);
+        for asset in bundle.extra_assets {
+            if !static_assets.iter().any(|a| a.path == asset.path) {
+                static_assets.push(*asset);
+            }
+        }
 
         Ok(Self {
             config: config.clone(),
