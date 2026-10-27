@@ -45,6 +45,13 @@ pub trait PageRenderer: Send + Sync {
     fn render_index(&self, sections: &[SectionSummary], entries: &[EntrySummary])
     -> Result<String>;
 
+    /// Render a 404 Not Found page into a complete HTML string.
+    fn render_not_found(&self, missing_path: &str) -> Result<String> {
+        Ok(format!(
+            "<!doctype html><html><head><meta charset=\"utf-8\"><title>404 Not Found</title></head><body><h1>404 Not Found</h1><p>Cannot find: <code>{missing_path}</code></p></body></html>"
+        ))
+    }
+
     /// Static assets (CSS, JS, etc.) supplied by this theme.
     fn static_assets(&self) -> &[StaticAsset] {
         &[]

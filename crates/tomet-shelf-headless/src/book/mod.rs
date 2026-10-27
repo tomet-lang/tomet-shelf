@@ -571,7 +571,17 @@ pub fn build_book(
     let wiki_index_html = renderer.render_index(&sections, &catalog_entries)?;
     let catalog_written = write_if_changed(&wiki_root.join("index.html"), &wiki_index_html)?;
 
-    // 7. Write root /index.html redirecting to the book, unless the book is already there
+    // 7. Write 404.html
+    // If a document with slug "404" exists, use its rendered HTML; otherwise use the theme's render_not_found.
+    let not_found_html = if let Some(custom_404_doc) = docs.iter().find(|d| d.slug == "404") {
+        let incoming: &[Backlink] = backlinks.get("404").map(Vec::as_slice).unwrap_or(&[]);
+        renderer.render_page(custom_404_doc, incoming, &book_index)?
+    } else {
+        renderer.render_not_found("")?
+    };
+    let _ = write_if_changed(&out_dir.join("404.html"), &not_found_html)?;
+
+    // 8. Write root /index.html redirecting to the book, unless the book is already there
     let mut redirect_written = false;
     if !wiki_rel.is_empty() {
         let redirect_target = if clean_url_prefix.is_empty() {

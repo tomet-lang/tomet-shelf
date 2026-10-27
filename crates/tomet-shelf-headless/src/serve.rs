@@ -355,14 +355,23 @@ pub fn handle_http_request(
     }
 
     // 6. 404 Not Found fallback
-    (
-        StatusCode::NOT_FOUND,
-        Html(format!(
-            "<!doctype html><html><head><meta charset=\"utf-8\"><title>404 Not Found</title></head><body><h1>404 Not Found</h1><p>Cannot find: <code>{}</code></p></body></html>",
-            path
-        )),
-    )
-        .into_response()
+    let not_found_html = {
+        let state_lock = state.read().unwrap();
+        if let Some(ref st) = *state_lock {
+            st.render_not_found_page(&path).unwrap_or_else(|_| {
+                format!(
+                    "<!doctype html><html><head><meta charset=\"utf-8\"><title>404 Not Found</title></head><body><h1>404 Not Found</h1><p>Cannot find: <code>{}</code></p></body></html>",
+                    path
+                )
+            })
+        } else {
+            format!(
+                "<!doctype html><html><head><meta charset=\"utf-8\"><title>404 Not Found</title></head><body><h1>404 Not Found</h1><p>Cannot find: <code>{}</code></p></body></html>",
+                path
+            )
+        }
+    };
+    (StatusCode::NOT_FOUND, Html(not_found_html)).into_response()
 }
 
 fn guess_mime(path: &Path) -> &'static str {

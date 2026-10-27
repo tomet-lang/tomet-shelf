@@ -61,6 +61,10 @@ pub fn ui_strings() -> HashMap<String, String> {
         ("index.sections", "Sections"),
         ("index.entries", "All Notes"),
         ("index.note_unit", "notes"),
+        // 404 Not Found
+        ("not_found.title", "Page Not Found"),
+        ("not_found.message", "The page you are looking for might have been removed, had its name changed, or is temporarily unavailable."),
+        ("not_found.back_home", "Back to Home"),
         // Controls
         ("view.switch", "Switch view mode"),
         ("view.book", "📖 Book"),

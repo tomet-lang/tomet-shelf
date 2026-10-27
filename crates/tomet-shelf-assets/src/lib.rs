@@ -86,6 +86,7 @@ pub const COMPONENT_VERSIONS: &[(&str, &str)] = &[
 pub const BASE_HTML: &str = include_str!("../templates/base.html");
 pub const PAGE_HTML: &str = include_str!("../templates/page.html");
 pub const INDEX_HTML: &str = include_str!("../templates/index.html");
+pub const NOT_FOUND_HTML: &str = include_str!("../templates/404.html");
 pub const MACROS_HTML: &str = include_str!("../templates/macros.html");
 
 /// Official `tomet-shelf` UI template and asset bundle.
@@ -93,6 +94,7 @@ pub const ASSETS: TemplateBundle = TemplateBundle {
     base_html: BASE_HTML,
     page_html: PAGE_HTML,
     index_html: INDEX_HTML,
+    not_found_html: NOT_FOUND_HTML,
     macros_html: MACROS_HTML,
     book_css: BOOK_CSS,
     book_js: BOOK_JS,

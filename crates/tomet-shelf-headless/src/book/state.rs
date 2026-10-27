@@ -294,6 +294,13 @@ impl VaultState {
         self.renderer
             .render_index(&self.sections, &self.catalog_entries)
     }
+
+    pub fn render_not_found_page(&self, missing_path: &str) -> Result<String> {
+        if let Ok(Some(custom_html)) = self.render_page_by_slug("404") {
+            return Ok(custom_html);
+        }
+        self.renderer.render_not_found(missing_path)
+    }
 }
 
 pub fn render_single_document_html(

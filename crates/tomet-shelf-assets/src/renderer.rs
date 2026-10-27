@@ -246,6 +246,61 @@ impl<'a> IndexTemplate<'a> {
     }
 }
 
+#[derive(Template)]
+#[template(path = "404.html")]
+pub struct NotFoundTemplate<'a> {
+    pub site_title: &'a str,
+    pub description: Option<&'a str>,
+    pub lang: &'a str,
+    pub custom_css: &'a [String],
+    pub css_version: &'a str,
+    pub js_version: &'a str,
+    pub base_path: &'a str,
+    pub clean_url_prefix: &'a str,
+    pub full_url_prefix: &'a str,
+    pub home_url: &'a str,
+    pub strings: &'a HashMap<String, String>,
+
+    pub tmt_btn_css_version: &'a str,
+    pub tmt_badge_css_version: &'a str,
+    pub tmt_icon_css_version: &'a str,
+    pub tmt_swatch_css_version: &'a str,
+    pub tmt_switch_css_version: &'a str,
+
+    pub page_title: &'a str,
+    pub missing_path: &'a str,
+}
+
+impl<'a> NotFoundTemplate<'a> {
+    pub fn t(&self, key: &str, default: &'a str) -> &'a str {
+        if let Some(val) = self.strings.get(key) {
+            val.as_str()
+        } else {
+            default
+        }
+    }
+
+    pub fn base_path_json(&self) -> String {
+        serde_json::to_string(&self.base_path).unwrap_or_else(|_| "\"\"".to_string())
+    }
+
+    pub fn clean_url_prefix_json(&self) -> String {
+        serde_json::to_string(&self.clean_url_prefix).unwrap_or_else(|_| "\"\"".to_string())
+    }
+
+    pub fn full_url_prefix_json(&self) -> String {
+        serde_json::to_string(&self.full_url_prefix).unwrap_or_else(|_| "\"\"".to_string())
+    }
+
+    pub fn home_url_json(&self) -> String {
+        serde_json::to_string(&self.home_url).unwrap_or_else(|_| "\"\"".to_string())
+    }
+
+    pub fn strings_json(&self) -> String {
+        serde_json::to_string(&self.strings).unwrap_or_else(|_| "{}".to_string())
+    }
+}
+
 //==============================================================================
 // TemplateBundle
 //==============================================================================
@@ -256,6 +311,7 @@ pub struct TemplateBundle {
     pub base_html: &'static str,
     pub page_html: &'static str,
     pub index_html: &'static str,
+    pub not_found_html: &'static str,
     pub macros_html: &'static str,
     pub book_css: &'static str,
     pub book_js: &'static str,
@@ -491,6 +547,33 @@ impl BookRenderer {
 
         template.render().map_err(Into::into)
     }
+
+    pub fn render_not_found(&self, missing_path: &str) -> Result<String> {
+        let template = NotFoundTemplate {
+            site_title: &self.config.book.title,
+            description: self.config.book.description.as_deref(),
+            lang: &self.config.book.lang,
+            custom_css: &self.config.ui.custom_css,
+            css_version: &self.css_version,
+            js_version: &self.js_version,
+            base_path: &self.base_path,
+            clean_url_prefix: self.config.build.clean_url_prefix(),
+            full_url_prefix: &self.full_url_prefix,
+            home_url: &self.home_url,
+            strings: &self.config.ui.strings,
+
+            tmt_btn_css_version: &self.tmt_btn_css_version,
+            tmt_badge_css_version: &self.tmt_badge_css_version,
+            tmt_icon_css_version: &self.tmt_icon_css_version,
+            tmt_swatch_css_version: &self.tmt_swatch_css_version,
+            tmt_switch_css_version: &self.tmt_switch_css_version,
+
+            page_title: "404 Not Found",
+            missing_path,
+        };
+
+        template.render().map_err(Into::into)
+    }
 }
 
 impl PageRenderer for BookRenderer {
@@ -509,6 +592,10 @@ impl PageRenderer for BookRenderer {
         entries: &[EntrySummary],
     ) -> Result<String> {
         BookRenderer::render_index(self, sections, entries)
+    }
+
+    fn render_not_found(&self, missing_path: &str) -> Result<String> {
+        BookRenderer::render_not_found(self, missing_path)
     }
 
     fn static_assets(&self) -> &[StaticAsset] {

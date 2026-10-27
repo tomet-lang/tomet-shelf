@@ -12,6 +12,8 @@
 
 ====[struct IndexTemplate]
 
+====[struct NotFoundTemplate]
+
 ====[struct TemplateBundle]
 
 Static HTML templates, CSS/JS assets, and extra static files for a theme.
@@ -61,6 +63,8 @@ Holds Askama templates configuration and static assets for rendering book pages.
 ===[const PAGE_HTML]
 
 ===[const INDEX_HTML]
+
+===[const NOT_FOUND_HTML]
 
 ===[const MACROS_HTML]
 
