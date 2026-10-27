@@ -37,7 +37,7 @@
     right: 0;
     bottom: 0;
     z-index: 40;
-    background: rgba(15, 23, 42, 0.42);
+    background: rgba(0, 0, 0, 0.48);
     backdrop-filter: blur(1px);
   }
 
