@@ -1,4 +1,3 @@
-use crate::HeroChipConfig;
 use std::collections::HashMap;
 
 /// The interface's text in Japanese (default).
@@ -63,7 +62,10 @@ pub fn ui_strings() -> HashMap<String, String> {
         ("index.note_unit", "ノート"),
         // 404 Not Found
         ("not_found.title", "ページが見つかりませんでした"),
-        ("not_found.message", "お探しのページは移動または削除されたか、URLが正しくない可能性があります。"),
+        (
+            "not_found.message",
+            "お探しのページは移動または削除されたか、URLが正しくない可能性があります。",
+        ),
         ("not_found.back_home", "ホームに戻る"),
         // Controls
         ("view.switch", "表示モード切替"),
@@ -126,57 +128,4 @@ pub fn ui_strings() -> HashMap<String, String> {
     .into_iter()
     .map(|(k, v)| (k.to_string(), v.to_string()))
     .collect()
-}
-
-/// Default hero chips in Japanese.
-pub fn hero_chips() -> Vec<HeroChipConfig> {
-    vec![
-        HeroChipConfig {
-            key: "parent".to_string(),
-            label: Some("所属".to_string()),
-            format: None,
-        },
-        HeroChipConfig {
-            key: "type.list-a".to_string(),
-            label: Some("ファン".to_string()),
-            format: None,
-        },
-        HeroChipConfig {
-            key: "type.element-a".to_string(),
-            label: None,
-            format: None,
-        },
-        HeroChipConfig {
-            key: "birth".to_string(),
-            label: Some("🎂".to_string()),
-            format: Some("birthday".to_string()),
-        },
-    ]
-}
-
-/// Default infobox key labels in Japanese.
-pub fn key_labels() -> HashMap<String, String> {
-    let mut m = HashMap::new();
-    m.insert("kind".to_string(), "種別".to_string());
-    m.insert("type".to_string(), "種別".to_string());
-    m.insert("birth".to_string(), "誕生日".to_string());
-    m.insert("height".to_string(), "身長".to_string());
-    m.insert("creator".to_string(), "デザイン".to_string());
-    m.insert("type.list-a".to_string(), "ファンネーム".to_string());
-    m.insert("type.element-a".to_string(), "属性 / MBTI".to_string());
-    m.insert("colors".to_string(), "カラー".to_string());
-    m.insert("parent".to_string(), "所属ユニット".to_string());
-    m.insert("group".to_string(), "所属組織".to_string());
-    m.insert("place".to_string(), "出身地".to_string());
-    m.insert("created".to_string(), "作成日".to_string());
-    m.insert("modified".to_string(), "更新日".to_string());
-    m.insert("reviewed".to_string(), "確認日".to_string());
-    m.insert("rating".to_string(), "評価".to_string());
-    m.insert("aliases".to_string(), "別名 / 愛称".to_string());
-    m.insert("topics".to_string(), "トピック".to_string());
-    m.insert("flags".to_string(), "フラグ".to_string());
-    m.insert("published".to_string(), "公開日".to_string());
-    m.insert("url.wiki".to_string(), "Wikipedia".to_string());
-    m.insert("url.else".to_string(), "関連リンク".to_string());
-    m
 }

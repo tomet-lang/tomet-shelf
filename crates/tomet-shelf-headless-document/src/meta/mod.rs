@@ -1,6 +1,7 @@
 //! Turning a document's `@meta` block into the page's chrome: the hero chips,
 //! the infobox rows, and the images the template hangs off them.
 
+pub mod defaults;
 mod format;
 mod icon;
 
@@ -295,9 +296,17 @@ fn images(cx: &MetaCtx, map: &Map<String, Value>) -> Vec<String> {
 }
 
 fn hero_chips(cx: &MetaCtx, map: &Map<String, Value>) -> Vec<HeroChipItem> {
-    let mut chips = Vec::new();
+    let configured = &cx.config.ui.hero_chips;
+    let fallback;
+    let chips_cfg: &[tomet_shelf_config::HeroChipConfig] = if configured.is_empty() {
+        fallback = defaults::default_hero_chips_for(&cx.config.book.lang);
+        &fallback
+    } else {
+        configured.as_slice()
+    };
 
-    for chip_cfg in &cx.config.ui.hero_chips {
+    let mut chips = Vec::new();
+    for chip_cfg in chips_cfg {
         let Some(val) = map.get(&chip_cfg.key) else {
             continue;
         };
@@ -341,14 +350,9 @@ fn infobox_rows(cx: &MetaCtx, map: &Map<String, Value>, kind: Option<&str>) -> V
         return Vec::new();
     }
 
+    let default_labels = defaults::default_key_labels_for(&cx.config.book.lang);
     let exclude: HashSet<&str> = infobox.exclude_keys.iter().map(String::as_str).collect();
-    let label_for = |key: &str| {
-        infobox
-            .labels
-            .get(key)
-            .cloned()
-            .unwrap_or_else(|| key.to_string())
-    };
+    let label_for = |key: &str| defaults::resolve_label(&infobox.labels, &default_labels, key);
     let mut rows = Vec::new();
 
     // The document's kind stands in for a `type` the metadata never gave.
@@ -358,13 +362,7 @@ fn infobox_rows(cx: &MetaCtx, map: &Map<String, Value>, kind: Option<&str>) -> V
         && !map.contains_key("kind")
     {
         rows.push(InfoboxRowItem {
-            label: infobox.labels.get("kind").cloned().unwrap_or_else(|| {
-                if tomet_shelf_config::i18n::is_english(&cx.config.book.lang) {
-                    "Kind".to_string()
-                } else {
-                    "種別".to_string()
-                }
-            }),
+            label: label_for("kind"),
             value: k.to_string(),
         });
     }

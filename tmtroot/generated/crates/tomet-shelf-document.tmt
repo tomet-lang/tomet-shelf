@@ -105,6 +105,38 @@ The slug a resolved `@meta` href points at, if it points at a page at all.
 Turning a document's `@meta` block into the page's chrome: the hero chips,
 the infobox rows, and the images the template hangs off them.
 
+===[Module defaults]
+
+====[Functions]
+
+=====[fn hero_chips_ja]
+
+Default hero chips in Japanese.
+
+=====[fn hero_chips_en]
+
+Default hero chips in English.
+
+=====[fn default_hero_chips_for]
+
+Look up default hero chips for a given book language code.
+
+=====[fn key_labels_ja]
+
+Default infobox key labels in Japanese.
+
+=====[fn key_labels_en]
+
+Default infobox key labels in English.
+
+=====[fn default_key_labels_for]
+
+Look up default infobox labels for a given book language code.
+
+=====[fn resolve_label]
+
+Resolve label for a given infobox key, falling back to default language labels and then the key itself.
+
 ===[Structs]
 
 ====[struct HeroChipItem]

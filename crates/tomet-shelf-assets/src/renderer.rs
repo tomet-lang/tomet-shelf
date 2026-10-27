@@ -416,8 +416,11 @@ impl BookRenderer {
             }
         }
 
+        let mut config = config.clone();
+        crate::i18n::apply_ui_defaults(&mut config.ui.strings, &config.book.lang);
+
         Ok(Self {
-            config: config.clone(),
+            config,
             clean_url_prefix: full_url_prefix.clone(),
             full_url_prefix,
             home_url,
@@ -624,5 +627,87 @@ impl PageRenderer for BookRenderer {
                 (slug.clone(), html)
             })
             .collect();
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn book_renderer_applies_japanese_ui_strings_by_default() {
+        let config = BookConfig::default();
+        let renderer = BookRenderer::new(&config, &crate::ASSETS, false).unwrap();
+        assert_eq!(
+            renderer
+                .config
+                .ui
+                .strings
+                .get("pane.toc")
+                .map(String::as_str),
+            Some("目次")
+        );
+        assert_eq!(
+            renderer
+                .config
+                .ui
+                .strings
+                .get("search.placeholder")
+                .map(String::as_str),
+            Some("検索... (Ctrl+K)")
+        );
+    }
+
+    #[test]
+    fn book_renderer_applies_english_ui_strings_for_english_lang() {
+        let mut config = BookConfig::default();
+        config.book.lang = "en".to_string();
+        let renderer = BookRenderer::new(&config, &crate::ASSETS, false).unwrap();
+        assert_eq!(
+            renderer
+                .config
+                .ui
+                .strings
+                .get("pane.toc")
+                .map(String::as_str),
+            Some("Table of Contents")
+        );
+        assert_eq!(
+            renderer
+                .config
+                .ui
+                .strings
+                .get("search.placeholder")
+                .map(String::as_str),
+            Some("Search... (Ctrl+K)")
+        );
+    }
+
+    #[test]
+    fn book_renderer_preserves_user_overrides() {
+        let mut config = BookConfig::default();
+        config
+            .ui
+            .strings
+            .insert("pane.toc".to_string(), "Custom Outline".to_string());
+        let renderer = BookRenderer::new(&config, &crate::ASSETS, false).unwrap();
+        assert_eq!(
+            renderer
+                .config
+                .ui
+                .strings
+                .get("pane.toc")
+                .map(String::as_str),
+            Some("Custom Outline")
+        );
+        assert_eq!(
+            renderer
+                .config
+                .ui
+                .strings
+                .get("pane.links")
+                .map(String::as_str),
+            Some("リンク")
+        );
     }
 }

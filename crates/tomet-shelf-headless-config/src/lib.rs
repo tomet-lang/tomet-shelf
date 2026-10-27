@@ -3,7 +3,13 @@ use serde::{Deserialize, Serialize};
 use std::collections::HashMap;
 use std::path::{Path, PathBuf};
 
-pub mod i18n;
+pub mod lang {
+    /// Returns true if the given language code represents English (e.g. "en", "en-US").
+    pub fn is_english(lang: &str) -> bool {
+        lang.trim().to_ascii_lowercase().starts_with("en")
+    }
+}
+pub use lang::is_english;
 
 #[derive(Debug, Clone, Serialize, Deserialize, Default)]
 pub struct BookConfig {
@@ -46,6 +52,12 @@ impl Default for BookMeta {
             lang: default_lang(),
             dest: default_dest(),
         }
+    }
+}
+
+impl BookMeta {
+    pub fn is_english(&self) -> bool {
+        is_english(&self.lang)
     }
 }
 
@@ -481,5 +493,28 @@ base_path = "/docs"
         assert_eq!(custom.build.clean_base_path(), "/docs");
         assert_eq!(custom.build.full_url_prefix(), "/docs/wiki");
         assert_eq!(custom.build.full_asset_prefix(), "/docs/vault");
+    }
+
+    #[test]
+    fn language_english_detection() {
+        assert!(is_english("en"));
+        assert!(is_english("en-US"));
+        assert!(is_english("EN-GB"));
+        assert!(is_english(" en "));
+        assert!(!is_english("ja"));
+        assert!(!is_english("ja-JP"));
+        assert!(!is_english("fr"));
+
+        let meta_en = BookMeta {
+            lang: "en".to_string(),
+            ..Default::default()
+        };
+        assert!(meta_en.is_english());
+
+        let meta_ja = BookMeta {
+            lang: "ja".to_string(),
+            ..Default::default()
+        };
+        assert!(!meta_ja.is_english());
     }
 }

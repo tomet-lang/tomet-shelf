@@ -1,9 +1,7 @@
 use super::*;
 
 fn ctx_config() -> BookConfig {
-    let mut cfg = BookConfig::default();
-    tomet_shelf_config::i18n::apply_defaults(&mut cfg);
-    cfg
+    BookConfig::default()
 }
 
 fn index() -> tomet::links::VaultLinkIndex {
@@ -242,4 +240,42 @@ fn icon_as_embed_or_link_or_image_path_resolves() {
         Some(crate::icon::DocIcon::Text("🎂".to_string()))
     );
     assert_eq!(props_emoji.icon_image_url, None);
+}
+
+#[test]
+fn default_japanese_metadata_labels_and_hero_chips() {
+    let json = r#"{"kind": "Character", "birth": "2000-05-15", "creator": "Alice"}"#;
+    let props = extract_from(json, Some("Character"));
+    assert_eq!(props.infobox_rows.len(), 3);
+    assert_eq!(props.infobox_rows[0].label, "種別");
+    assert_eq!(props.infobox_rows[1].label, "誕生日");
+    assert_eq!(props.infobox_rows[2].label, "デザイン");
+
+    assert_eq!(props.hero_chips.len(), 1);
+    assert_eq!(props.hero_chips[0].label.as_deref(), Some("🎂"));
+    assert_eq!(props.hero_chips[0].value, "5月15日");
+}
+
+#[test]
+fn default_english_metadata_labels_and_hero_chips() {
+    let mut cfg = BookConfig::default();
+    cfg.book.lang = "en".to_string();
+    let json = r#"{"kind": "Character", "birth": "2000-05-15", "creator": "Alice"}"#;
+    let value: Value = serde_json::from_str(json).unwrap();
+    let props = extract(
+        Some(&value),
+        Some("Character"),
+        Path::new("notes/a.tmt"),
+        &index(),
+        &cfg,
+        None,
+    );
+    assert_eq!(props.infobox_rows.len(), 3);
+    assert_eq!(props.infobox_rows[0].label, "Kind");
+    assert_eq!(props.infobox_rows[1].label, "Birthday");
+    assert_eq!(props.infobox_rows[2].label, "Creator");
+
+    assert_eq!(props.hero_chips.len(), 1);
+    assert_eq!(props.hero_chips[0].label.as_deref(), Some("🎂"));
+    assert_eq!(props.hero_chips[0].value, "May 15");
 }

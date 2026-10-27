@@ -2,7 +2,8 @@ use anyhow::Result;
 use std::path::Path;
 use std::sync::LazyLock;
 
-pub use tomet_shelf_config::{BookConfig, i18n};
+pub use tomet_shelf_config::BookConfig;
+pub mod i18n;
 pub use tomet_shelf_headless::assets::{
     StaticAsset, content_version, write_if_changed, write_static_assets as write_render_assets,
 };

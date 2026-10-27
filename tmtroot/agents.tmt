@@ -41,9 +41,9 @@ All Markdown files (`README.md`, `AGENTS.md`, `CLAUDE.md`) are generated build a
 `tomet-shelf` is a static site generator and documentation server specifically built for Tomet (`.tmt`) vaults. It provides live reloading, fast link resolution, and client-side full-text search.
 
 - `app`: CLI entry point (`tomet-shelf-cli`).
-- `crates/tomet-shelf-assets`: Official web assets and frontend UI (`tomet-shelf-assets`, TypeScript, Tailwind).
+- `crates/tomet-shelf-assets`: Official web assets, frontend UI, templates, and i18n (`tomet-shelf-assets`, TypeScript, Tailwind).
 - `crates/tomet-shelf-headless`: Headless SSG engine and dev server orchestration (`tomet-shelf-headless`).
-- `crates/tomet-shelf-headless-config`: Configuration parser, models, and i18n (`tomet-shelf-config`).
+- `crates/tomet-shelf-headless-config`: Configuration parser and models (`tomet-shelf-config`).
 - `crates/tomet-shelf-headless-document`: Document parsing, AST transformation, and metadata extraction (`tomet-shelf-document`).
 - `crates/tomet-shelf-headless-route`: Route resolution, slug generation, and URL sanitization (`tomet-shelf-route`).
 - `crates/tomet-shelf-headless-search`: Search indexing (`tomet-shelf-search`).

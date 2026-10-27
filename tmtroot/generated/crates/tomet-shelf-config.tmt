@@ -4,63 +4,13 @@
 
 =[tomet-shelf-config]
 
-==[Module i18n]
-
-Internationalization dictionaries and helpers for tomet-shelf.
-
-===[Module en]
-
-====[Functions]
-
-=====[fn ui_strings]
-
-The interface's text in English.
-
-=====[fn hero_chips]
-
-Default hero chips in English.
-
-=====[fn key_labels]
-
-Default infobox key labels in English.
-
-===[Module ja]
-
-====[Functions]
-
-=====[fn ui_strings]
-
-The interface's text in Japanese (default).
-
-=====[fn hero_chips]
-
-Default hero chips in Japanese.
-
-=====[fn key_labels]
-
-Default infobox key labels in Japanese.
+==[Module lang]
 
 ===[Functions]
-
-====[fn apply_defaults]
-
-Populate missing UI strings, infobox labels, and hero chips in `config` based on `config.book.lang`.
 
 ====[fn is_english]
 
 Returns true if the given language code represents English (e.g. "en", "en-US").
-
-====[fn default_ui_strings_for]
-
-Look up default UI strings for a given book language code.
-
-====[fn default_key_labels_for]
-
-Look up default infobox labels for a given book language code.
-
-====[fn default_hero_chips_for]
-
-Look up default hero chips for a given book language code.
 
 ==[Structs]
 

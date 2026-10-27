@@ -1,4 +1,3 @@
-use crate::HeroChipConfig;
 use std::collections::HashMap;
 
 /// The interface's text in English.
@@ -126,57 +125,4 @@ pub fn ui_strings() -> HashMap<String, String> {
     .into_iter()
     .map(|(k, v)| (k.to_string(), v.to_string()))
     .collect()
-}
-
-/// Default hero chips in English.
-pub fn hero_chips() -> Vec<HeroChipConfig> {
-    vec![
-        HeroChipConfig {
-            key: "parent".to_string(),
-            label: Some("Affiliation".to_string()),
-            format: None,
-        },
-        HeroChipConfig {
-            key: "type.list-a".to_string(),
-            label: Some("Fans".to_string()),
-            format: None,
-        },
-        HeroChipConfig {
-            key: "type.element-a".to_string(),
-            label: None,
-            format: None,
-        },
-        HeroChipConfig {
-            key: "birth".to_string(),
-            label: Some("🎂".to_string()),
-            format: Some("birthday".to_string()),
-        },
-    ]
-}
-
-/// Default infobox key labels in English.
-pub fn key_labels() -> HashMap<String, String> {
-    let mut m = HashMap::new();
-    m.insert("kind".to_string(), "Kind".to_string());
-    m.insert("type".to_string(), "Type".to_string());
-    m.insert("birth".to_string(), "Birthday".to_string());
-    m.insert("height".to_string(), "Height".to_string());
-    m.insert("creator".to_string(), "Creator".to_string());
-    m.insert("type.list-a".to_string(), "Fan Name".to_string());
-    m.insert("type.element-a".to_string(), "Element / MBTI".to_string());
-    m.insert("colors".to_string(), "Colors".to_string());
-    m.insert("parent".to_string(), "Affiliation".to_string());
-    m.insert("group".to_string(), "Organization".to_string());
-    m.insert("place".to_string(), "Origin".to_string());
-    m.insert("created".to_string(), "Created".to_string());
-    m.insert("modified".to_string(), "Modified".to_string());
-    m.insert("reviewed".to_string(), "Reviewed".to_string());
-    m.insert("rating".to_string(), "Rating".to_string());
-    m.insert("aliases".to_string(), "Aliases / Nicknames".to_string());
-    m.insert("topics".to_string(), "Topics".to_string());
-    m.insert("flags".to_string(), "Flags".to_string());
-    m.insert("published".to_string(), "Published".to_string());
-    m.insert("url.wiki".to_string(), "Wikipedia".to_string());
-    m.insert("url.else".to_string(), "Related Links".to_string());
-    m
 }
