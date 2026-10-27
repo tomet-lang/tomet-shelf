@@ -23,30 +23,19 @@ pub const ICON_ASSETS: &[StaticAsset] = &[
     },
 ];
 
-// Stylesheets
-pub const BOOK_CSS: &str = concat!(
-    include_str!("../frontend/styles/00-base.css"),
-    include_str!("../frontend/styles/10-shell.css"),
-    include_str!("../frontend/styles/20-panes.css"),
-    include_str!("../frontend/styles/40-hero.css"),
-    include_str!("../frontend/styles/50-nav-infobox.css"),
-    include_str!("../frontend/styles/60-content.css"),
-    include_str!("../frontend/styles/70-widgets.css"),
-    include_str!("../frontend/styles/71-source-viewer.css"),
-    include_str!("../frontend/styles/72-center-peek.css"),
-    include_str!(concat!(env!("OUT_DIR"), "/tailwind.css")),
-    include_str!("../frontend/styles/90-responsive.css"),
-    include_str!("../frontend/styles/98-no-js.css"),
-);
+// Stylesheets (bundled, lowered, and minified by Lightning CSS in `build.rs`)
+pub const BOOK_CSS: &str = include_str!(concat!(env!("OUT_DIR"), "/shelf.min.css"));
 
 pub const BOOK_JS: &str = include_str!(concat!(env!("OUT_DIR"), "/shelf.js"));
 
 // Web Component Shadow DOM Stylesheets
-pub const TMT_BTN_CSS: &str = include_str!("../frontend/styles/components/tmt-btn.css");
-pub const TMT_BADGE_CSS: &str = include_str!("../frontend/styles/components/tmt-badge.css");
-pub const TMT_ICON_CSS: &str = include_str!("../frontend/styles/components/tmt-icon.css");
-pub const TMT_SWATCH_CSS: &str = include_str!("../frontend/styles/components/tmt-swatch.css");
-pub const TMT_SWITCH_CSS: &str = include_str!("../frontend/styles/components/tmt-switch.css");
+pub const TMT_BTN_CSS: &str = include_str!(concat!(env!("OUT_DIR"), "/components/tmt-btn.css"));
+pub const TMT_BADGE_CSS: &str = include_str!(concat!(env!("OUT_DIR"), "/components/tmt-badge.css"));
+pub const TMT_ICON_CSS: &str = include_str!(concat!(env!("OUT_DIR"), "/components/tmt-icon.css"));
+pub const TMT_SWATCH_CSS: &str =
+    include_str!(concat!(env!("OUT_DIR"), "/components/tmt-swatch.css"));
+pub const TMT_SWITCH_CSS: &str =
+    include_str!(concat!(env!("OUT_DIR"), "/components/tmt-switch.css"));
 
 pub static TMT_BTN_CSS_VERSION: LazyLock<String> = LazyLock::new(|| content_version(TMT_BTN_CSS));
 pub static TMT_BADGE_CSS_VERSION: LazyLock<String> =
@@ -156,6 +145,18 @@ mod tests {
         assert!(
             BOOK_CSS.contains("tmt-btn"),
             "tmt-btn light DOM base rules are in BOOK_CSS"
+        );
+        assert!(
+            !BOOK_CSS.contains("@import"),
+            "all @import rules in shelf.css are resolved by Lightning CSS"
+        );
+        assert!(
+            !BOOK_CSS.contains(".container{width:100%"),
+            "unused Tailwind .container utility is excluded"
+        );
+        assert!(
+            !TMT_BTN_CSS.contains("/*"),
+            "component shadow stylesheets are minified"
         );
     }
 

@@ -36,6 +36,7 @@ mkShell rec {
     #== UI
     typescript
     esbuild
+    lightningcss
     tailwindcss_4
   ];
 

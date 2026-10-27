@@ -2,14 +2,18 @@
    reset lives in 00-base.css. Token values are defined there as plain CSS
    variables so they switch cleanly with light/dark theme attributes.
 
-   Utilities are emitted UNLAYERED so specificity and source order behave
-   predictably alongside the hand-written stylesheets in BOOK_CSS (lib.rs). */
+   Utilities are imported UNLAYERED (`@import "tailwindcss/utilities.css"`) so
+   specificity and source order behave predictably alongside the hand-written
+   stylesheets composed in `shelf.css`. */
 @import "tailwindcss/theme.css" layer(theme);
-@tailwind utilities;
+@import "tailwindcss/utilities.css" source(none);
 
 @source "../../templates";
 @source "../../src";
 @source "../src";
+
+/* Prevent TS variable names (`container`) from emitting dead `.container` rules. */
+@source not inline("container");
 
 @custom-variant dark (&:where([data-theme="dark"], [data-theme="dark"] *));
 
