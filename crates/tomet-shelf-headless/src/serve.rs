@@ -129,15 +129,84 @@ impl DevServerHandler for TometDevHandler {
         }
 
         if !plan.docs.is_empty() {
-            let state_lock = self.state.read().unwrap();
-            if let Some(ref state) = *state_lock {
-                let clean_prefix = state.config.build.clean_url_prefix();
-                for (_abs_path, rel_path) in &plan.docs {
-                    if let Some(slug) = state.route_table.get(rel_path) {
+            let mut state_lock = self.state.write().unwrap();
+            if let Some(ref mut state) = *state_lock {
+                let clean_prefix = state.config.build.clean_url_prefix().to_string();
+                let mut changes = Vec::new();
+
+                for (abs_path, rel_path) in &plan.docs {
+                    let source = match std::fs::read_to_string(abs_path) {
+                        Ok(s) => s,
+                        Err(_) => {
+                            drop(state_lock);
+                            if self.full_rebuild() {
+                                signals.push(ReloadSignal::Full);
+                            }
+                            return signals;
+                        }
+                    };
+
+                    let (doc, _) =
+                        match crate::book::document::parse_tomet_document(&source, rel_path) {
+                            Ok(p) => p,
+                            Err(_) => {
+                                drop(state_lock);
+                                if self.full_rebuild() {
+                                    signals.push(ReloadSignal::Full);
+                                }
+                                return signals;
+                            }
+                        };
+
+                    let resolve_target = |from: &str, raw: &str| -> Option<String> {
+                        let from_p = Path::new(from);
+                        let parsed_ref = tomet_shelf_document::links::parse_link_ref(raw);
+                        let clean_target = parsed_ref.target;
+                        let resolved = state
+                            .scanned
+                            .vault_index
+                            .resolve_ref(clean_target, Some(from_p))
+                            .or_else(|| {
+                                let stripped = clean_target.trim_start_matches('@');
+                                if stripped != clean_target {
+                                    state
+                                        .scanned
+                                        .vault_index
+                                        .resolve_ref(stripped, Some(from_p))
+                                } else {
+                                    None
+                                }
+                            });
+                        resolved.map(tomet_shelf_document::slug::normalize_path)
+                    };
+
+                    let doc_node =
+                        tomet::deps::extract_document_node(rel_path, &source, &doc, resolve_target);
+                    changes.push(tomet::deps::Change::Modified(doc_node));
+                }
+
+                let affected = state.dep_graph.affected_by_changes(&changes);
+
+                for change in changes {
+                    if let tomet::deps::Change::Modified(node) = change {
+                        state.dep_graph.insert(node);
+                    }
+                }
+
+                let mut notified_urls = HashSet::new();
+                for affected_path in &affected.rebuild_required {
+                    if let Some(slug) = state.route_table.get(affected_path) {
                         let doc_url = format!("{clean_prefix}/{slug}");
-                        info!("⚡ Document updated: {rel_path} -> {doc_url}");
-                        signals.push(ReloadSignal::Doc { url: doc_url });
-                    } else {
+                        if notified_urls.insert(doc_url.clone()) {
+                            info!("⚡ Document updated (affected): {affected_path} -> {doc_url}");
+                            signals.push(ReloadSignal::Doc { url: doc_url });
+                        }
+                    }
+                }
+
+                // If any updated doc was new/not in route table, trigger full rebuild
+                for (_abs_path, rel_path) in &plan.docs {
+                    if state.route_table.get(rel_path).is_none() {
                         drop(state_lock);
                         if self.full_rebuild() {
                             signals.push(ReloadSignal::Full);

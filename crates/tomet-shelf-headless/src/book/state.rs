@@ -56,6 +56,7 @@ pub struct VaultState {
     pub catalog_entries: Vec<EntrySummary>,
     pub search_index: Option<tomet_shelf_search::SearchIndex>,
     pub search_index_json: Option<String>,
+    pub dep_graph: tomet_shelf_incremental::DependencyGraph,
 }
 
 impl VaultState {
@@ -117,6 +118,40 @@ impl VaultState {
         let route_table = slug::RouteTable::build(&doc_route_inputs, &config.build)?;
 
         let written_index = read_written_index(&scanned, &parsed, src_dir, Some(&route_table));
+
+        let resolve_target = |from: &str, raw: &str| -> Option<String> {
+            let from_p = Path::new(from);
+            let parsed_ref = tomet_shelf_document::links::parse_link_ref(raw);
+            let clean_target = parsed_ref.target;
+            let resolved = scanned
+                .vault_index
+                .resolve_ref(clean_target, Some(from_p))
+                .or_else(|| {
+                    let stripped = clean_target.trim_start_matches('@');
+                    if stripped != clean_target {
+                        scanned.vault_index.resolve_ref(stripped, Some(from_p))
+                    } else {
+                        None
+                    }
+                });
+            resolved.map(tomet_shelf_document::slug::normalize_path)
+        };
+
+        let nodes: Vec<tomet_shelf_incremental::DocumentNode> = parsed
+            .iter()
+            .zip(scanned.doc_files.iter())
+            .filter_map(|(res, doc_file)| {
+                let (doc, _) = res.as_ref().ok()?;
+                let source = fs::read_to_string(&doc_file.abs_path).ok()?;
+                Some(tomet::deps::extract_document_node(
+                    &doc_file.rel_path,
+                    &source,
+                    doc,
+                    resolve_target,
+                ))
+            })
+            .collect();
+        let dep_graph = tomet_shelf_incremental::DependencyGraph::from_nodes(nodes);
 
         let custom_element = Some(tomet_shelf_render::create_doc_icon_custom_element(
             config.build.clean_base_path(),
@@ -249,6 +284,7 @@ impl VaultState {
             catalog_entries,
             search_index,
             search_index_json,
+            dep_graph,
         })
     }
 

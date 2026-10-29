@@ -2,6 +2,7 @@
 
 pub mod catalog;
 pub mod image_opt;
+pub mod incremental;
 pub mod kinds;
 pub mod loader;
 pub(crate) mod manifest;
@@ -227,9 +228,6 @@ pub fn build_book(
 
     // 2. Initialize page renderer and write static assets
     let mut renderer: Box<dyn PageRenderer> = renderer_factory.create(config, is_dev)?;
-    let icon_renderer = renderer
-        .icon_renderer()
-        .or_else(|| renderer_factory.icon_renderer());
     write_static_assets(out_dir, src_dir, config, renderer.static_assets())
         .context("Failed to write static assets")?;
 
@@ -260,104 +258,23 @@ pub fn build_book(
     let full_url_prefix = config.build.full_url_prefix();
     let clean_url_prefix = full_url_prefix.as_str();
 
-    // 5. Process every document.
-    //
-    // Backlinks are what force two passes: a page cannot say who points at it
-    // until every other page has been read. Parsing happens once and the
-    // results are kept, so the second pass only fills in the template.
-    // Read every document once, and keep what came back: the `@kind` decides
-    // what the site publishes, and that has to be settled before any link is
-    // resolved, since a link to a document left out has to come out broken.
-    info!("Parsing {} document(s)...", scanned.doc_files.len());
-    let parsed: Vec<Result<(tomet::ast::Document, Option<String>), DocFailure>> = scanned
-        .doc_files
-        .par_iter()
-        .map(|doc_file| {
-            let fail = |error: String| DocFailure {
-                rel_path: doc_file.rel_path.clone(),
-                error,
-            };
+    // 5. Incrementally process vault documents
+    let prev_cache = tomet_shelf_incremental::VaultCache::read(out_dir).unwrap_or_default();
+    let inc_state = incremental::process_incremental_vault(
+        &prev_cache,
+        &scanned,
+        config,
+        src_dir,
+        renderer_factory,
+    )?;
 
-            let source = fs::read_to_string(&doc_file.abs_path)
-                .map_err(|e| fail(format!("could not read file: {e}")))?;
+    let route_table = inc_state.route_table;
+    let unpublished = inc_state.unpublished;
+    let mut processed = inc_state.processed;
+    let affected = inc_state.affected;
+    let new_cache = inc_state.new_cache;
 
-            document::parse_tomet_document(&source, &doc_file.rel_path)
-                .map_err(|e| fail(format!("could not parse document: {e}")))
-        })
-        .collect();
-
-    let unpublished: HashSet<String> = parsed
-        .iter()
-        .zip(scanned.doc_files.iter())
-        .filter(|(result, _)| match result {
-            Ok((_, kind)) => !kinds::publishes(kind.as_deref(), &config.build.kinds),
-            // A document that would not parse is not published either, but it
-            // is reported as a failure rather than a choice.
-            Err(_) => false,
-        })
-        .map(|(_, doc_file)| doc_file.rel_path.clone())
-        .collect();
-
-    if !unpublished.is_empty() {
-        info!(
-            "Leaving out {} document(s) whose @kind the book does not publish",
-            unpublished.len()
-        );
-    }
-
-    let mut route_meta = Vec::new();
-    for (res, doc_file) in parsed.iter().zip(scanned.doc_files.iter()) {
-        if unpublished.contains(&doc_file.rel_path) {
-            continue;
-        }
-        if let Ok((doc, _)) = res {
-            let (slug, id) = slug::extract_route_metadata(doc);
-            route_meta.push((doc_file.rel_path.as_str(), slug, id));
-        }
-    }
-    let doc_route_inputs: Vec<slug::DocRouteInput<'_>> = route_meta
-        .iter()
-        .map(|(path, slug, id)| slug::DocRouteInput {
-            rel_path: path,
-            explicit_slug: slug.as_deref(),
-            meta_id: id.as_deref(),
-        })
-        .collect();
-    let route_table = slug::RouteTable::build(&doc_route_inputs, &config.build)?;
-
-    let written_index = read_written_index(&scanned, &parsed, src_dir, Some(&route_table));
-
-    info!(
-        "Processing {} document(s)...",
-        scanned.doc_files.len() - unpublished.len()
-    );
-    let custom_element = Some(tomet_shelf_render::create_doc_icon_custom_element(
-        config.build.clean_base_path(),
-        icon_renderer,
-    ));
-    let mut processed: Vec<Result<ProcessedDoc, DocFailure>> = parsed
-        .into_par_iter()
-        .zip(scanned.doc_files.par_iter())
-        .filter(|(_, doc_file)| !unpublished.contains(&doc_file.rel_path))
-        .map(|(result, doc_file)| {
-            let (doc, _) = result?;
-            document::process_parsed_document_with_custom_element(
-                doc,
-                &doc_file.rel_path,
-                Some(&doc_file.abs_path),
-                config,
-                &scanned.vault_index,
-                &scanned.workspace_config_blocks,
-                &unpublished,
-                Some(&route_table),
-                custom_element.clone(),
-            )
-            .map_err(|e| DocFailure {
-                rel_path: doc_file.rel_path.clone(),
-                error: format!("could not process document: {e}"),
-            })
-        })
-        .collect();
+    let written_index = read_written_index(&scanned, &[], src_dir, Some(&route_table));
 
     // 5.5. Optimize referenced banners and profile images
     image_opt::optimize_docs_media(&mut processed, src_dir, out_dir, config);
@@ -451,12 +368,31 @@ pub fn build_book(
                 .map(Vec::as_slice)
                 .unwrap_or(&[]);
 
+            let out_html_path = wiki_root.join(&processed.slug).join("index.html");
+            let needs_render = prev_cache.is_empty()
+                || affected.rebuild_required.contains(&processed.rel_path)
+                || !out_html_path.exists();
+
+            if !needs_render {
+                return DocOutcome::Rendered {
+                    entry: EntrySummary {
+                        url: format!("{clean_url_prefix}/{}", processed.slug),
+                        title: processed.title.clone(),
+                        section: processed.section.clone(),
+                        children: Vec::new(),
+                    },
+                    section: processed.section.clone(),
+                    slug: processed.slug.clone(),
+                    rel_path: processed.rel_path.clone(),
+                    written: false,
+                };
+            }
+
             let html = match renderer.render_page(processed, incoming, &book_index) {
                 Ok(h) => h,
                 Err(e) => return fail(format!("could not render template: {e}")),
             };
 
-            let out_html_path = wiki_root.join(&processed.slug).join("index.html");
             let written = match write_if_changed(&out_html_path, &html) {
                 Ok(w) => w,
                 Err(e) => return fail(format!("could not write {}: {e}", out_html_path.display())),
@@ -665,6 +601,9 @@ pub fn build_book(
     }
 
     manifest.write(out_dir)?;
+    new_cache
+        .write(out_dir)
+        .context("Failed to write incremental cache")?;
 
     // 9. Search indexing based on configured search engine
     match config.build.search {

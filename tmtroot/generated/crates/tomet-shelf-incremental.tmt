@@ -1,0 +1,75 @@
+::kind(api)
+
+::meta{crate: tomet-shelf-incremental, dependencies: list(tomet-shelf-document), dependents: list(tomet-shelf-headless)}
+
+=[tomet-shelf-incremental]
+
+==[tomet-shelf-incremental]
+
+Incremental state, cache, and change detection for `tomet-shelf`.
+
+Orchestrates on-disk cache persistence, mtime/size comparison for zero-I/O
+unchanged skips, and integration with `tomet::deps` for invalidation impact analysis.
+
+==[Module cache]
+
+Persistent vault cache file management and serialization.
+
+===[Structs]
+
+====[struct VaultCache]
+
+In-memory and persistent container for cached document entries across a vault.
+
+===[Constants]
+
+====[const CACHE_FILE_NAME]
+
+Filename of the on-disk incremental cache.
+
+====[const CURRENT_SCHEMA_VERSION]
+
+Current schema version of the cache.
+Incrementing this invalidates older cache files safely.
+
+==[Module diff]
+
+Change detection between filesystem state and the incremental cache.
+
+===[Structs]
+
+====[struct ScannedDoc]
+
+Descriptor of a scanned document file on disk.
+
+====[struct ChangedDoc]
+
+A document that changed on disk and requires re-reading and parsing.
+
+====[struct ChangeDetectionResult]
+
+Partition of scanned files compared against the previous cache.
+
+===[Functions]
+
+====[fn detect_changes]
+
+Detects changes by comparing current scanned vault files against the previous cache.
+
+====[fn reconcile_vault_state]
+
+Helper to reconcile unchanged entries with newly parsed updates into updated cache and change list.
+
+==[Module entry]
+
+Cache entry and filesystem signature data models.
+
+===[Structs]
+
+====[struct FileSignature]
+
+Filesystem fingerprint of a source document.
+
+====[struct CacheEntry]
+
+A cached record for a single document.

@@ -30,6 +30,7 @@ Fast static site generator and documentation server specifically built for Tomet
 -| @dir(crates/tomet-shelf-headless) (`tomet-shelf-headless`) -- Headless SSG engine, vault state, and dev server orchestration.
 -| @dir(crates/tomet-shelf-headless-config) (`tomet-shelf-config`) -- `shelf.toml` configuration parser and models.
 -| @dir(crates/tomet-shelf-headless-document) (`tomet-shelf-document`) -- Tomet document parsing, AST transformation, and metadata extraction.
+-| @dir(crates/tomet-shelf-headless-incremental) (`tomet-shelf-incremental`) -- Incremental state, cache, and change detection.
 -| @dir(crates/tomet-shelf-headless-route) (`tomet-shelf-route`) -- Route resolution, slug generation, and URL sanitization.
 -| @dir(crates/tomet-shelf-headless-search) (`tomet-shelf-search`) -- Full-text search indexing.
 -| @dir(crates/tomet-shelf-headless-serve) (`tomet-shelf-serve`) -- Axum development server and WebSocket live reload.

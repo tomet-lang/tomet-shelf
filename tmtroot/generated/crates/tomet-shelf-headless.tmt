@@ -1,6 +1,6 @@
 ::kind(api)
 
-::meta{crate: tomet-shelf-headless, dependencies: list(tomet-shelf-config, tomet-shelf-document, tomet-shelf-icons, tomet-shelf-render, tomet-shelf-route, tomet-shelf-search, tomet-shelf-serve), dependents: list(tomet-shelf-assets, tomet-shelf-cli)}
+::meta{crate: tomet-shelf-headless, dependencies: list(tomet-shelf-config, tomet-shelf-document, tomet-shelf-icons, tomet-shelf-incremental, tomet-shelf-render, tomet-shelf-route, tomet-shelf-search, tomet-shelf-serve), dependents: list(tomet-shelf-assets, tomet-shelf-cli)}
 
 =[tomet-shelf-headless]
 
@@ -128,6 +128,30 @@ Optimizes referenced banners and profile images across all documents in parallel
 =====[fn optimize_single_doc_media]
 
 Optimizes media for a single document during incremental builds.
+
+===[Module incremental]
+
+Incremental document loading, change detection, and reconciliation for book builds.
+
+====[Structs]
+
+=====[struct IncrementalVaultState]
+
+The resolved state produced by incremental processing of a vault.
+
+====[Functions]
+
+=====[fn prepare_scanned_docs]
+
+Converts scanned doc files into [`ScannedDoc`] instances with filesystem signatures.
+
+=====[fn process_incremental_vault]
+
+Incrementally processes the vault against the previous cache:
+1. Compares file signatures to identify unchanged documents (zero I/O).
+2. Reads and parses only added and modified documents in parallel.
+3. Builds the route table and extracts dependency nodes.
+4. Reconciles state into an updated [`VaultCache`] and calculates affected paths via `tomet::deps`.
 
 ===[Module kinds]
 

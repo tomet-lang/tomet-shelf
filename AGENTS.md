@@ -45,6 +45,7 @@ All Markdown files (`README.md`, `AGENTS.md`, `CLAUDE.md`) are generated build a
 - `crates/tomet-shelf-headless`: Headless SSG engine and dev server orchestration (`tomet-shelf-headless`).
 - `crates/tomet-shelf-headless-config`: Configuration parser and models (`tomet-shelf-config`).
 - `crates/tomet-shelf-headless-document`: Document parsing, AST transformation, and metadata extraction (`tomet-shelf-document`).
+- `crates/tomet-shelf-headless-incremental`: Incremental state, cache, and change detection (`tomet-shelf-incremental`).
 - `crates/tomet-shelf-headless-route`: Route resolution, slug generation, and URL sanitization (`tomet-shelf-route`).
 - `crates/tomet-shelf-headless-search`: Search indexing (`tomet-shelf-search`).
 - `crates/tomet-shelf-headless-serve`: Axum dev server and live reload (`tomet-shelf-serve`).

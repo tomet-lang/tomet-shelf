@@ -16,12 +16,14 @@ tomet-shelf-render = { path = "crates/tomet-shelf-render" }
 tomet-shelf-headless = { path = "crates/tomet-shelf-headless" }
 tomet-shelf-config = { path = "crates/tomet-shelf-headless-config" }
 tomet-shelf-document = { path = "crates/tomet-shelf-headless-document" }
+tomet-shelf-incremental = { path = "crates/tomet-shelf-headless-incremental" }
 tomet-shelf-route = { path = "crates/tomet-shelf-headless-route" }
 tomet-shelf-search = { path = "crates/tomet-shelf-headless-search" }
 tomet-shelf-serve = { path = "crates/tomet-shelf-headless-serve" }
 
 #= Tomet
 tomet = { git = "https://github.com/tomet-lang/tomet.git", features = [
+  "deps",
   "html",
   "links",
   "parser",

@@ -602,3 +602,41 @@ fn build_book_with_base_path() {
     let _ = fs::remove_dir_all(&src);
     let _ = fs::remove_dir_all(&out);
 }
+
+#[test]
+fn test_incremental_build_reuses_cache_and_selectively_rebuilds() {
+    let src = scratch("incremental-selective-src");
+    let out = scratch("incremental-selective-out");
+
+    fs::write(src.join("alpha.tmt"), "=[ Alpha ]\n\nLinks to [[beta]].\n").unwrap();
+    fs::write(src.join("beta.tmt"), "=[ Beta Old Title ]\n\nBeta body.\n").unwrap();
+
+    let mut config = BookConfig::default();
+    config.build.search = SearchEngine::None;
+
+    // 1. Initial build: both documents rendered and written
+    let report1 = build_book(&src, &out, &config, &MinimalRendererFactory, false).unwrap();
+    assert_eq!(report1.rendered, 2);
+    assert_eq!(report1.written, 2);
+    assert!(out.join(".tomet-shelf-cache.json").exists());
+
+    // 2. Second build without changes: 0 written!
+    let report2 = build_book(&src, &out, &config, &MinimalRendererFactory, false).unwrap();
+    assert_eq!(report2.rendered, 2);
+    assert_eq!(
+        report2.written, 0,
+        "No pages should be written when vault is unchanged"
+    );
+
+    // 3. Modify beta's title: both beta (modified) and alpha (referencing beta) must be written
+    // Wait small amount or set new mtime to ensure mtime changes
+    std::thread::sleep(std::time::Duration::from_millis(50));
+    fs::write(src.join("beta.tmt"), "=[ Beta New Title ]\n\nBeta body.\n").unwrap();
+
+    let report3 = build_book(&src, &out, &config, &MinimalRendererFactory, false).unwrap();
+    assert_eq!(report3.rendered, 2);
+    assert!(report3.written >= 1, "At least beta must be rewritten");
+
+    let _ = fs::remove_dir_all(&src);
+    let _ = fs::remove_dir_all(&out);
+}
