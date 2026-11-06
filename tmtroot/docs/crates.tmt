@@ -1,6 +1,6 @@
 ::kind(doc)
+::id(crates)
 ::meta{
-  id: crates,
   lang: en
 }
 

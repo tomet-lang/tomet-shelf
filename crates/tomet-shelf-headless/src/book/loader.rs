@@ -10,7 +10,7 @@ pub struct ScannedVault {
     pub media_files: Vec<MediaFileInfo>,
     pub vault_index: tomet::links::VaultLinkIndex,
     pub workspace_config_src: Option<String>,
-    pub workspace_config_blocks: Vec<tomet::ast::Block>,
+    pub workspace_config_declarations: Vec<tomet::ast::Declaration>,
     /// The documents that shape the book without being part of it:
     /// `*.index.tmt` and `*.config.tmt`, in filename order, so a long index
     /// can be split the way a long stylesheet is.
@@ -128,7 +128,7 @@ pub fn scan_vault(src_dir: &Path, config: &BookConfig) -> Result<ScannedVault> {
         if ext == "tmt" || ext == "tm" {
             // `*.index.tmt` and `*.config.tmt` shape the book; they are not
             // part of it. Left in `doc_files` they would each publish a page
-            // of their own -- which `default.config.tmt` has been doing.
+            // of their own -- which `vault.config.tmt` has been doing.
             if crate::book::catalog::is_control_document(&rel_str) {
                 control_files.push(DocFileInfo {
                     abs_path: path.to_path_buf(),
@@ -151,11 +151,11 @@ pub fn scan_vault(src_dir: &Path, config: &BookConfig) -> Result<ScannedVault> {
     // Build link resolution index
     let vault_index = tomet::links::VaultLinkIndex::from_paths(&all_rel_paths);
 
-    // Check for default.config.tmt
+    // Check for vault.config.tmt
     let workspace_cfg_path = if let Some(custom) = &config.build.config_path {
         src_dir.join(custom)
     } else {
-        src_dir.join("default.config.tmt")
+        src_dir.join("vault.config.tmt")
     };
 
     let workspace_config_src = if workspace_cfg_path.exists() {
@@ -164,9 +164,9 @@ pub fn scan_vault(src_dir: &Path, config: &BookConfig) -> Result<ScannedVault> {
         None
     };
 
-    let workspace_config_blocks = workspace_config_src
+    let workspace_config_declarations = workspace_config_src
         .as_deref()
-        .map(crate::book::document::extract_workspace_config_blocks)
+        .map(crate::book::document::extract_workspace_config_declarations)
         .unwrap_or_default();
 
     // WalkDir does not promise an order, and the catalog must not depend on
@@ -178,7 +178,7 @@ pub fn scan_vault(src_dir: &Path, config: &BookConfig) -> Result<ScannedVault> {
         media_files,
         vault_index,
         workspace_config_src,
-        workspace_config_blocks,
+        workspace_config_declarations,
         control_files,
     })
 }

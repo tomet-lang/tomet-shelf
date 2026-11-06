@@ -431,7 +431,7 @@ fn build_book_id_routing_behavior() {
     fs::create_dir_all(&notes_dir).unwrap();
     fs::write(
         notes_dir.join("my-note.tmt"),
-        "::meta{ id: \"random-uuid-1234\" }\n\n#[ My Note ]\n\nContent.\n",
+        "::id(random-uuid-1234)\n\n#[ My Note ]\n\nContent.\n",
     )
     .unwrap();
     fs::write(

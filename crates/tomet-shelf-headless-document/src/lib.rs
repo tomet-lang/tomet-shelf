@@ -52,34 +52,36 @@ pub struct ProcessedDoc {
     pub outgoing: Vec<String>,
 }
 
-/// Extract the `::config`/`::settings` blocks of a workspace-wide document.
-pub fn extract_workspace_config_blocks(workspace_cfg_src: &str) -> Vec<tomet::ast::Block> {
-    let Ok(cfg_doc) = tomet::parser::parse_document(workspace_cfg_src) else {
+/// Extract configuration declarations (such as `::config`, `::settings`, `::macros`, `::vars`)
+/// of a workspace-wide document.
+pub fn extract_workspace_config_declarations(
+    workspace_cfg_src: &str,
+) -> Vec<tomet::ast::Declaration> {
+    let Ok(cfg_doc) = tomet::parser::parse_file(workspace_cfg_src) else {
         return Vec::new();
     };
 
     cfg_doc
-        .blocks
+        .header
         .into_iter()
-        .filter(|block| match block {
-            tomet::ast::Block::Element(el) => {
-                let kind = tomet::semantics::classify_std_lenient(el);
-                kind.as_str() == "config" || kind.as_str() == "settings"
-            }
-            _ => false,
+        .filter(|decl| {
+            !decl.name.is_bare_named("kind")
+                && !decl.name.is_bare_named("id")
+                && !decl.name.is_bare_named("meta")
         })
         .collect()
 }
 
-/// Prepend pre-parsed workspace-wide config blocks so shared macros are in scope.
-pub fn inject_workspace_config_blocks(
-    doc: &mut tomet::ast::Document,
-    prefix_blocks: &[tomet::ast::Block],
+/// Prepend pre-parsed workspace-wide configuration declarations so shared macros and config
+/// are in scope.
+pub fn inject_workspace_config_declarations(
+    doc: &mut tomet::File,
+    prefix_decls: &[tomet::ast::Declaration],
 ) {
-    if !prefix_blocks.is_empty() {
-        let mut new_blocks = prefix_blocks.to_vec();
-        new_blocks.append(&mut doc.blocks);
-        doc.blocks = new_blocks;
+    if !prefix_decls.is_empty() {
+        let mut new_header = prefix_decls.to_vec();
+        new_header.append(&mut doc.header);
+        doc.header = new_header;
     }
 }
 
@@ -122,11 +124,8 @@ fn resolve_title(
 /// single link, since a link to a document the site leaves out has to come
 /// out broken. That decision needs the `::kind`, and the `::kind` needs a
 /// parse -- so the parse is done once, here, and handed on.
-pub fn parse_tomet_document(
-    source: &str,
-    rel_path: &str,
-) -> Result<(tomet::ast::Document, Option<String>)> {
-    let doc = tomet::parser::parse_document(source)
+pub fn parse_tomet_document(source: &str, rel_path: &str) -> Result<(tomet::File, Option<String>)> {
+    let doc = tomet::parser::parse_file(source)
         .map_err(|e| anyhow::anyhow!("Failed to parse {rel_path}: {e}"))?;
     let kind = tomet::declaration::document_kind(&doc).map(|s| s.to_string());
     Ok((doc, kind))
@@ -156,7 +155,7 @@ pub fn process_tomet_document(
 
 #[allow(clippy::too_many_arguments)]
 pub fn process_parsed_document(
-    doc: tomet::ast::Document,
+    doc: tomet::File,
     rel_path: &str,
     abs_path: Option<&Path>,
     config: &BookConfig,
@@ -165,30 +164,30 @@ pub fn process_parsed_document(
     unpublished: &HashSet<String>,
     route_table: Option<&RouteTable>,
 ) -> Result<ProcessedDoc> {
-    let blocks = workspace_cfg_src
-        .map(extract_workspace_config_blocks)
+    let decls = workspace_cfg_src
+        .map(extract_workspace_config_declarations)
         .unwrap_or_default();
-    process_parsed_document_with_blocks(
+    process_parsed_document_with_declarations(
         doc,
         rel_path,
         abs_path,
         config,
         vault_index,
-        &blocks,
+        &decls,
         unpublished,
         route_table,
     )
 }
 
-/// Turn a parsed document into the page it becomes using pre-parsed workspace config blocks.
+/// Turn a parsed document into the page it becomes using pre-parsed workspace config declarations.
 #[allow(clippy::too_many_arguments)]
-pub fn process_parsed_document_with_blocks(
-    doc: tomet::ast::Document,
+pub fn process_parsed_document_with_declarations(
+    doc: tomet::File,
     rel_path: &str,
     abs_path: Option<&Path>,
     config: &BookConfig,
     vault_index: &tomet::links::VaultLinkIndex,
-    workspace_cfg_blocks: &[tomet::ast::Block],
+    workspace_cfg_declarations: &[tomet::ast::Declaration],
     unpublished: &HashSet<String>,
     route_table: Option<&RouteTable>,
 ) -> Result<ProcessedDoc> {
@@ -198,29 +197,29 @@ pub fn process_parsed_document_with_blocks(
         abs_path,
         config,
         vault_index,
-        workspace_cfg_blocks,
+        workspace_cfg_declarations,
         unpublished,
         route_table,
         None,
     )
 }
 
-/// Turn a parsed document into the page it becomes using pre-parsed workspace config blocks
+/// Turn a parsed document into the page it becomes using pre-parsed workspace config declarations
 /// and an optional custom element renderer (e.g. for `@doc.icon`).
 #[allow(clippy::too_many_arguments)]
 pub fn process_parsed_document_with_custom_element(
-    mut doc: tomet::ast::Document,
+    mut doc: tomet::File,
     rel_path: &str,
     abs_path: Option<&Path>,
     config: &BookConfig,
     vault_index: &tomet::links::VaultLinkIndex,
-    workspace_cfg_blocks: &[tomet::ast::Block],
+    workspace_cfg_declarations: &[tomet::ast::Declaration],
     unpublished: &HashSet<String>,
     route_table: Option<&RouteTable>,
     custom_element: Option<tomet::html::CustomElementRenderer>,
 ) -> Result<ProcessedDoc> {
-    // 1. Bring in the vault-wide config (e.g. default.config.tmt)
-    inject_workspace_config_blocks(&mut doc, workspace_cfg_blocks);
+    // 1. Bring in the vault-wide config (e.g. vault.config.tmt)
+    inject_workspace_config_declarations(&mut doc, workspace_cfg_declarations);
 
     // 2. Prepare expressions and macros via Tomet Vault
     let vault_root = abs_path.and_then(|p| p.parent()).unwrap_or(Path::new("."));
@@ -326,10 +325,10 @@ pub fn process_parsed_document_with_custom_element(
         && let Some(tomet::ast::Value::Map(entries)) = raw_meta.as_ref()
         && let Some((_, tomet::ast::Value::Element(el))) = entries.iter().find(|(k, _)| k == "icon")
     {
-        let name = el.sigil.name().map(|n| n.to_string()).unwrap_or_default();
+        let name = el.name.to_string();
         if name == "doc.icon" {
             let bindings = tomet::semantics::Bindings::default();
-            let args = tomet::semantics::normalized_element_args_in(el, &bindings);
+            let args = tomet::semantics::normalized_element_args_in(el.as_view(), &bindings);
             if let Some(tomet::ast::Value::Map(arg_map)) = args.as_ref() {
                 let icon_name = arg_map
                     .iter()
@@ -576,6 +575,31 @@ mod kind_tests {
                 pkg: "simple".to_string(),
                 name: "github".to_string(),
             })
+        );
+    }
+
+    #[test]
+    fn workspace_config_macro_is_injected_into_page() {
+        let config = BookConfig::default();
+        let vault = VaultLinkIndex::from_paths(&["index.tmt".to_string()]);
+        let workspace_cfg = "::kind(config)\n::macros{ site_name: \"Tomet Shelf\" }\n";
+
+        let out = process_tomet_document(
+            "=[ Welcome to ${macro.site_name()} ]\n\nHello from ${macro.site_name()}.\n",
+            "index.tmt",
+            None,
+            &config,
+            &vault,
+            Some(workspace_cfg),
+            &HashSet::new(),
+        )
+        .unwrap();
+
+        assert_eq!(out.title, "Welcome to Tomet Shelf");
+        assert!(
+            out.body_html.contains("Hello from Tomet Shelf"),
+            "macro should be expanded in body: {}",
+            out.body_html
         );
     }
 }

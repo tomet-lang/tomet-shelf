@@ -1,6 +1,6 @@
 ::kind(adr)
+::id(adr-0001)
 ::meta{
-  id: adr-0001
   category: list("template", "renderer")
 }
 

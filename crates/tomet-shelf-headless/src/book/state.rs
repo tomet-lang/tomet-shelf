@@ -27,7 +27,7 @@ pub struct RenderContext<'a> {
     pub src_dir: &'a Path,
     pub vault_index: &'a tomet::links::VaultLinkIndex,
     pub workspace_cfg_src: Option<&'a str>,
-    pub workspace_cfg_blocks: &'a [tomet::ast::Block],
+    pub workspace_cfg_declarations: &'a [tomet::ast::Declaration],
     pub renderer: &'a dyn PageRenderer,
     /// The documents the last full build left out, so a page re-rendered on
     /// its own still shows links to them as broken.
@@ -68,7 +68,7 @@ impl VaultState {
     ) -> Result<Self> {
         let scanned = scan_vault(src_dir, config).context("Failed to scan vault")?;
 
-        let parsed: Vec<Result<(tomet::ast::Document, Option<String>), DocFailure>> = scanned
+        let parsed: Vec<Result<(tomet::File, Option<String>), DocFailure>> = scanned
             .doc_files
             .par_iter()
             .map(|doc_file| {
@@ -169,7 +169,7 @@ impl VaultState {
                     Some(&doc_file.abs_path),
                     config,
                     &scanned.vault_index,
-                    &scanned.workspace_config_blocks,
+                    &scanned.workspace_config_declarations,
                     &unpublished,
                     Some(&route_table),
                     custom_element.clone(),
@@ -294,7 +294,7 @@ impl VaultState {
             src_dir: &self.src_dir,
             vault_index: &self.scanned.vault_index,
             workspace_cfg_src: self.scanned.workspace_config_src.as_deref(),
-            workspace_cfg_blocks: &self.scanned.workspace_config_blocks,
+            workspace_cfg_declarations: &self.scanned.workspace_config_declarations,
             renderer: self.renderer.as_ref(),
             unpublished: &self.unpublished,
             book_index: &self.book_index,
@@ -364,7 +364,7 @@ pub fn render_single_document_html(
         Some(abs_path),
         config,
         cx.vault_index,
-        cx.workspace_cfg_blocks,
+        cx.workspace_cfg_declarations,
         cx.unpublished,
         Some(cx.route_table),
         custom_element,
@@ -403,7 +403,7 @@ pub fn render_single_document(
         Some(abs_path),
         config,
         cx.vault_index,
-        cx.workspace_cfg_blocks,
+        cx.workspace_cfg_declarations,
         cx.unpublished,
         Some(cx.route_table),
         custom_element,

@@ -101,7 +101,7 @@ pub fn write_if_changed(path: &Path, content: &str) -> Result<bool> {
 }
 pub(crate) fn read_written_index(
     scanned: &ScannedVault,
-    _parsed: &[Result<(tomet::ast::Document, Option<String>), DocFailure>],
+    _parsed: &[Result<(tomet::File, Option<String>), DocFailure>],
     src_dir: &Path,
     route_table: Option<&slug::RouteTable>,
 ) -> Option<Vec<catalog::IndexEntry>> {
