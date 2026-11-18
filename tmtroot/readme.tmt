@@ -1,13 +1,13 @@
+::id(doc-readme)
 ::export(
-  type: commonmark,
+  type: commonmark
   path: "README.md"
 )
-::id(doc-readme)
-::meta{
+::meta(
   lang: en
-}
+)
 
-${macro.generated_by(self.path)}
+$macro.generated_by(self::path)
 
 =[ Tomet Shelf ]
 
@@ -36,16 +36,19 @@ Fast static site generator and documentation server specifically built for Tomet
 ==[ Building and Running ]
 
 === Build workspace
+
 ```bash
-cargo build --workspace
+`` cargo build --workspace
 ```
 
 === Run tests
+
 ```bash
-cargo test --workspace
+`` cargo test --workspace
 ```
 
 === Serve a vault locally
+
 ```bash
-cargo run -p tomet-shelf-cli -- serve tmtroot/
+`` cargo run -p tomet-shelf-cli -- serve tmtroot/
 ```

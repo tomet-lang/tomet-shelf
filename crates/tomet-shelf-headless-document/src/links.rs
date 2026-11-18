@@ -305,7 +305,7 @@ mod tests {
 /// another Tomet document count -- media and external URLs are not pages, and
 /// a document linking to itself is not a backlink.
 pub fn outgoing_page_slugs(
-    doc: &tomet::File,
+    doc: &tomet::ast::File,
     from_path: &Path,
     own_slug: &str,
     vault_index: &tomet::links::VaultLinkIndex,
@@ -380,7 +380,7 @@ mod outgoing_tests {
     }
 
     fn slugs(source: &str, paths: &[&str], own: &str) -> Vec<String> {
-        let doc = tomet::parser::parse_file(source).unwrap();
+        let doc = tomet::parse_file(source).unwrap();
         let index = tomet::links::VaultLinkIndex::from_paths(paths);
         outgoing_page_slugs(
             &doc,

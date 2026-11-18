@@ -1,5 +1,7 @@
 # Checks that were red on `main` (found while taking commonfiles, 2026-10-24)
 
+> Cross-repository coordination: `bearings/initiatives/follow-declarations.tmt` (the table and the order live there; the work stays here).
+
 - [x] CI "Run CI checks & tests" (`just ci`) failed on the last five runs of `main`: `nix fmt -- --ci` wanted four Rust files
   (`tomet-shelf-assets/src/lib.rs`, `tomet-shelf-render/src/document/code.rs`, `tomet-shelf/src/book/image_opt.rs`, `tomet-shelf/src/serve.rs`)
   and `nix/default.nix` (statix: `inherit (sisho) tomet;`) formatted. Done in a `style:` commit with the common files; `just check`, clippy

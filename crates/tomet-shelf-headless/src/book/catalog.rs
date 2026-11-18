@@ -23,7 +23,7 @@
 
 use std::path::Path;
 
-use tomet::ast::{Block, Inline, ListItem};
+use tomet::ast::{Block, File, ListItem};
 use tomet::links::VaultLinkIndex;
 
 use super::document::strip_doc_extension;
@@ -80,7 +80,7 @@ pub fn parse_index_document(
     vault_root: Option<&Path>,
     route_table: Option<&crate::book::slug::RouteTable>,
 ) -> IndexOutline {
-    let Ok(mut doc) = tomet::parser::parse_file(source) else {
+    let Ok(mut doc) = tomet::parse_file(source) else {
         return IndexOutline::default();
     };
 
@@ -148,7 +148,7 @@ fn collect_list_items(
         // A list item's own link lives in its content; the sub-list it
         // opens lives in its sublist. Reading them separately is what
         // keeps a parent from claiming its first child's target.
-        let target = first_page_target(&item.content);
+        let target = first_page_target(item);
 
         let children = item
             .sublist
@@ -179,82 +179,23 @@ fn collect_list_items(
 
 /// The first link in a list item that could point at a page.
 ///
-/// Directly walks the item's block elements to extract the first link target
-/// with a file, document, or ref target scheme.
-fn first_page_target(blocks: &[Block]) -> Option<String> {
-    for block in blocks {
-        if let Some(target) = first_block_link_target(block) {
-            return Some(target);
-        }
-    }
-    None
-}
+/// Wrapping the item's blocks in a throwaway document is what lets this
+/// reuse `collect_links` rather than re-deriving which elements and which
+/// schemes count as a link.
+fn first_page_target(item: &ListItem) -> Option<String> {
+    let probe = File::new(Vec::new(), item.content.to_vec(), item.span);
 
-fn first_block_link_target(block: &Block) -> Option<String> {
-    match block {
-        Block::Paragraph(p) => {
-            for inline in &p.content {
-                if let Inline::Element(el) = inline {
-                    if let Some(target) = first_element_link_target(el) {
-                        return Some(target);
-                    }
-                }
-            }
-        }
-        Block::Element(el) => {
-            if let Some(target) = first_element_link_target(el) {
-                return Some(target);
-            }
-        }
-        Block::Section(s) => {
-            for inline in &s.title {
-                if let Inline::Element(el) = inline {
-                    if let Some(target) = first_element_link_target(el) {
-                        return Some(target);
-                    }
-                }
-            }
-            if let Some(target) = first_page_target(&s.blocks) {
-                return Some(target);
-            }
-        }
-        Block::List(l) => {
-            for item in &l.items {
-                if let Some(target) = first_page_target(&item.content) {
-                    return Some(target);
-                }
-            }
-        }
-        _ => {}
-    }
-    None
-}
-
-fn first_element_link_target(el: &tomet::ast::Element) -> Option<String> {
-    let view = el.as_view();
-    if let Some((kind, target)) =
-        tomet::semantics::link_target_of(view).or_else(|| tomet::semantics::path_target_of(view))
-    {
-        match kind {
-            tomet::semantics::ElementKind::File => return Some(target),
-            tomet::semantics::ElementKind::Link => {
-                let (scheme, rest) = tomet::semantics::target_scheme(&target);
-                match scheme {
-                    tomet::semantics::TargetScheme::File
-                    | tomet::semantics::TargetScheme::Document
-                    | tomet::semantics::TargetScheme::Ref => return Some(rest.to_string()),
-                    _ => {}
-                }
-            }
-            _ => {}
-        }
-    }
-    if let Some(content) = &el.content {
-        if let Some(target) = first_page_target(content) {
-            return Some(target);
-        }
-    }
-    None
+    tomet::links::collect_links(&probe)
+        .into_iter()
+        .find(|link| {
+            matches!(
+                link.kind,
+                tomet::links::LinkKind::Ref
+                    | tomet::links::LinkKind::Tmt
+                    | tomet::links::LinkKind::File
+            )
+        })
+        .map(|link| link.target)
 }
 
 /// Resolve a link target to the slug of a page, or `None` when it points at

@@ -57,7 +57,7 @@ pub struct ProcessedDoc {
 pub fn extract_workspace_config_declarations(
     workspace_cfg_src: &str,
 ) -> Vec<tomet::ast::Declaration> {
-    let Ok(cfg_doc) = tomet::parser::parse_file(workspace_cfg_src) else {
+    let Ok(cfg_doc) = tomet::parse_file(workspace_cfg_src) else {
         return Vec::new();
     };
 
@@ -124,8 +124,11 @@ fn resolve_title(
 /// single link, since a link to a document the site leaves out has to come
 /// out broken. That decision needs the `::kind`, and the `::kind` needs a
 /// parse -- so the parse is done once, here, and handed on.
-pub fn parse_tomet_document(source: &str, rel_path: &str) -> Result<(tomet::File, Option<String>)> {
-    let doc = tomet::parser::parse_file(source)
+pub fn parse_tomet_document(
+    source: &str,
+    rel_path: &str,
+) -> Result<(tomet::ast::File, Option<String>)> {
+    let doc = tomet::parse_file(source)
         .map_err(|e| anyhow::anyhow!("Failed to parse {rel_path}: {e}"))?;
     let kind = tomet::declaration::document_kind(&doc).map(|s| s.to_string());
     Ok((doc, kind))
@@ -155,7 +158,7 @@ pub fn process_tomet_document(
 
 #[allow(clippy::too_many_arguments)]
 pub fn process_parsed_document(
-    doc: tomet::File,
+    doc: tomet::ast::File,
     rel_path: &str,
     abs_path: Option<&Path>,
     config: &BookConfig,
@@ -182,7 +185,7 @@ pub fn process_parsed_document(
 /// Turn a parsed document into the page it becomes using pre-parsed workspace config declarations.
 #[allow(clippy::too_many_arguments)]
 pub fn process_parsed_document_with_declarations(
-    doc: tomet::File,
+    doc: tomet::ast::File,
     rel_path: &str,
     abs_path: Option<&Path>,
     config: &BookConfig,
@@ -208,7 +211,7 @@ pub fn process_parsed_document_with_declarations(
 /// and an optional custom element renderer (e.g. for `@doc.icon`).
 #[allow(clippy::too_many_arguments)]
 pub fn process_parsed_document_with_custom_element(
-    mut doc: tomet::File,
+    mut doc: tomet::ast::File,
     rel_path: &str,
     abs_path: Option<&Path>,
     config: &BookConfig,
@@ -322,36 +325,29 @@ pub fn process_parsed_document_with_custom_element(
 
     // `icon: @doc.icon("cake")` fallback if not parsed via meta_json
     if props.icon.is_none()
-        && let Some(tomet::ast::Value::Map(entries)) = raw_meta.as_ref()
-        && let Some((_, tomet::ast::Value::Element(el))) = entries.iter().find(|(k, _)| k == "icon")
+        && let Some(tomet::ast::Value::Tuple(tuple)) = raw_meta.as_ref()
+        && let Some(tomet::ast::Value::Element(el)) = tuple.get("icon")
+        && el.name.to_string() == "doc.icon"
+        && let Some(arg_tuple) = &el.data.args
     {
-        let name = el.name.to_string();
-        if name == "doc.icon" {
-            let bindings = tomet::semantics::Bindings::default();
-            let args = tomet::semantics::normalized_element_args_in(el.as_view(), &bindings);
-            if let Some(tomet::ast::Value::Map(arg_map)) = args.as_ref() {
-                let icon_name = arg_map
-                    .iter()
-                    .find(|(k, _)| k == "name")
-                    .and_then(|(_, v)| match v {
-                        tomet::ast::Value::String(s) => Some(s.clone()),
-                        _ => None,
-                    })
-                    .unwrap_or_default();
-                let pkg = arg_map
-                    .iter()
-                    .find(|(k, _)| k == "pkg")
-                    .and_then(|(_, v)| match v {
-                        tomet::ast::Value::String(s) => Some(s.clone()),
-                        _ => None,
-                    })
-                    .unwrap_or_else(|| "lucide".to_string());
-                props.icon = Some(DocIcon::Named {
-                    pkg,
-                    name: icon_name,
-                });
-            }
-        }
+        let icon_name = arg_tuple
+            .get("name")
+            .or_else(|| arg_tuple.nth_unnamed(0))
+            .and_then(|v| v.as_scalar())
+            .and_then(|s| s.text())
+            .map(std::borrow::Cow::into_owned)
+            .unwrap_or_default();
+        let pkg = arg_tuple
+            .get("pkg")
+            .or_else(|| arg_tuple.nth_unnamed(1))
+            .and_then(|v| v.as_scalar())
+            .and_then(|s| s.text())
+            .map(std::borrow::Cow::into_owned)
+            .unwrap_or_else(|| "lucide".to_string());
+        props.icon = Some(DocIcon::Named {
+            pkg,
+            name: icon_name,
+        });
     }
 
     // Merge links from @meta into body links, dropping self-references and duplicates.
@@ -523,7 +519,7 @@ mod kind_tests {
         let vault = VaultLinkIndex::from_paths(&["page.tmt".to_string()]);
 
         let out = process_tomet_document(
-            "::meta{icon: @doc.icon(\"cake\")}\n\n#[ Page ]\n\nbody\n",
+            "::meta(icon: @doc.icon(\"cake\"))\n\n#[ Page ]\n\nbody\n",
             "page.tmt",
             None,
             &config,
@@ -548,7 +544,7 @@ mod kind_tests {
         let vault = VaultLinkIndex::from_paths(&["page.tmt".to_string()]);
 
         let out = process_tomet_document(
-            "::meta{icon: \"🎂\"}\n\n#[ Page ]\n\nbody\n",
+            "::meta(icon: \"🎂\")\n\n#[ Page ]\n\nbody\n",
             "page.tmt",
             None,
             &config,
@@ -560,7 +556,7 @@ mod kind_tests {
         assert_eq!(out.icon, Some(DocIcon::Text("🎂".to_string())));
 
         let out2 = process_tomet_document(
-            "::meta{icon: \"simple:github\"}\n\n#[ Page ]\n\nbody\n",
+            "::meta(icon: \"simple:github\")\n\n#[ Page ]\n\nbody\n",
             "page.tmt",
             None,
             &config,
@@ -582,10 +578,10 @@ mod kind_tests {
     fn workspace_config_macro_is_injected_into_page() {
         let config = BookConfig::default();
         let vault = VaultLinkIndex::from_paths(&["index.tmt".to_string()]);
-        let workspace_cfg = "::kind(config)\n::macros{ site_name: \"Tomet Shelf\" }\n";
+        let workspace_cfg = "::kind(config)\n::macro( site_name: \"Tomet Shelf\" )\n";
 
         let out = process_tomet_document(
-            "=[ Welcome to ${macro.site_name()} ]\n\nHello from ${macro.site_name()}.\n",
+            "=[ Welcome to $macro.site_name() ]\n\nHello from $macro.site_name().\n",
             "index.tmt",
             None,
             &config,

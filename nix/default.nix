@@ -17,7 +17,10 @@ flake-parts.lib.mkFlake { inherit inputs; } {
     let
       system = pkgs.stdenv.hostPlatform.system;
       craneLib = inputs.crane.mkLib pkgs;
-      sisho = inputs.sisho.packages.${system};
+      tometPkgs = inputs.tomet.packages.${system};
+      twritPkgs = inputs.twrit.packages.${system};
+      catastoPkgs = inputs.catasto.packages.${system};
+      sishoPkgs = inputs.sisho.packages.${system};
     in
     {
       packages = rec {
@@ -45,18 +48,21 @@ flake-parts.lib.mkFlake { inherit inputs; } {
         fenix = inputs.fenix.packages.${system};
         tomet-shelf = pkgs.callPackage ./pkgs/tomet-shelf.nix { inherit craneLib; };
         # The other tools; tomet-shelf itself is the one built from this checkout.
-        tools = inputs.sisho.legacyPackages.${system}.combine [
-          sisho.sisho
-          sisho.tomet
-          sisho.tomet-lsp
-          sisho.twrit
-          # `sisho check` runs `catasto check` beside `tomet` and `twrit`.
-          sisho.catasto
-        ];
+        tools = pkgs.symlinkJoin {
+          name = "tomet-toolchain";
+          paths = [
+            sishoPkgs.sisho
+            tometPkgs.tomet
+            tometPkgs.tomet-lsp
+            twritPkgs.twrit
+            # `sisho check` runs `catasto check` beside `tomet` and `twrit`.
+            catastoPkgs.catasto
+          ];
+        };
       };
 
       treefmt = import ./formatter.nix {
-        inherit (sisho) tomet;
+        inherit (tometPkgs) tomet;
       };
     };
 }

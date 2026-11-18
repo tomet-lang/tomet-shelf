@@ -109,15 +109,25 @@ pub(super) fn extract_icon(
             if el_name == Some("doc.icon") {
                 let args = obj.get("args");
                 let name = match args {
-                    Some(Value::Object(m)) => {
-                        m.get("name").and_then(|v| v.as_str()).unwrap_or_default()
+                    Some(Value::Object(m)) => m
+                        .get("name")
+                        .or_else(|| m.get("0"))
+                        .and_then(|v| v.as_str())
+                        .unwrap_or_default(),
+                    Some(Value::Array(arr)) => {
+                        arr.first().and_then(|v| v.as_str()).unwrap_or_default()
                     }
                     Some(Value::String(s)) => s.as_str(),
                     _ => "",
                 };
                 let pkg = match args {
-                    Some(Value::Object(m)) => {
-                        m.get("pkg").and_then(|v| v.as_str()).unwrap_or("lucide")
+                    Some(Value::Object(m)) => m
+                        .get("pkg")
+                        .or_else(|| m.get("1"))
+                        .and_then(|v| v.as_str())
+                        .unwrap_or("lucide"),
+                    Some(Value::Array(arr)) => {
+                        arr.get(1).and_then(|v| v.as_str()).unwrap_or("lucide")
                     }
                     _ => "lucide",
                 };

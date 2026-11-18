@@ -1,8 +1,8 @@
 ::kind(doc)
 ::id(crates)
-::meta{
+::meta(
   lang: en
-}
+)
 
 =[ Crates API Reference ]
 

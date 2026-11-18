@@ -68,7 +68,7 @@ impl VaultState {
     ) -> Result<Self> {
         let scanned = scan_vault(src_dir, config).context("Failed to scan vault")?;
 
-        let parsed: Vec<Result<(tomet::File, Option<String>), DocFailure>> = scanned
+        let parsed: Vec<Result<(tomet::ast::File, Option<String>), DocFailure>> = scanned
             .doc_files
             .par_iter()
             .map(|doc_file| {

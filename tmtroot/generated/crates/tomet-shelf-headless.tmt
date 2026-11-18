@@ -1,6 +1,6 @@
 ::kind(api)
 
-::meta{crate: tomet-shelf-headless, dependencies: list(tomet-shelf-config, tomet-shelf-document, tomet-shelf-icons, tomet-shelf-incremental, tomet-shelf-render, tomet-shelf-route, tomet-shelf-search, tomet-shelf-serve), dependents: list(tomet-shelf-assets, tomet-shelf-cli)}
+::meta(crate: tomet-shelf-headless, dependencies: (tomet-shelf-config, tomet-shelf-document, tomet-shelf-icons, tomet-shelf-incremental, tomet-shelf-render, tomet-shelf-route, tomet-shelf-search, tomet-shelf-serve), dependents: (tomet-shelf-assets, tomet-shelf-cli))
 
 =[tomet-shelf-headless]
 
@@ -8,10 +8,10 @@ Headless engine library surface for `tomet-shelf-headless`.
 
 Provides the primary API for building and serving Tomet books:
 
-- `book::build_book` an entire book from a vault directory.:Builds
-- `run_dev_server` a local development server with live reload.:Runs
-- `config::BookConfig` parser and models.:Configuration
-- `PageRenderer` / [`RendererFactory`]: Template-engine-agnostic page rendering traits.
+- `book::build_book`: Builds an entire book from a vault directory.
+- `run_dev_server`: Runs a local development server with live reload.
+- `config::BookConfig`: Configuration parser and models.
+- `PageRenderer` / \[`RendererFactory`\]: Template-engine-agnostic page rendering traits.
 
 ==[Module assets]
 
@@ -47,16 +47,16 @@ The file is an ordinary Tomet document -- a nested list of links -- so it
 needs no syntax of its own. An entry may also be a `${filter(...)}` query
 (tomet-core's `tomet-transform::index_query`, shared rather than
 reimplemented here): it expands into the same `@link(ref:"...")` shape
-before this module ever sees the tree, so [`collect_blocks`] does not
+before this module ever sees the tree, so \[`collect_blocks`\] does not
 need to know a query was ever there.
 
 ```tomet
-@kind(doc.index)
-
-- @link(ref:"getting-started")
-- @link(ref:"concepts")
-  - @link(ref:"concepts/tomet")
-  - ${filter(contains(path, "concepts/"), by(path))}
+`` @kind(doc.index)
+``
+`` - @link(ref:"getting-started")
+`` - @link(ref:"concepts")
+``   - @link(ref:"concepts/tomet")
+``   - ${filter(contains(path, "concepts/"), by(path))}
 ```
 
 ====[Structs]
@@ -143,7 +143,7 @@ The resolved state produced by incremental processing of a vault.
 
 =====[fn prepare_scanned_docs]
 
-Converts scanned doc files into [`ScannedDoc`] instances with filesystem signatures.
+Converts scanned doc files into \[`ScannedDoc`\] instances with filesystem signatures.
 
 =====[fn process_incremental_vault]
 
@@ -151,7 +151,7 @@ Incrementally processes the vault against the previous cache:
 1. Compares file signatures to identify unchanged documents (zero I/O).
 2. Reads and parses only added and modified documents in parallel.
 3. Builds the route table and extracts dependency nodes.
-4. Reconciles state into an updated [`VaultCache`] and calculates affected paths via `tomet::deps`.
+4. Reconciles state into an updated \[`VaultCache`\] and calculates affected paths via `tomet::deps`.
 
 ===[Module kinds]
 
@@ -162,9 +162,9 @@ what they say they are. One ordered list does both an allow list and a
 deny list, the way `.gitignore` does:
 
 ```toml
-kinds = ["*", "!config", "!index"]    # everything but these
-kinds = ["page", "unit"]              # only these
-kinds = ["*", "!deck.*", "deck.card"] # a namespace, minus one exception
+`` kinds = ["*", "!config", "!index"]    # everything but these
+`` kinds = ["page", "unit"]              # only these
+`` kinds = ["*", "!deck.*", "deck.card"] # a namespace, minus one exception
 ```
 
 The borrowed half is the notation, not the difficulty: gitignore's sharp
@@ -328,7 +328,7 @@ Minimal template-engine-free renderer for headless tests and barebones rendering
 
 ====[struct MinimalRendererFactory]
 
-Unit factory that creates a [`MinimalRenderer`] for headless tests.
+Unit factory that creates a \[`MinimalRenderer`\] for headless tests.
 
 ===[Traits]
 
@@ -338,7 +338,7 @@ Template-engine-agnostic page renderer implemented by the application/theme laye
 
 ====[trait RendererFactory]
 
-Factory that creates a [`PageRenderer`] bound to a [`BookConfig`].
+Factory that creates a \[`PageRenderer`\] bound to a \[`BookConfig`\].
 Used by `build_book` and by the dev server (which re-creates the renderer on config hot-reload).
 
 ==[Module serve]

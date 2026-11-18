@@ -154,24 +154,21 @@ fn escape_html(raw: &str) -> String {
         .replace('\'', "&#39;")
 }
 
-fn arg_str<'a>(args: Option<&'a Value>, key: &str) -> Option<&'a str> {
-    let Value::Map(entries) = args? else {
+fn arg_str<'a>(args: Option<&'a Value>, key: &str) -> Option<std::borrow::Cow<'a, str>> {
+    let Value::Tuple(tuple) = args? else {
         return None;
     };
-    entries
-        .iter()
-        .find(|(k, _)| k == key)
-        .and_then(|(_, v)| match v {
-            Value::String(s) => Some(s.as_str()),
-            _ => None,
-        })
+    tuple
+        .get(key)
+        .and_then(|v| v.as_scalar())
+        .and_then(|s| s.text())
 }
 
 fn wrap_icon(html: String, req: &IconRequest) -> String {
     if req.class == Some("tm-link-icon") {
         return html;
     }
-    let has_circle = arg_str(req.args, "shape") == Some("circle");
+    let has_circle = arg_str(req.args, "shape").as_deref() == Some("circle");
     let inner = if has_circle {
         format!(r#"<span class="tm-icon-wrapper tm-icon-circle">{html}</span>"#)
     } else {
@@ -305,10 +302,10 @@ mod tests {
     #[test]
     fn test_render_with_circle_shape() {
         let renderer = StandardIconRenderer::new();
-        let args = Value::Map(vec![(
+        let args = Value::Tuple(tomet::ast::Tuple::from_named([(
             "shape".to_string(),
-            Value::String("circle".to_string()),
-        )]);
+            tomet::parse_value(r#""circle""#).unwrap(),
+        )]));
         let req = IconRequest {
             name: "star",
             pkg: "lucide",

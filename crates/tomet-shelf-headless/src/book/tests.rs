@@ -166,7 +166,7 @@ fn build_book_enhances_internal_links_with_note_icons() {
 
     fs::write(
         src.join("target.tmt"),
-        "::meta{icon: \"🛍️\"}\n\n#[ Target ]\n\nTarget page.\n",
+        "::meta(icon: \"🛍️\")\n\n#[ Target ]\n\nTarget page.\n",
     )
     .unwrap();
     fs::write(
@@ -391,7 +391,7 @@ fn build_book_explicit_slug_precedence() {
     fs::create_dir_all(&nested).unwrap();
     fs::write(
         nested.join("guide.tmt"),
-        "::meta{ slug: \"super-guide\" }\n\n#[ Super Guide ]\n\nContent.\n",
+        "::meta( slug: \"super-guide\" )\n\n#[ Super Guide ]\n\nContent.\n",
     )
     .unwrap();
     fs::write(
@@ -431,12 +431,12 @@ fn build_book_id_routing_behavior() {
     fs::create_dir_all(&notes_dir).unwrap();
     fs::write(
         notes_dir.join("my-note.tmt"),
-        "::id(random-uuid-1234)\n\n#[ My Note ]\n\nContent.\n",
+        "::id(\"random-uuid-1234\")\n\n#[ My Note ]\n\nContent.\n",
     )
     .unwrap();
     fs::write(
         src.join("index.tmt"),
-        "::meta{ slug: \"index\" }\n\n#[ Home ]\n\nSee @link(ref:\"notes/my-note.tmt\").\n",
+        "::meta( slug: \"index\" )\n\n#[ Home ]\n\nSee @link(ref:\"notes/my-note.tmt\").\n",
     )
     .unwrap();
 
@@ -481,7 +481,7 @@ fn build_book_emits_native_search_index_json() {
 
     fs::write(
         src.join("intro.tmt"),
-        "::meta{ title: \"Getting Started\" }\n\n#[ Getting Started ]\n\nWelcome to tomet documentation.\n",
+        "::meta( title: \"Getting Started\" )\n\n#[ Getting Started ]\n\nWelcome to tomet documentation.\n",
     )
     .unwrap();
 
@@ -525,13 +525,13 @@ fn build_book_with_base_path() {
 
     fs::write(
         src.join("intro.tmt"),
-        "::meta{ title: \"Getting Started\", icon: @doc.icon(\"book-open\", pkg: \"lucide\") }\n\n#[ Getting Started ]\n\nSee @link(ref:\"outro\")[Outro].\n",
+        "::meta( title: \"Getting Started\", icon: @doc.icon(\"book-open\", pkg: \"lucide\") )\n\n#[ Getting Started ]\n\nSee @link(ref:\"outro\")[Outro].\n",
     )
     .unwrap();
 
     fs::write(
         src.join("outro.tmt"),
-        "::meta{ title: \"Conclusion\" }\n\n#[ Conclusion ]\n\nDone.\n",
+        "::meta( title: \"Conclusion\" )\n\n#[ Conclusion ]\n\nDone.\n",
     )
     .unwrap();
 

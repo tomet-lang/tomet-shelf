@@ -31,7 +31,7 @@ pub struct IncrementalVaultState {
     pub new_cache: VaultCache,
     pub affected: AffectedPaths,
     pub changes: Vec<Change>,
-    pub parsed_for_index: Vec<Result<(tomet::File, Option<String>), DocFailure>>,
+    pub parsed_for_index: Vec<Result<(tomet::ast::File, Option<String>), DocFailure>>,
 }
 
 /// Converts scanned doc files into [`ScannedDoc`] instances with filesystem signatures.
@@ -86,7 +86,7 @@ pub fn process_incremental_vault(
         abs_path: PathBuf,
         signature: FileSignature,
         source: String,
-        parsed_doc: Result<(tomet::File, Option<String>), DocFailure>,
+        parsed_doc: Result<(tomet::ast::File, Option<String>), DocFailure>,
         explicit_slug: Option<String>,
         meta_id: Option<String>,
     }

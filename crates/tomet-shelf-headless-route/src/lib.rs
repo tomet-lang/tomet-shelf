@@ -103,8 +103,8 @@ pub struct DocRouteInput<'a> {
     pub meta_id: Option<&'a str>,
 }
 
-/// Extract explicit `slug` and `id` from a document's declarations, if present.
-pub fn extract_route_metadata(doc: &tomet::File) -> (Option<String>, Option<String>) {
+/// Extract explicit `slug` and `id` from a document's `@meta` block, if present.
+pub fn extract_route_metadata(doc: &tomet::ast::File) -> (Option<String>, Option<String>) {
     let raw_meta = tomet::declaration::document_meta(doc);
     let meta_json = raw_meta.as_ref().map(tomet::semantics::value_to_json);
     let slug = meta_json
@@ -115,7 +115,16 @@ pub fn extract_route_metadata(doc: &tomet::File) -> (Option<String>, Option<Stri
             serde_json::Value::Number(n) => Some(n.to_string()),
             _ => None,
         });
-    let id = tomet::declaration::document_id(doc);
+    let id = tomet::declaration::document_id(doc).or_else(|| {
+        meta_json
+            .as_ref()
+            .and_then(|m| m.get("id"))
+            .and_then(|v| match v {
+                serde_json::Value::String(s) => Some(s.clone()),
+                serde_json::Value::Number(n) => Some(n.to_string()),
+                _ => None,
+            })
+    });
     (slug, id)
 }
 

@@ -7,11 +7,11 @@ Rules the tomet-shelf repository obeys.
 ==[ rust-api-docs ]
 
 @rule(rust-api-docs){
-  guard: { twrit: rust-api }
+  guard: (twrit: rust-api)
 
-  rust_api: {
+  rust_api: (
     out: "tmtroot/generated/crates"
-  }
+  )
 }
 
 API documentation for all workspace Rust crates must be kept up to date

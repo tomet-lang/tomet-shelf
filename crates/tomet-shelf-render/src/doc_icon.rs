@@ -15,19 +15,6 @@ use tomet_shelf_icons::{IconRenderer, IconRequest};
 
 use crate::html::escape_html;
 
-fn arg_str<'a>(args: Option<&'a Value>, key: &str) -> Option<&'a str> {
-    let Value::Map(entries) = args? else {
-        return None;
-    };
-    entries
-        .iter()
-        .find(|(k, _)| k == key)
-        .and_then(|(_, v)| match v {
-            Value::String(s) => Some(s.as_str()),
-            _ => None,
-        })
-}
-
 /// A visible stand-in for an icon that cannot be drawn.
 fn placeholder(name: &str, pkg: &str, inline: bool) -> String {
     let tag = if inline { "span" } else { "div" };
@@ -46,9 +33,20 @@ pub fn render_doc_icon(
         return None;
     }
 
-    let args = ctx.normalized_args();
-    let name = arg_str(args.as_ref(), "name").unwrap_or_default();
-    let pkg = arg_str(args.as_ref(), "pkg").unwrap_or("lucide");
+    let args_view = ctx.args_view();
+    let args_val = args_view.as_ref().map(|v| Value::Tuple(v.tuple().clone()));
+    let name_cow = args_view
+        .as_ref()
+        .and_then(|v| v.get("name"))
+        .and_then(|v| v.as_scalar())
+        .and_then(|s| s.text());
+    let pkg_cow = args_view
+        .as_ref()
+        .and_then(|v| v.get("pkg"))
+        .and_then(|v| v.as_scalar())
+        .and_then(|s| s.text());
+    let name = name_cow.as_deref().unwrap_or_default();
+    let pkg = pkg_cow.as_deref().unwrap_or("lucide");
     let name_attr = escape_html(name);
     let pkg_attr = escape_html(pkg);
 
@@ -58,7 +56,7 @@ pub fn render_doc_icon(
         base_path,
         inline: ctx.inline,
         class: Some("tm-doc-icon"),
-        args: args.as_ref(),
+        args: args_val.as_ref(),
     };
 
     if let Some(r) = renderer {
@@ -106,16 +104,24 @@ mod tests {
         }
     }
 
-    fn args(name: &str, pkg: Option<&str>) -> Value {
-        let mut entries = vec![("name".to_string(), Value::String(name.to_string()))];
+    fn args(name: &str, pkg: Option<&str>) -> tomet::ast::Tuple {
+        let mut entries = vec![(
+            "name".to_string(),
+            tomet::parse_value(&format!("{name:?}")).unwrap(),
+        )];
         if let Some(pkg) = pkg {
-            entries.push(("pkg".to_string(), Value::String(pkg.to_string())));
+            entries.push((
+                "pkg".to_string(),
+                tomet::parse_value(&format!("{pkg:?}")).unwrap(),
+            ));
         }
-        Value::Map(entries)
+        tomet::ast::Tuple::from_named(entries)
     }
 
-    fn ctx<'a>(kind: &'a str, args: &'a Value, inline: bool) -> CustomElementCtx<'a> {
-        CustomElementCtx::new(kind, None, inline, || Some(args.clone()))
+    fn ctx<'a>(kind: &'a str, args: &'a tomet::ast::Tuple, inline: bool) -> CustomElementCtx<'a> {
+        CustomElementCtx::new(kind, None, inline, || {
+            Some(tomet::semantics::TupleView::new(args, &["name", "pkg"]))
+        })
     }
 
     #[test]

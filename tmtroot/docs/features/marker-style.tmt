@@ -13,12 +13,12 @@
 ==[ 有効化設定（shelf.toml） ]
 
 ```toml
-[ui.markers]
-enable = true
-strikethrough = true
-
-[ui.markers.custom]
-fire = { icon = "flame", color = "#f97316" }
+`` [ui.markers]
+`` enable = true
+`` strikethrough = true
+``
+`` [ui.markers.custom]
+`` fire = { icon = "flame", color = "#f97316" }
 ```
 
 ==[ 有効化時のチェックボックス・アイコン ]

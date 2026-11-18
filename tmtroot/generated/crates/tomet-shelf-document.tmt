@@ -1,6 +1,6 @@
 ::kind(api)
 
-::meta{crate: tomet-shelf-document, dependencies: list(tomet-shelf-config, tomet-shelf-route, tomet-shelf-search), dependents: list(tomet-shelf-assets, tomet-shelf-headless, tomet-shelf-incremental, tomet-shelf-render)}
+::meta(crate: tomet-shelf-document, dependencies: (tomet-shelf-config, tomet-shelf-route, tomet-shelf-search), dependents: (tomet-shelf-assets, tomet-shelf-headless, tomet-shelf-incremental, tomet-shelf-render))
 
 =[tomet-shelf-document]
 
@@ -193,13 +193,15 @@ and every deeper heading nests under the most recent shallower one.
 
 ==[Functions]
 
-===[fn extract_workspace_config_blocks]
+===[fn extract_workspace_config_declarations]
 
-Extract the `::config`/`::settings` blocks of a workspace-wide document.
+Extract configuration declarations (such as `::config`, `::settings`, `::macros`, `::vars`)
+of a workspace-wide document.
 
-===[fn inject_workspace_config_blocks]
+===[fn inject_workspace_config_declarations]
 
-Prepend pre-parsed workspace-wide config blocks so shared macros are in scope.
+Prepend pre-parsed workspace-wide configuration declarations so shared macros and config
+are in scope.
 
 ===[fn parse_tomet_document]
 
@@ -214,11 +216,11 @@ parse -- so the parse is done once, here, and handed on.
 
 ===[fn process_parsed_document]
 
-===[fn process_parsed_document_with_blocks]
+===[fn process_parsed_document_with_declarations]
 
-Turn a parsed document into the page it becomes using pre-parsed workspace config blocks.
+Turn a parsed document into the page it becomes using pre-parsed workspace config declarations.
 
 ===[fn process_parsed_document_with_custom_element]
 
-Turn a parsed document into the page it becomes using pre-parsed workspace config blocks
+Turn a parsed document into the page it becomes using pre-parsed workspace config declarations
 and an optional custom element renderer (e.g. for `@doc.icon`).

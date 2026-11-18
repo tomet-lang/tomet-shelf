@@ -1,6 +1,6 @@
 ::kind(api)
 
-::meta{crate: tomet-shelf-search, dependencies: list(), dependents: list(tomet-shelf-document, tomet-shelf-headless)}
+::meta(crate: tomet-shelf-search, dependencies: (), dependents: (tomet-shelf-document, tomet-shelf-headless))
 
 =[tomet-shelf-search]
 

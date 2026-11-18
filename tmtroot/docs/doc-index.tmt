@@ -14,11 +14,11 @@
 索引はただのTomet文書 -- リンクのネストされたリストなので、専用の構文はいらない。
 
 ```tmt
-::kind(doc.index)
-
-- @link(ref:"getting-started")
-- @link(ref:"concepts")
-  - @link(ref:"concepts/tomet")
+`` ::kind(doc.index)
+``
+`` - @link(ref:"getting-started")
+`` - @link(ref:"concepts")
+``   - @link(ref:"concepts/tomet")
 ```
 
 リンクのないバレットは見出しラベルとして扱われ、その下の子はそのまま持ち上がる。
@@ -32,7 +32,7 @@
 展開されると手書きと同じ並びになるので、両方を自由に混ぜてよい。
 
 ```tmt
-- ${filter(contains(path, "concepts/"), by(path))}
+`` - ${filter(contains(path, "concepts/"), by(path))}
 ```
 
 条件はvault全体のメタデータ (pathや`meta.*`フィールド) に対して評価される。

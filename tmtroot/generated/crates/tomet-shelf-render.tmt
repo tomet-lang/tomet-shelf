@@ -1,6 +1,6 @@
 ::kind(api)
 
-::meta{crate: tomet-shelf-render, dependencies: list(tomet-shelf-config, tomet-shelf-document, tomet-shelf-icons), dependents: list(tomet-shelf-assets, tomet-shelf-headless)}
+::meta(crate: tomet-shelf-render, dependencies: (tomet-shelf-config, tomet-shelf-document, tomet-shelf-icons), dependents: (tomet-shelf-assets, tomet-shelf-headless))
 
 =[tomet-shelf-render]
 
@@ -28,14 +28,14 @@ with a language label and a copy button.
 
 ==[Module doc_icon]
 
-Renders `@doc.icon("name", pkg:"lucide")` via a pluggable [`IconRenderer`].
+Renders `@doc.icon("name", pkg:"lucide")` via a pluggable \[`IconRenderer`\].
 
 Tomet resolves this element but deliberately never draws it, by design: an
 external renderer is meant to implement the notation. This module connects
-the element to [`IconRenderer`] (wired in as a
+the element to \[`IconRenderer`\] (wired in as a
 `tomet_html::RenderOptions::custom_element` hook).
 
-If no [`IconRenderer`] is configured or an unknown icon is requested,
+If no \[`IconRenderer`\] is configured or an unknown icon is requested,
 a visible placeholder is rendered so typos in documents are visible.
 
 ===[Functions]
