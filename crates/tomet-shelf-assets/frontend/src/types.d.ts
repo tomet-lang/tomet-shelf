@@ -17,5 +17,7 @@ interface ViewTransition {
 }
 
 interface Document {
-  startViewTransition?(updateCallback: () => void | Promise<void>): ViewTransition;
+  startViewTransition?(
+    updateCallback: () => void | Promise<void>,
+  ): ViewTransition;
 }

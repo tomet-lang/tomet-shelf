@@ -48,7 +48,9 @@ export function isHomeOrRootPath(pathname: string): boolean {
  * Returns true when `href` targets an internal note page within this vault
  * (not an external link, hash-only anchor, or catalog index root).
  */
-export function isInternalNoteUrl(href: string | null | undefined): href is string {
+export function isInternalNoteUrl(
+  href: string | null | undefined,
+): href is string {
   if (!href) return false;
   if (
     href.startsWith("#") ||

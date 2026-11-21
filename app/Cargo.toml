@@ -1,26 +1,26 @@
 [package]
-name = "tomet-shelf-cli"
-version.workspace = true
-edition.workspace = true
+name                   = "tomet-shelf-cli"
+version.workspace      = true
+edition.workspace      = true
 rust-version.workspace = true
-description = "CLI for tomet-shelf - A standalone book & wiki generator for Tomet"
+description            = "CLI for tomet-shelf - A standalone book & wiki generator for Tomet"
 
 [[bin]]
 name = "tomet-shelf"
 path = "src/main.rs"
 
 [dependencies]
+tomet-shelf-assets   = { workspace = true }
 tomet-shelf-headless = { workspace = true }
-tomet-shelf-assets = { workspace = true }
 
 #= Crates.io
-anyhow = { workspace = true }
-clap = { workspace = true }
-tokio = { workspace = true }
-tracing = { workspace = true }
+anyhow             = { workspace = true }
+clap               = { workspace = true }
+tokio              = { workspace = true }
+tracing            = { workspace = true }
 tracing-subscriber = { workspace = true }
 
 [features]
-default = []
-embedded-search = ["tomet-shelf-headless/embedded-search"]
+default                  = []
+embedded-search          = ["tomet-shelf-headless/embedded-search"]
 embedded-search-extended = ["tomet-shelf-headless/embedded-search-extended"]

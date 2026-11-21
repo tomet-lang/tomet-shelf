@@ -1,40 +1,40 @@
 [package]
-name = "tomet-shelf-headless"
-version.workspace = true
-edition.workspace = true
+name                   = "tomet-shelf-headless"
+version.workspace      = true
+edition.workspace      = true
 rust-version.workspace = true
-description = "Headless book & wiki engine for Tomet"
+description            = "Headless book & wiki engine for Tomet"
 
 [dependencies]
-tomet-shelf-config = { workspace = true }
-tomet-shelf-document = { workspace = true }
-tomet-shelf-icons = { workspace = true }
+tomet-shelf-config      = { workspace = true }
+tomet-shelf-document    = { workspace = true }
+tomet-shelf-icons       = { workspace = true }
 tomet-shelf-incremental = { workspace = true }
-tomet-shelf-render = { workspace = true }
-tomet-shelf-route = { workspace = true }
-tomet-shelf-search = { workspace = true }
-tomet-shelf-serve = { workspace = true }
+tomet-shelf-render      = { workspace = true }
+tomet-shelf-route       = { workspace = true }
+tomet-shelf-search      = { workspace = true }
+tomet-shelf-serve       = { workspace = true }
 
 #= Tomet
 tomet = { workspace = true }
 
 #= Crates.io
-anyhow = { workspace = true }
-image = { workspace = true }
-notify = { workspace = true }
-pagefind = { workspace = true, optional = true }
-percent-encoding = { workspace = true }
-rayon = { workspace = true }
-regex = { workspace = true }
-serde = { workspace = true }
-serde_json = { workspace = true }
-tokio = { workspace = true }
-toml = { workspace = true }
-tracing = { workspace = true }
-tracing-subscriber = { workspace = true }
+anyhow               = { workspace = true }
+image                = { workspace = true }
+notify               = { workspace = true }
+pagefind             = { workspace = true, optional = true }
+percent-encoding     = { workspace = true }
+rayon                = { workspace = true }
+regex                = { workspace = true }
+serde                = { workspace = true }
+serde_json           = { workspace = true }
+tokio                = { workspace = true }
+toml                 = { workspace = true }
+tracing              = { workspace = true }
+tracing-subscriber   = { workspace = true }
 unicode-segmentation = { workspace = true }
-walkdir = { workspace = true }
+walkdir              = { workspace = true }
 
 [features]
-embedded-search = ["dep:pagefind"]
+embedded-search          = ["dep:pagefind"]
 embedded-search-extended = ["embedded-search", "pagefind/extended"]

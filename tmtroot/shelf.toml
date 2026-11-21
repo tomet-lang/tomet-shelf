@@ -1,15 +1,15 @@
 [book]
 title = "tomet-shelf docs"
-lang = "en"
-dest = "dist"
+lang  = "en"
+dest  = "dist"
 
 [build]
-base = "/tomet-shelf"
-kinds = ["*", "!config", "!blueprint", "!vocabulary"]
-routing = "id"                                                  # "hierarchical" (default) | "flat" | "id"
+base    = "/tomet-shelf"
+kinds   = ["*", "!config", "!blueprint", "!vocabulary"]
+routing = "id"                                          # "hierarchical" (default) | "flat" | "id"
 
 [ui.markers]
-enable = true
+enable        = true
 strikethrough = true
 
 [ui.markers.custom]

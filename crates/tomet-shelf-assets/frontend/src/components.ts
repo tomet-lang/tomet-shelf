@@ -263,9 +263,7 @@ class TmtSwatch extends HTMLElement {
     if (!moveKeys.includes(e.key)) return;
     e.preventDefault();
 
-    const siblings = this.siblings().filter(
-      (s) => !s.hasAttribute("disabled"),
-    );
+    const siblings = this.siblings().filter((s) => !s.hasAttribute("disabled"));
     if (siblings.length === 0) return;
     const idx = siblings.indexOf(this);
 

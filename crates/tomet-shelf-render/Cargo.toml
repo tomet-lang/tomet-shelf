@@ -1,22 +1,22 @@
 [package]
-name = "tomet-shelf-render"
-version.workspace = true
-edition.workspace = true
+name                   = "tomet-shelf-render"
+version.workspace      = true
+edition.workspace      = true
 rust-version.workspace = true
-description = "HTML tag injection and presentation rendering for tomet-shelf"
+description            = "HTML tag injection and presentation rendering for tomet-shelf"
 
 [dependencies]
-tomet-shelf-config = { workspace = true }
+tomet-shelf-config   = { workspace = true }
 tomet-shelf-document = { workspace = true }
-tomet-shelf-icons = { workspace = true }
+tomet-shelf-icons    = { workspace = true }
 
 #= Tomet
 tomet = { workspace = true }
 
 #= Crates.io
-anyhow = { workspace = true }
-regex = { workspace = true }
-serde = { workspace = true }
-serde_json = { workspace = true }
-tracing = { workspace = true }
+anyhow               = { workspace = true }
+regex                = { workspace = true }
+serde                = { workspace = true }
+serde_json           = { workspace = true }
+tracing              = { workspace = true }
 unicode-segmentation = { workspace = true }

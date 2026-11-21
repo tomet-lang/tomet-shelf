@@ -78,9 +78,7 @@ async function getPagefind(): Promise<PagefindApi | null> {
   if (!pagefindInstance) {
     try {
       const pagefindUrl = withBasePath("/pagefind/pagefind.js");
-      const pf = (await import(
-        /* @vite-ignore */ pagefindUrl
-      )) as PagefindApi;
+      const pf = (await import(/* @vite-ignore */ pagefindUrl)) as PagefindApi;
       await pf.options({ ranking: { pageLength: 0.1 } });
       await pf.init();
       pagefindInstance = pf;
@@ -94,7 +92,9 @@ async function getPagefind(): Promise<PagefindApi | null> {
 function getNativeIndex(): Promise<NativeSearchIndex | null> {
   if (!nativeIndexPromise) {
     nativeIndexPromise = fetch(withBasePath("/search-index.json"))
-      .then((res) => (res.ok ? (res.json() as Promise<NativeSearchIndex>) : null))
+      .then((res) =>
+        res.ok ? (res.json() as Promise<NativeSearchIndex>) : null,
+      )
       .catch(() => null);
   }
   return nativeIndexPromise;
@@ -185,7 +185,10 @@ function scoreTargets(
   let maxBoost = 0;
 
   for (const { strict, fuzzy, weight } of targets) {
-    if (strict === compiled.strict || (compiled.fuzzy && fuzzy === compiled.fuzzy)) {
+    if (
+      strict === compiled.strict ||
+      (compiled.fuzzy && fuzzy === compiled.fuzzy)
+    ) {
       maxBoost = Math.max(maxBoost, 100000 * weight);
     } else if (
       strict.startsWith(compiled.strict) ||
@@ -478,7 +481,9 @@ export function setupSearch(): void {
       item.href = res.url;
       item.dataset.index = String(idx);
 
-      const thumb = item.querySelector<HTMLImageElement>(".search-result-thumb");
+      const thumb = item.querySelector<HTMLImageElement>(
+        ".search-result-thumb",
+      );
       if (res.meta.image && thumb) {
         thumb.src = res.meta.image;
         thumb.hidden = false;
@@ -509,8 +514,7 @@ export function setupSearch(): void {
       }
 
       const displayPath =
-        res.meta.path ||
-        res.url.replace(cleanPrefixRe, "").replace(/\/+$/, "");
+        res.meta.path || res.url.replace(cleanPrefixRe, "").replace(/\/+$/, "");
       const pathEl = item.querySelector<HTMLElement>(".search-result-path");
       if (displayPath && pathEl) {
         pathEl.textContent = displayPath;
@@ -619,8 +623,9 @@ export function setupSearch(): void {
   });
 
   input.addEventListener("keydown", (e) => {
-    const items =
-      resultsEl.querySelectorAll<HTMLAnchorElement>(".search-result-item");
+    const items = resultsEl.querySelectorAll<HTMLAnchorElement>(
+      ".search-result-item",
+    );
     if (e.key === "ArrowDown") {
       e.preventDefault();
       if (items.length > 0) {

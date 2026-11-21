@@ -1,11 +1,7 @@
 // Visited note tracking and recent notes sidebar list.
 
 import { storage } from "./dom";
-import {
-  isHomeOrRootPath,
-  isInternalNoteUrl,
-  normalizePath,
-} from "./env";
+import { isHomeOrRootPath, isInternalNoteUrl, normalizePath } from "./env";
 
 interface RecentEntry {
   path: string;

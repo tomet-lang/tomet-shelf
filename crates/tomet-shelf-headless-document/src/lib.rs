@@ -291,7 +291,8 @@ pub fn process_parsed_document_with_custom_element(
         custom_element,
         ..Default::default()
     };
-    let (body_html, outline) = tomet::html::render_body_with_outline(&doc, &render_opts);
+    let bindings = vault.bindings(&doc);
+    let (body_html, outline) = tomet::html::render_body_with_outline(&doc, &bindings, &render_opts);
 
     // 6. Table of contents, title, and the sticky-tab tree
     let (first_h1, mut toc) = toc_from_outline(&outline);

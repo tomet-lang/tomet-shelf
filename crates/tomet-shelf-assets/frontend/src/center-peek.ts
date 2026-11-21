@@ -112,9 +112,7 @@ export async function openCenterPeek(url: string): Promise<void> {
       link.addEventListener("click", (e) => {
         e.preventDefault();
         const targetId = decodeURIComponent(href.slice(1));
-        const targetEl = bodyEl.querySelector(
-          `[id="${CSS.escape(targetId)}"]`,
-        );
+        const targetEl = bodyEl.querySelector(`[id="${CSS.escape(targetId)}"]`);
         targetEl?.scrollIntoView({ behavior: "smooth", block: "start" });
       });
       return;

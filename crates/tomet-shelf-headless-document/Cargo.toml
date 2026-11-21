@@ -1,24 +1,24 @@
 [package]
-name = "tomet-shelf-document"
-version.workspace = true
-edition.workspace = true
+name                   = "tomet-shelf-document"
+version.workspace      = true
+edition.workspace      = true
 rust-version.workspace = true
-description = "Document parsing, AST transformation, and metadata extraction for tomet-shelf"
+description            = "Document parsing, AST transformation, and metadata extraction for tomet-shelf"
 
 [dependencies]
 tomet-shelf-config = { workspace = true }
-tomet-shelf-route = { workspace = true }
+tomet-shelf-route  = { workspace = true }
 tomet-shelf-search = { workspace = true }
 
 #= Tomet
 tomet = { workspace = true }
 
 #= Crates.io
-anyhow = { workspace = true }
-image = { workspace = true }
-percent-encoding = { workspace = true }
-regex = { workspace = true }
-serde = { workspace = true }
-serde_json = { workspace = true }
-tracing = { workspace = true }
+anyhow               = { workspace = true }
+image                = { workspace = true }
+percent-encoding     = { workspace = true }
+regex                = { workspace = true }
+serde                = { workspace = true }
+serde_json           = { workspace = true }
+tracing              = { workspace = true }
 unicode-segmentation = { workspace = true }

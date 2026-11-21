@@ -1,25 +1,25 @@
 [workspace]
-resolver = "3"
-members = ["app", "crates/*"]
+resolver        = "3"
+members         = ["app", "crates/*"]
 default-members = ["app"]
 
 [workspace.package]
-version = "0.1.0"
-edition = "2024"
+version      = "0.1.0"
+edition      = "2024"
 rust-version = "1.85"
 
 [workspace.dependencies]
 tomet-shelf-assets = { path = "crates/tomet-shelf-assets" }
-tomet-shelf-icons = { path = "crates/tomet-shelf-icons" }
+tomet-shelf-icons  = { path = "crates/tomet-shelf-icons" }
 tomet-shelf-render = { path = "crates/tomet-shelf-render" }
 #--- Headless ---
-tomet-shelf-headless = { path = "crates/tomet-shelf-headless" }
-tomet-shelf-config = { path = "crates/tomet-shelf-headless-config" }
-tomet-shelf-document = { path = "crates/tomet-shelf-headless-document" }
+tomet-shelf-config      = { path = "crates/tomet-shelf-headless-config" }
+tomet-shelf-document    = { path = "crates/tomet-shelf-headless-document" }
+tomet-shelf-headless    = { path = "crates/tomet-shelf-headless" }
 tomet-shelf-incremental = { path = "crates/tomet-shelf-headless-incremental" }
-tomet-shelf-route = { path = "crates/tomet-shelf-headless-route" }
-tomet-shelf-search = { path = "crates/tomet-shelf-headless-search" }
-tomet-shelf-serve = { path = "crates/tomet-shelf-headless-serve" }
+tomet-shelf-route       = { path = "crates/tomet-shelf-headless-route" }
+tomet-shelf-search      = { path = "crates/tomet-shelf-headless-search" }
+tomet-shelf-serve       = { path = "crates/tomet-shelf-headless-serve" }
 
 #= Tomet
 tomet = { git = "https://github.com/tomet-lang/tomet.git", features = [
@@ -31,6 +31,7 @@ tomet = { git = "https://github.com/tomet-lang/tomet.git", features = [
 
 #= Crates.io
 anyhow = "1.0"
+askama = "0.16"
 axum = "0.7"
 clap = { version = "4.5", features = ["derive"] }
 image = { version = "0.25", default-features = false, features = [
@@ -38,7 +39,6 @@ image = { version = "0.25", default-features = false, features = [
   "png",
   "webp",
 ] }
-askama = "0.16"
 notify = "6.1"
 pagefind = { version = "1.5", default-features = false }
 percent-encoding = "2.3"
