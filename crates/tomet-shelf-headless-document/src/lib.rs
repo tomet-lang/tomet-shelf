@@ -207,6 +207,46 @@ pub fn process_parsed_document_with_declarations(
     )
 }
 
+/// Adapts the vault index, unpublished set, and route table to `tomet::transform::LinkCatalog`,
+/// mapping published document paths to clean site slugs.
+struct ShelfLinkCatalog<'a> {
+    vault_index: &'a tomet::links::VaultLinkIndex,
+    unpublished: &'a HashSet<String>,
+    route_table: Option<&'a RouteTable>,
+}
+
+impl tomet::transform::LinkCatalog for ShelfLinkCatalog<'_> {
+    fn resolve_ref(&self, name: &str, from: Option<&str>) -> Option<String> {
+        let p = self.vault_index.resolve_ref(name, from.map(Path::new))?;
+        let norm = normalize_path(p);
+        // A page the site does not publish is not a page. Resolving
+        // it would print a link to a file that was never written.
+        if self.unpublished.contains(&norm) {
+            return None;
+        }
+        if links::strip_doc_extension(&norm) != norm {
+            let clean_slug = self
+                .route_table
+                .map(|rt| rt.get_or_clean(&norm))
+                .unwrap_or_else(|| clean_doc_slug(&norm));
+            Some(format!("{clean_slug}.tmt"))
+        } else {
+            Some(norm)
+        }
+    }
+
+    fn exists(&self, path: &str) -> bool {
+        let norm = normalize_path_str(path);
+        self.vault_index
+            .resolve_ref(&norm, None)
+            .is_some_and(|p| normalize_path(p) == norm)
+    }
+
+    fn is_published(&self, path: &str) -> bool {
+        !self.unpublished.contains(&normalize_path_str(path))
+    }
+}
+
 /// Turn a parsed document into the page it becomes using pre-parsed workspace config declarations
 /// and an optional custom element renderer (e.g. for `@doc.icon`).
 #[allow(clippy::too_many_arguments)]
@@ -250,33 +290,29 @@ pub fn process_parsed_document_with_custom_element(
         route_table,
     );
 
-    let mode = tomet::transform::TargetMode::WebSlug {
-        url_prefix: config.build.full_url_prefix(),
-        asset_prefix: config.build.full_asset_prefix(),
+    let url_prefix = config.build.full_url_prefix();
+    let asset_prefix = config.build.full_asset_prefix();
+    let catalog = ShelfLinkCatalog {
+        vault_index,
+        unpublished,
+        route_table,
     };
-    tomet::transform::resolve_document_links(
-        &mut doc,
-        Some(from_path),
-        |target, from| {
-            vault_index
-                .resolve_ref(target, from)
-                // A page the site does not publish is not a page. Resolving
-                // it would print a link to a file that was never written.
-                .filter(|p| !unpublished.contains(&normalize_path(p)))
-                .map(|p| {
-                    let norm = normalize_path(p);
-                    if links::strip_doc_extension(&norm) != norm {
-                        let clean_slug = route_table
-                            .map(|rt| rt.get_or_clean(&norm))
-                            .unwrap_or_else(|| clean_doc_slug(&norm));
-                        std::path::PathBuf::from(format!("{clean_slug}.tmt"))
-                    } else {
-                        p.to_path_buf()
-                    }
-                })
-        },
-        &mode,
-    );
+    let site = tomet::transform::LinkSite {
+        url_prefix: &url_prefix,
+        asset_prefix: &asset_prefix,
+        base_path: "",
+        source_url: None,
+        catalog: &catalog,
+    };
+    let unresolved = tomet::transform::resolve_site_links(&mut doc, Some(rel_path), &site);
+    for link in &unresolved {
+        tracing::debug!(
+            "{rel_path}: unresolved {} link `{}` ({})",
+            link.scheme,
+            link.target,
+            link.reason
+        );
+    }
 
     // 4. Metadata and kind
     let kind = tomet::declaration::document_kind(&doc).map(|s| s.to_string());
